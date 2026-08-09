@@ -36,8 +36,16 @@ def test_dialogue_section_renders():
 
 
 def test_cap_drops_trailing_segments_not_mid_string():
-    fields = {"shot_type": "wide shot", "setting": "a cramped office",
-              "camera_body": "shot on ARRI Alexa 65", "music_genre": "orchestral"}
+    # Build fields with enough content to exceed pixverse limit (2048)
+    fields = {
+        "shot_type": "wide shot",
+        "setting": "a cramped office",
+        "camera_body": "shot on ARRI Alexa 65",
+        "music_genre": "orchestral",
+        "beat_1": "x" * 400,
+        "beat_2": "x" * 400,
+        "beat_3": "x" * 400,
+    }
     out = profiles.render(fields, "pixverse")
     assert len(out) <= 2048
     assert out.endswith((".", "!", '"'))
@@ -48,3 +56,38 @@ def test_cap_never_returns_partial_sentence():
     out = profiles.render(fields, "pixverse")
     assert len(out) <= 2048
     assert out.endswith(".")
+
+
+def test_cap_handles_single_sentence_exceeding_limit():
+    # One very long segment with no sentence boundary: _cap must truncate at word boundary
+    fields = {"dialogue": "x" * 5000}
+    out = profiles.render(fields, "pixverse")
+    assert out  # Non-empty
+    assert len(out) <= 2048
+    assert out.endswith(".")
+
+
+def test_render_applies_model_order():
+    # VEO puts CINEMATOGRAPHY first, universal puts STYLE/SUBJECT first
+    # Use a state with both cinematography and subject content
+    fields = {
+        "shot_type": "cinematic wide shot",
+        "char_label": "a mysterious figure",
+    }
+    veo_out = profiles.render(fields, "veo")
+    universal_out = profiles.render(fields, "universal")
+
+    # Both should contain the key phrases (case-insensitive check)
+    assert "cinematic wide shot" in veo_out.lower()
+    assert "mysterious figure" in universal_out.lower()
+
+    # In veo output, cinematography content should appear before subject content
+    veo_shot_pos = veo_out.lower().find("cinematic wide shot")
+    veo_char_pos = veo_out.lower().find("mysterious figure")
+    assert veo_shot_pos < veo_char_pos, "VEO should lead with CINEMATOGRAPHY"
+
+    # In universal output, subject (character) typically appears earlier
+    # (STYLE/SUBJECT come before CINEMATOGRAPHY in universal)
+    universal_char_pos = universal_out.lower().find("mysterious figure")
+    universal_shot_pos = universal_out.lower().find("cinematic wide shot")
+    assert universal_char_pos < universal_shot_pos, "Universal should lead with SUBJECT before CINEMATOGRAPHY"

@@ -52,16 +52,28 @@ def _cap(text: str, limit: int) -> str:
     if len(text) <= limit:
         return text
 
-    def render(parts: list[str]) -> str:
+    def _rendered(parts: list[str]) -> str:
         out = ". ".join(parts)
         if out and not out.endswith((".", "!", '"')):
             out += "."
         return out
 
     parts = text.split(". ")
-    while parts and len(render(parts)) > limit:
+    while len(parts) > 1 and len(_rendered(parts)) > limit:
         parts.pop()
-    return render(parts)
+
+    out = _rendered(parts)
+    if len(out) <= limit:
+        return out
+
+    # One sentence longer than the whole budget: there is no sentence boundary
+    # left to cut at. Truncate at the last word boundary that leaves room for the
+    # period — an empty prompt is a worse failure than a shortened one.
+    head = parts[0][: limit - 1]
+    cut = head.rfind(" ")
+    if cut > 0:
+        head = head[:cut]
+    return head.rstrip(" ,;:") + "."
 
 
 def render(fields: dict, model: str = "universal", kind: str = "video") -> str:
