@@ -31,14 +31,27 @@ curated values, 39 of them free-text.
 
 ### Two components not in the npm package
 
-1. **Per-model profiles**: each target model reorders the 7 sections and carries a
+1. **Per-model profiles**: each target model reorders the 8 sections and carries a
    character cap (universal 3000, sora 2500, veo 3000, kling 2500, seedance 10000,
    grok 4096, ltx 3000, pixverse 2048, happyhorse 2500, luma 3000, wan 3000).
-   Extracted from the site bundle.
+   Nine models have an explicit order; `wan` and `ltx` have a cap but no order, so
+   they fall back to universal. Extracted from the site bundle.
 2. **Compatibility matrix**: `format` gates other fields. `film` deletes
    `color_science` and restricts `camera_body` by gauge; `digital` deletes
    `film_stock`; `consumer` deletes `camera_body`, `color_science`, `film_stock`.
    Enforced in their DOM, which means any non-UI caller bypasses it.
+
+### Oracle scope: the CLI and the site disagree
+
+The npm CLI's `SECTION_ORDER` has 7 sections and lists `dialogue`,
+`delivery_style`, `delivery_style_custom`, and `dialogue_language` in none of them,
+so its loop silently skips all four. The live site has 8 sections, with a separate
+`DIALOGUE` section holding exactly those fields.
+
+We implement the site's 8-section model, since that is the shipping product. The
+oracle is therefore valid only for states with no dialogue fields set, and the
+fixture generator excludes those four field names. DIALOGUE placement is covered by
+hand-written tests instead.
 
 ### Known gap in the reference
 
@@ -117,8 +130,8 @@ prune (compat)  →  order sections (per model)  →  apply merge rules
                 →  nl_join lists  →  group SUBJECT/gear runs  →  sentence-case  →  cap
 ```
 
-Sections: STYLE, SUBJECT, ACTIONS, ENVIRONMENT, CINEMATOGRAPHY, PALETTE, SOUND.
-Roughly 16 merge rules weld field pairs into English; the representative case is
+Sections: STYLE, SUBJECT, ACTIONS, ENVIRONMENT, CINEMATOGRAPHY, PALETTE, DIALOGUE,
+SOUND. Roughly 16 merge rules weld field pairs into English; the representative case is
 `camera_body` + `color_science`, which strips a duplicated manufacturer so
 `"ARRI Alexa 65"` + `"ARRI LogC4"` does not yield `"ARRI ... ARRI"`.
 
@@ -169,6 +182,11 @@ The ratio catches hallucinated vocabulary; the floor catches a model that gave u
 Neither catches both.
 
 ### Escalation
+
+`fill_from_scene` is async: `localllm.py` uses `httpx.AsyncClient` and
+`scene3d/author.py:231` is `async def _call_model`, which the cloud path reuses.
+The local path needs a generic `ask_local(system, user)` helper added to
+`localllm.py`, since the existing `_ask` hardcodes the archetype system prompt.
 
 Local, one retry, then DeepSeek, then raise `FillError` to the caller. No fabricated
 fields at any step. A failed fill returns nothing and says so. A prompt the user
