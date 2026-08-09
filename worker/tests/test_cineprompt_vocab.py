@@ -22,3 +22,11 @@ def test_overlay_extends_and_overrides(tmp_path, monkeypatch):
     assert "shot on a Lamka rig" in vocab.values_for("camera_body")
     assert "shot on ARRI Alexa 65" in vocab.values_for("camera_body")
     assert vocab.values_for("brand_beat") == ["logo settles into frame"]
+
+
+def test_returned_list_cannot_corrupt_cache():
+    got = vocab.values_for("camera_body")
+    got.append("not a real value")
+    got.sort()
+    assert vocab.values_for("camera_body") != got
+    assert "not a real value" not in vocab.values_for("camera_body")

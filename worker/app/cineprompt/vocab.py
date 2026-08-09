@@ -23,15 +23,18 @@ _CACHE: dict[str, list[str]] = {}
 
 
 def values_for(field: str) -> list[str]:
-    """Allowed values for a field. Empty list means free text or unknown."""
+    """Allowed values for a field. Empty list means free text or unknown.
+
+    Returns a fresh copy each call so callers cannot mutate the cache.
+    """
     if field in _CACHE:
-        return _CACHE[field]
+        return list(_CACHE[field])
     merged = list(_BASE.get(field, []))
     for value in _OVERLAY.get(field, []):
         if value not in merged:
             merged.append(value)
     _CACHE[field] = merged
-    return merged
+    return list(merged)
 
 
 def all_fields() -> set[str]:
