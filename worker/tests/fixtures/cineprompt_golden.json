@@ -1,0 +1,3449 @@
+[
+ {
+  "fields": {
+   "camera_body": "shot on ARRI Alexa 65",
+   "color_science": "ARRI LogC4 flat log footage, ungraded"
+  },
+  "expected": "Shot on ARRI Alexa 65 in LogC4, flat log footage, ungraded."
+ },
+ {
+  "fields": {
+   "camera_body": "shot on RED V-Raptor",
+   "color_science": "ARRI LogC4 flat log footage, ungraded"
+  },
+  "expected": "Shot on RED V-Raptor in ARRI LogC4, flat log footage, ungraded."
+ },
+ {
+  "fields": {
+   "camera_body": "shot on ARRI Alexa 65"
+  },
+  "expected": "Shot on ARRI Alexa 65."
+ },
+ {
+  "fields": {
+   "color_science": "ARRI LogC4 flat log footage, ungraded"
+  },
+  "expected": "ARRI LogC4 flat log footage, ungraded."
+ },
+ {
+  "fields": {
+   "shot_type": "wide shot",
+   "movement": "static"
+  },
+  "expected": "Wide shot, locked-off static camera."
+ },
+ {
+  "fields": {
+   "shot_type": "wide shot",
+   "movement": "pan"
+  },
+  "expected": "Wide shot with pan camera movement."
+ },
+ {
+  "fields": {
+   "shot_type": "wide shot"
+  },
+  "expected": "Wide shot."
+ },
+ {
+  "fields": {
+   "movement": "static"
+  },
+  "expected": "Locked-off static camera."
+ },
+ {
+  "fields": {
+   "movement": "pan"
+  },
+  "expected": "Pan camera movement."
+ },
+ {
+  "fields": {
+   "focal_length": "50mm lens",
+   "lens_brand": "ARRI Master Prime"
+  },
+  "expected": "50mm ARRI Master Prime."
+ },
+ {
+  "fields": {
+   "focal_length": "50mm lens"
+  },
+  "expected": "50mm lens."
+ },
+ {
+  "fields": {
+   "lens_brand": "ARRI Master Prime"
+  },
+  "expected": "ARRI Master Prime."
+ },
+ {
+  "fields": {
+   "lighting_style": "soft light",
+   "lighting_type": "daylight"
+  },
+  "expected": "Soft daylight."
+ },
+ {
+  "fields": {
+   "lighting_style": "soft light"
+  },
+  "expected": "Soft light."
+ },
+ {
+  "fields": {
+   "lighting_type": "daylight"
+  },
+  "expected": "Daylight."
+ },
+ {
+  "fields": {
+   "hair_style": "short hair",
+   "hair_color": "black hair"
+  },
+  "expected": "Short black hair."
+ },
+ {
+  "fields": {
+   "hair_style": "short hair"
+  },
+  "expected": "Short hair."
+ },
+ {
+  "fields": {
+   "hair_color": "black hair"
+  },
+  "expected": "Black hair."
+ },
+ {
+  "fields": {
+   "env_time": "dawn, first light",
+   "weather": "light rain"
+  },
+  "expected": "Dawn, first light, light rain."
+ },
+ {
+  "fields": {
+   "env_time": "dawn, first light"
+  },
+  "expected": "Dawn, first light."
+ },
+ {
+  "fields": {
+   "key_light": "hard key from camera left",
+   "fill_light": "soft fill from camera right"
+  },
+  "expected": "Hard key from camera left, soft fill from camera right."
+ },
+ {
+  "fields": {
+   "key_light": "hard key from camera left"
+  },
+  "expected": "Hard key from camera left."
+ },
+ {
+  "fields": {
+   "film_stock": "Kodak Portra 400 film colors, warm pastels",
+   "color_grade": "warm tones"
+  },
+  "expected": "Kodak Portra 400 film colors, warm pastels, warm tones."
+ },
+ {
+  "fields": {
+   "film_stock": "Kodak Portra 400 film colors, warm pastels"
+  },
+  "expected": "Kodak Portra 400 film colors, warm pastels."
+ },
+ {
+  "fields": {
+   "expression": "a faint smile",
+   "body_language": "shoulders relaxed"
+  },
+  "expected": "A faint smile, shoulders relaxed."
+ },
+ {
+  "fields": {
+   "expression": "a faint smile"
+  },
+  "expected": "A faint smile."
+ },
+ {
+  "fields": {
+   "char_label": "a woman",
+   "age_range": "in their 30s"
+  },
+  "expected": "A woman in their 30s."
+ },
+ {
+  "fields": {
+   "char_label": "a woman",
+   "age_range": "a child"
+  },
+  "expected": "A woman, a child."
+ },
+ {
+  "fields": {
+   "char_label": "a woman"
+  },
+  "expected": "A woman."
+ },
+ {
+  "fields": {
+   "creature_category": "wild animal",
+   "creature_label": "the alpha"
+  },
+  "expected": "Wild animal, the alpha."
+ },
+ {
+  "fields": {
+   "creature_category": "wild animal"
+  },
+  "expected": "Wild animal."
+ },
+ {
+  "fields": {
+   "veh_type": "car",
+   "veh_subtype": "vintage roadster"
+  },
+  "expected": "Vintage roadster."
+ },
+ {
+  "fields": {
+   "veh_type": "car"
+  },
+  "expected": "Car."
+ },
+ {
+  "fields": {
+   "music_genre": "orchestral",
+   "music_mood": "tense, unsettling"
+  },
+  "expected": "Tense orchestral."
+ },
+ {
+  "fields": {
+   "music_genre": "orchestral"
+  },
+  "expected": "Orchestral."
+ },
+ {
+  "fields": {
+   "sound_mode": "voice-over narration",
+   "voiceover_text": "It began quietly."
+  },
+  "expected": "Voice-over narration: \"It began quietly.\""
+ },
+ {
+  "fields": {
+   "sound_mode": "voice-over narration"
+  },
+  "expected": "Voice-over narration."
+ },
+ {
+  "fields": {
+   "setting": "a cramped office",
+   "location_type": "living room",
+   "custom_location": "above a laundromat"
+  },
+  "expected": "A cramped office, living room, above a laundromat."
+ },
+ {
+  "fields": {
+   "setting": "a cramped office",
+   "custom_location": "above a laundromat"
+  },
+  "expected": "A cramped office, above a laundromat."
+ },
+ {
+  "fields": {
+   "media_type": "cinematic",
+   "genre": [
+    "action",
+    "thriller"
+   ]
+  },
+  "expected": "Cinematic action and thriller."
+ },
+ {
+  "fields": {
+   "ms_camera_body": "shot on DJI Inspire",
+   "social_media_style": "product review video",
+   "ms_lens_filter": "fog filter"
+  },
+  "expected": ""
+ },
+ {
+  "fields": {
+   "location_type": "stairwell",
+   "lighting_style": "backlight",
+   "veh_type": "ship",
+   "age_range": "in their 60s",
+   "food_texture": "glossy, glazed surface",
+   "movement_type": "wilting slowly, petals dropping",
+   "ms_color_science": "Panasonic V-Log flat log footage, ungraded",
+   "genre": "crime",
+   "isolation": "isolated on a bright green screen background, chroma key, evenly lit",
+   "dof": "shallow depth of field, bokeh",
+   "ms_lighting_type": "tungsten light",
+   "art_condition": "partially restored, visible conservation work",
+   "ms_format": "digital large format",
+   "weather": "clear sky",
+   "hair_style": "straight hair",
+   "cloth_presentation": "close-up detail of stitching and texture"
+  },
+  "expected": "In their 60s, straight hair, glossy, glazed surface, close-up detail of stitching and texture, partially restored, visible conservation work, ship. Wilting slowly, petals dropping. Stairwell. Isolated on a bright green screen background, chroma key, evenly lit. Clear sky. Shallow depth of field, bokeh. Backlight."
+ },
+ {
+  "fields": {
+   "film_stock": "Ilford FP4 Plus black and white, fine grain classic",
+   "interaction_type": "two characters in dialogue",
+   "isolation": "isolated on a clean white studio background, white cyclorama, no shadows",
+   "lighting_style": "hard light",
+   "social_media_style": "TikTok Reels short-form vertical video",
+   "ms_color_science": "ARRI LogC4 flat log footage, ungraded",
+   "color_science": "ARRI LogC4 flat log footage, ungraded",
+   "veh_type": "motorcycle",
+   "music_genre": "hip-hop score, heavy beats",
+   "ms_lens_filter": "Classic Soft diffusion filter",
+   "env_time": "late night, deep darkness",
+   "food_texture": "fizzy, carbonated bubbles rising",
+   "ms_genre": "drama",
+   "obj_scale": "massive, monumental",
+   "prod_staging": "on a clean white surface, soft studio lighting, subtle shadow",
+   "music_video_style": "one-take music video",
+   "abs_quality": "particle-based",
+   "obj_condition": "weathered, worn",
+   "veh_condition": "showroom condition"
+  },
+  "expected": "Weathered, worn, massive, monumental, on a clean white surface, soft studio lighting, subtle shadow, fizzy, carbonated bubbles rising, motorcycle, showroom condition, particle-based. Two characters in dialogue. Isolated on a clean white studio background, white cyclorama, no shadows. Late night, deep darkness. ARRI LogC4 flat log footage, ungraded. Hard light. Ilford FP4 Plus black and white, fine grain classic. Hip-hop score, heavy beats."
+ },
+ {
+  "fields": {
+   "lens_filter": "ND filter",
+   "ms_lens_brand": "Cooke S4/i",
+   "abstract_environment": "in a wireframe environment",
+   "mood": "dreamlike",
+   "music_mood": "triumphant, victorious",
+   "veh_era": "modern",
+   "veh_subtype": "submarine",
+   "cloth_presentation": "caught in wind, fabric flowing freely",
+   "ms_lens_filter": "Black Pro-Mist 1/4 filter",
+   "genre": "superhero",
+   "ms_color_grade": "vintage film look"
+  },
+  "expected": "Caught in wind, fabric flowing freely, submarine, modern. In a wireframe environment. ND filter. Triumphant, victorious."
+ },
+ {
+  "fields": {
+   "camera_body": "shot on Blackmagic URSA Mini Pro",
+   "shot_type": "trunk shot, low angle from inside a confined space",
+   "ms_mood": "contemplative",
+   "botan_detail": "sun-bleached, faded by light",
+   "sfx_interior": "keys typing on keyboard",
+   "music_mood": "chaotic, frenetic",
+   "cloth_fit": "flowing, loose drape",
+   "cloth_fabric": "leather, supple hide",
+   "veh_type": "helicopter"
+  },
+  "expected": "Leather, supple hide, flowing, loose drape, sun-bleached, faded by light, helicopter. Trunk shot, low angle from inside a confined space. Shot on Blackmagic URSA Mini Pro. Keys typing on keyboard. Chaotic, frenetic."
+ },
+ {
+  "fields": {
+   "cloth_presentation": "editorial fashion, styled on model in environment",
+   "color_science": "Blackmagic RAW flat log footage, ungraded",
+   "ms_genre": "film noir",
+   "veh_type": "truck",
+   "ms_mood": "whimsical",
+   "ms_camera_body": "shot on RED One",
+   "build": "athletic build",
+   "framing": "silhouetted in doorway"
+  },
+  "expected": "Athletic build; silhouetted in doorway, editorial fashion, styled on model in environment, truck. Blackmagic RAW flat log footage, ungraded."
+ },
+ {
+  "fields": {
+   "music_genre": "choral, voices and choir",
+   "commercial_type": "real estate commercial",
+   "veh_subtype": "e-bike",
+   "land_scale": "vast panoramic landscape",
+   "veh_type": "aircraft",
+   "lighting_style": "cross light",
+   "sfx_dramatic": "ringing ears, tinnitus after loud event",
+   "ms_music_video_style": "animated music video",
+   "creature_skin": "smooth skin",
+   "creature_category": "reptile",
+   "obj_condition": "aged, vintage patina",
+   "hair_color": "auburn hair",
+   "ms_color_grade": "cross-processed colors",
+   "ms_lens_brand": "Panavision Primo",
+   "movement": "handheld",
+   "film_stock": "Kodachrome 64 film colors, rich warm reds and deep blues"
+  },
+  "expected": "Auburn hair, reptile, smooth skin, aged, vintage patina, e-bike, vast panoramic landscape. Handheld camera movement. Cross light. Kodachrome 64 film colors, rich warm reds and deep blues. Ringing ears, tinnitus after loud event. Choral, voices and choir."
+ },
+ {
+  "fields": {
+   "ms_social_media_style": "day in the life video",
+   "botan_type": "vine, climbing and twisting",
+   "format": "35mm film",
+   "focal_length": "18mm lens",
+   "ms_documentary_style": "wildlife documentary",
+   "food_texture": "flaky, layered pastry",
+   "creature_size": "large",
+   "botan_detail": "rain-soaked, water droplets clinging"
+  },
+  "expected": "35mm film. Large, flaky, layered pastry, vine, climbing and twisting, rain-soaked, water droplets clinging. 18mm lens."
+ },
+ {
+  "fields": {
+   "env_time": "dawn, first light",
+   "build": "petite",
+   "ms_music_video_style": "narrative music video",
+   "documentary_style": "food documentary",
+   "prod_staging": "surrounded by complementary props",
+   "abstract_environment": "inside a fractal space, infinite recursive geometry",
+   "ms_media_type": "documentary",
+   "location_type": "jungle",
+   "prod_condition": "well-loved, showing character from use",
+   "obj_condition": "polished, gleaming"
+  },
+  "expected": "Petite, polished, gleaming, surrounded by complementary props, well-loved, showing character from use. Jungle. Inside a fractal space, infinite recursive geometry. Dawn, first light."
+ },
+ {
+  "fields": {
+   "shot_type": "two shot, framing both subjects",
+   "mood": "contemplative",
+   "music_mood": "haunting, eerie",
+   "hair_color": "light brown hair",
+   "sfx_mechanical": "radio static and white noise",
+   "interaction_type": "objects interacting with each other",
+   "creature_body": "amorphous, shapeless mass",
+   "genre": "thriller",
+   "creature_category": "stampede of creatures",
+   "abs_movement": "spiraling inward",
+   "food_state": "fresh, just prepared"
+  },
+  "expected": "Light brown hair, stampede of creatures, amorphous, shapeless mass, fresh, just prepared, spiraling inward. Objects interacting with each other. Two shot, framing both subjects. Radio static and white noise. Haunting, eerie."
+ },
+ {
+  "fields": {
+   "creature_skin": "armored exoskeleton",
+   "documentary_style": "wildlife documentary",
+   "shot_type": "medium close-up",
+   "creature_subtype": "whale",
+   "movement": "push in",
+   "music_mood": "melancholic, sorrowful",
+   "prod_condition": "limited edition, special colorway",
+   "ms_color_science": "Sony S-Log3 flat log footage, ungraded",
+   "lighting_style": "top light",
+   "age_range": "in their 50s",
+   "isolation": "isolated on a pure black background, void, no reflections",
+   "art_condition": "freshly created, paint still wet",
+   "art_setting": "outdoors, public installation",
+   "food_texture": "crispy, crunchy exterior",
+   "ms_mood": "ominous",
+   "framing": "in the background, small in frame"
+  },
+  "expected": "In their 50s; in the background, small in frame, whale, armored exoskeleton, limited edition, special colorway, crispy, crunchy exterior, outdoors, public installation, freshly created, paint still wet. Isolated on a pure black background, void, no reflections. Medium close-up with push in camera movement. Top light. Melancholic, sorrowful."
+ },
+ {
+  "fields": {
+   "lighting_type": "sodium vapor light",
+   "botan_type": "vine, climbing and twisting",
+   "ms_lighting_style": "underlight",
+   "music_genre": "choral, voices and choir",
+   "hair_style": "buzz cut"
+  },
+  "expected": "Buzz cut, vine, climbing and twisting. Sodium vapor light. Choral, voices and choir."
+ },
+ {
+  "fields": {
+   "ms_camera_body": "shot on Sony FX6",
+   "veh_era": "futuristic",
+   "food_texture": "flaky, layered pastry",
+   "sfx_mechanical": "elevator ding and doors",
+   "movement_type": "unboxing, being revealed",
+   "creature_subtype": "horse",
+   "land_scale": "medium vista"
+  },
+  "expected": "Horse, flaky, layered pastry, futuristic, medium vista. Unboxing, being revealed. Elevator ding and doors."
+ },
+ {
+  "fields": {
+   "ms_lens_brand": "Petzval vintage swirl",
+   "mood": "serene",
+   "music_video_style": "experimental music video",
+   "sfx_interior": "room tone, quiet interior",
+   "abs_quality": "organic",
+   "veh_type": "train",
+   "genre": "war",
+   "film_stock": "Ektachrome E100 slide film colors, clean cool tones",
+   "ms_color_grade": "teal and orange",
+   "dof": "deep focus",
+   "setting": "interior",
+   "music_genre": "world music, ethnic percussion",
+   "food_state": "frozen, frosted with ice crystals"
+  },
+  "expected": "Frozen, frosted with ice crystals, train, organic. Interior. Deep focus. Ektachrome E100 slide film colors, clean cool tones. Room tone, quiet interior. World music, ethnic percussion."
+ },
+ {
+  "fields": {
+   "ms_lighting_type": "sodium vapor light",
+   "media_type": "animation",
+   "creature_size": "medium-sized",
+   "color_science": "Sony S-Log3 flat log footage, ungraded",
+   "mood": "contemplative",
+   "land_scale": "infinite horizon, endless expanse",
+   "obj_condition": "weathered, worn",
+   "setting": "interior",
+   "prod_material": "brushed metal finish",
+   "ms_commercial_type": "restaurant commercial",
+   "botan_type": "vine, climbing and twisting",
+   "food_state": "caramelized, golden-brown crust",
+   "movement": "jib",
+   "ms_genre": "thriller",
+   "ms_camera_body": "shot on Canon 814 XL-S Super 8",
+   "env_time": "dawn, first light",
+   "creature_category": "stampede of creatures",
+   "shot_type": "establishing shot"
+  },
+  "expected": "Animation. Stampede of creatures, medium-sized, weathered, worn, brushed metal finish, caramelized, golden-brown crust, vine, climbing and twisting, infinite horizon, endless expanse. Interior. Dawn, first light. Establishing shot with jib camera movement. Sony S-Log3 flat log footage, ungraded."
+ },
+ {
+  "fields": {
+   "botan_detail": "dusted with pollen",
+   "lighting_type": "moonlight",
+   "creature_skin": "armored exoskeleton",
+   "weather": "wind, movement in air",
+   "sfx_dramatic": "sudden silence, all sound drops out",
+   "ms_music_video_style": "animated music video",
+   "obj_scale": "life-size",
+   "ms_pacing": "frozen in time, completely still",
+   "prod_material": "matte surface",
+   "creature_size": "large",
+   "veh_condition": "chrome polished, gleaming",
+   "prod_staging": "surrounded by complementary props",
+   "abstract_environment": "inside a fractal space, infinite recursive geometry",
+   "ms_color_grade": "black and white"
+  },
+  "expected": "Large, armored exoskeleton, life-size, matte surface, surrounded by complementary props, dusted with pollen, chrome polished, gleaming. Inside a fractal space, infinite recursive geometry. Wind, movement in air. Moonlight. Sudden silence, all sound drops out."
+ },
+ {
+  "fields": {
+   "ms_lens_brand": "Canon FD vintage",
+   "art_medium": "mosaic, tiled artwork",
+   "obj_condition": "weathered, worn",
+   "media_type": "home video",
+   "ms_documentary_style": "biographical documentary",
+   "creature_category": "demon",
+   "cloth_fabric": "lace, delicate openwork"
+  },
+  "expected": "Home video. Demon, weathered, worn, lace, delicate openwork, mosaic, tiled artwork."
+ },
+ {
+  "fields": {
+   "film_stock": "Kodak Gold 200 film colors, warm golden cast",
+   "ms_lighting_type": "moonlight",
+   "obj_material": "fabric texture",
+   "isolation": "isolated on a pure black background, void, no reflections",
+   "veh_era": "futuristic",
+   "location_type": "hallway, corridor",
+   "ms_camera_body": "shot on iPhone",
+   "ms_color_grade": "desaturated",
+   "dof": "tilt-shift miniature effect",
+   "env_time": "blue hour",
+   "camera_body": "shot on Aaton LTR",
+   "cloth_fit": "asymmetric, unconventional cut"
+  },
+  "expected": "Fabric texture, asymmetric, unconventional cut, futuristic. Hallway, corridor. Isolated on a pure black background, void, no reflections. Blue hour. Shot on Aaton LTR. Tilt-shift miniature effect. Kodak Gold 200 film colors, warm golden cast."
+ },
+ {
+  "fields": {
+   "movement_type": "breaching out of the water",
+   "music_video_style": "lyric video",
+   "ms_commercial_type": "celebrity interview commercial",
+   "env_time": "sunset",
+   "documentary_style": "science documentary",
+   "food_state": "bubbling, actively cooking",
+   "mood": "ominous"
+  },
+  "expected": "Bubbling, actively cooking. Breaching out of the water. Sunset."
+ },
+ {
+  "fields": {
+   "cloth_fabric": "sequined, covered in reflective discs",
+   "ms_color_grade": "crushed blacks",
+   "veh_type": "truck",
+   "sfx_interior": "restaurant ambience, cutlery and murmur",
+   "commercial_type": "fast food commercial",
+   "interaction_type": "two characters in dialogue",
+   "obj_material": "metal surface",
+   "pacing": "in fast motion",
+   "ms_documentary_style": "observational documentary",
+   "ms_pacing": "frozen in time, completely still",
+   "cloth_fit": "oversized, exaggerated proportions",
+   "food_texture": "gooey, stretching"
+  },
+  "expected": "Metal surface, gooey, stretching, sequined, covered in reflective discs, oversized, exaggerated proportions, truck. In fast motion. Two characters in dialogue. Restaurant ambience, cutlery and murmur."
+ },
+ {
+  "fields": {
+   "abstract_environment": "in an industrial factory space, metal and concrete",
+   "genre": "film noir",
+   "weather": "smoke drifting through scene",
+   "sfx_mechanical": "machinery humming, factory sounds",
+   "isolation": "isolated on a bright green screen background, chroma key, evenly lit",
+   "focal_length": "85mm lens",
+   "veh_type": "truck",
+   "ms_format": "35mm film",
+   "veh_subtype": "convertible",
+   "obj_material": "ceramic surface",
+   "commercial_type": "car commercial"
+  },
+  "expected": "Ceramic surface, convertible. Isolated on a bright green screen background, chroma key, evenly lit. In an industrial factory space, metal and concrete. Smoke drifting through scene. 85mm lens. Machinery humming, factory sounds."
+ },
+ {
+  "fields": {
+   "pacing": "hyperlapse",
+   "interaction_type": "objects interacting with each other",
+   "sfx_dramatic": "gunshot",
+   "mood": "ethereal",
+   "ms_commercial_type": "watch commercial",
+   "abs_quality": "glitch",
+   "commercial_type": "electronics commercial",
+   "documentary_style": "wildlife documentary",
+   "ms_lighting_style": "underlight",
+   "art_condition": "weathered by the elements, outdoor patina",
+   "botan_detail": "frost-edged, ice crystals on petals",
+   "ms_lens_brand": "Panavision G-Series Anamorphic",
+   "ms_music_video_style": "one-take music video",
+   "media_type": "documentary",
+   "lens_brand": "Kowa Anamorphic vintage",
+   "veh_condition": "rusty, abandoned"
+  },
+  "expected": "Wildlife documentary. Weathered by the elements, outdoor patina, frost-edged, ice crystals on petals, rusty, abandoned, glitch. Hyperlapse. Objects interacting with each other. Kowa Anamorphic vintage. Gunshot."
+ },
+ {
+  "fields": {
+   "setting": "interior",
+   "ms_lighting_style": "top light",
+   "documentary_style": "true crime documentary",
+   "ms_color_science": "flat ungraded log footage, maximum dynamic range preserved",
+   "prod_condition": "unboxing, fresh from packaging",
+   "sfx_interior": "HVAC, air conditioning hum",
+   "interaction_type": "reaction to environment"
+  },
+  "expected": "Unboxing, fresh from packaging. Reaction to environment. Interior. HVAC, air conditioning hum."
+ },
+ {
+  "fields": {
+   "music_video_style": "one-take music video",
+   "land_scale": "medium vista",
+   "obj_condition": "polished, gleaming",
+   "focal_length": "65mm lens"
+  },
+  "expected": "Polished, gleaming, medium vista. 65mm lens."
+ },
+ {
+  "fields": {
+   "ms_film_stock": "Fujifilm Velvia 50 slide film, hyper-saturated vivid colors",
+   "ms_animation_style": "2D traditional animation",
+   "focal_length": "24mm lens",
+   "prod_material": "glossy, high-shine surface",
+   "color_grade": "cross-processed colors",
+   "obj_material": "paper texture"
+  },
+  "expected": "Paper texture, glossy, high-shine surface. 24mm lens. Cross-processed colors."
+ },
+ {
+  "fields": {
+   "prod_condition": "pristine, brand new, factory fresh",
+   "obj_scale": "miniature, tiny",
+   "ms_lens_brand": "Lomo Round Front Anamorphic",
+   "build": "stocky build",
+   "interaction_type": "transformation",
+   "ms_dof": "shallow depth of field, bokeh",
+   "prod_staging": "floating, suspended in mid-air",
+   "sfx_interior": "door creaking",
+   "prod_material": "premium leather",
+   "abs_quality": "luminous, glowing",
+   "weather": "dust in the air",
+   "env_time": "early morning",
+   "cloth_fit": "fitted, body-hugging",
+   "food_texture": "fizzy, carbonated bubbles rising"
+  },
+  "expected": "Stocky build, miniature, tiny, premium leather, floating, suspended in mid-air, pristine, brand new, factory fresh, fizzy, carbonated bubbles rising, fitted, body-hugging, luminous, glowing. Transformation. Early morning, dust in the air. Door creaking."
+ },
+ {
+  "fields": {
+   "ms_media_type": "commercial",
+   "dof": "deep focus",
+   "ms_commercial_type": "luxury fashion commercial",
+   "land_scale": "medium vista",
+   "documentary_style": "historical documentary",
+   "social_media_style": "haul video",
+   "food_presentation": "fine dining plating, elegant arrangement",
+   "ms_lens_filter": "graduated ND filter",
+   "location_type": "marketplace"
+  },
+  "expected": "Fine dining plating, elegant arrangement, medium vista. Marketplace. Deep focus."
+ },
+ {
+  "fields": {
+   "film_stock": "Fujifilm Velvia 50 slide film, hyper-saturated vivid colors",
+   "weather": "smoke drifting through scene",
+   "obj_scale": "handheld size"
+  },
+  "expected": "Handheld size. Smoke drifting through scene. Fujifilm Velvia 50 slide film, hyper-saturated vivid colors."
+ },
+ {
+  "fields": {
+   "lighting_style": "low-key lighting",
+   "weather": "humid, tropical heat",
+   "shot_type": "extreme wide shot",
+   "veh_era": "post-apocalyptic",
+   "ms_lens_brand": "Lomo Round Front Anamorphic",
+   "sfx_dramatic": "ringing ears, tinnitus after loud event",
+   "food_texture": "gooey, stretching",
+   "ms_media_type": "behind-the-scenes",
+   "commercial_type": "beverage commercial",
+   "ms_film_stock": "CineStill 50D film colors, fine grain daylight",
+   "isolation": "isolated on a bright green screen background, chroma key, evenly lit",
+   "sfx_environment": "river flowing, running water",
+   "mood": "nostalgic"
+  },
+  "expected": "Gooey, stretching, post-apocalyptic. Isolated on a bright green screen background, chroma key, evenly lit. Humid, tropical heat. Extreme wide shot. Low-key lighting. River flowing, running water. Ringing ears, tinnitus after loud event."
+ },
+ {
+  "fields": {
+   "ms_format": "digital",
+   "location_type": "basement",
+   "ms_lens_filter": "diopter close-up filter",
+   "sfx_mechanical": "electrical buzzing and sparking",
+   "music_video_style": "animated music video",
+   "art_condition": "pristine, museum-quality condition",
+   "ms_color_science": "Canon C-Log3 flat log footage, ungraded",
+   "interaction_type": "solo, alone in frame",
+   "movement": "jib",
+   "format": "Super 8mm film",
+   "animation_style": "anime style animation",
+   "prod_material": "matte surface",
+   "music_genre": "industrial, dark electronic",
+   "focal_length": "28mm lens",
+   "genre": "gothic",
+   "isolation": "isolated on a bright green screen background, chroma key, evenly lit",
+   "botan_type": "bouquet, arranged flowers",
+   "creature_size": "colossal, towering over buildings"
+  },
+  "expected": "Super 8mm film. Colossal, towering over buildings, matte surface, pristine, museum-quality condition, bouquet, arranged flowers. Solo, alone in frame. Basement. Isolated on a bright green screen background, chroma key, evenly lit. Jib camera movement. 28mm lens. Electrical buzzing and sparking. Industrial, dark electronic."
+ },
+ {
+  "fields": {
+   "ms_animation_style": "paper cut-out animation",
+   "movement_type": "spinning",
+   "sfx_dramatic": "metal impact, clang",
+   "creature_size": "tiny, insect-sized",
+   "art_setting": "in an artist's studio, work in progress",
+   "obj_condition": "aged, vintage patina",
+   "ms_mood": "ethereal",
+   "ms_lens_brand": "Cooke Speed Panchro",
+   "ms_pacing": "speed ramp from slow to fast",
+   "social_media_style": "tutorial how-to video",
+   "ms_format": "MiniDV",
+   "creature_category": "wild animal",
+   "veh_subtype": "tour helicopter",
+   "sfx_mechanical": "camera shutter clicking",
+   "setting": "interior transitioning to exterior"
+  },
+  "expected": "Wild animal, tiny, insect-sized, aged, vintage patina, in an artist's studio, work in progress, tour helicopter. Spinning. Interior transitioning to exterior. Camera shutter clicking. Metal impact, clang."
+ },
+ {
+  "fields": {
+   "sfx_environment": "forest ambience, rustling leaves",
+   "music_genre": "world music, ethnic percussion",
+   "abs_quality": "geometric",
+   "lighting_style": "low-key lighting",
+   "age_range": "in their 40s",
+   "creature_category": "alien creature",
+   "obj_condition": "weathered, worn",
+   "prod_material": "matte surface",
+   "movement": "crane",
+   "cloth_fit": "oversized, exaggerated proportions",
+   "ms_mood": "dreamlike"
+  },
+  "expected": "In their 40s, alien creature, weathered, worn, matte surface, oversized, exaggerated proportions, geometric. Crane camera movement. Low-key lighting. Forest ambience, rustling leaves. World music, ethnic percussion."
+ },
+ {
+  "fields": {
+   "media_type": "broadcast news",
+   "movement_type": "bouncing",
+   "creature_skin": "metallic, chrome surface",
+   "ms_commercial_type": "fragrance commercial",
+   "focal_length": "21mm lens",
+   "env_time": "sunset",
+   "sfx_dramatic": "gunshot"
+  },
+  "expected": "Broadcast news. Metallic, chrome surface. Bouncing. Sunset. 21mm lens. Gunshot."
+ },
+ {
+  "fields": {
+   "social_media_style": "reaction video",
+   "ms_camera_body": "shot on RED V-Raptor",
+   "mood": "dreamlike",
+   "sfx_mechanical": "engine rumbling",
+   "documentary_style": "nature documentary",
+   "sfx_dramatic": "explosion, heavy impact",
+   "focal_length": "85mm lens",
+   "art_condition": "weathered by the elements, outdoor patina",
+   "music_video_style": "narrative music video",
+   "ms_lighting_type": "reflected light",
+   "botan_stage": "in full bloom, peak growth",
+   "ms_commercial_type": "travel commercial",
+   "ms_color_science": "Canon C-Log3 flat log footage, ungraded"
+  },
+  "expected": "Weathered by the elements, outdoor patina, in full bloom, peak growth. 85mm lens. Engine rumbling. Explosion, heavy impact."
+ },
+ {
+  "fields": {
+   "ms_music_video_style": "performance music video",
+   "animation_style": "rotoscope animation",
+   "prod_condition": "pristine, brand new, factory fresh",
+   "ms_color_grade": "monochromatic tinted",
+   "ms_lens_filter": "UV haze filter",
+   "ms_social_media_style": "day in the life video",
+   "mood": "dreamlike",
+   "movement_type": "crouching",
+   "abs_quality": "geometric",
+   "lighting_style": "low contrast lighting",
+   "art_setting": "in a museum, dramatic lighting",
+   "isolation": "isolated on a bright green screen background, chroma key, evenly lit",
+   "prod_material": "soft-touch rubber",
+   "ms_lighting_style": "low contrast lighting",
+   "art_medium": "street art mural, spray paint",
+   "cloth_presentation": "draped on hanger"
+  },
+  "expected": "Soft-touch rubber, pristine, brand new, factory fresh, draped on hanger, street art mural, spray paint, in a museum, dramatic lighting, geometric. Crouching. Isolated on a bright green screen background, chroma key, evenly lit. Low contrast lighting."
+ },
+ {
+  "fields": {
+   "obj_condition": "polished, gleaming",
+   "documentary_style": "nature documentary",
+   "abstract_environment": "on a neon grid, Tron-like digital plane",
+   "sfx_environment": "ocean waves crashing"
+  },
+  "expected": "Polished, gleaming. On a neon grid, Tron-like digital plane. Ocean waves crashing."
+ },
+ {
+  "fields": {
+   "isolation": "isolated on a pure black background, void, no reflections",
+   "prod_condition": "unboxing, fresh from packaging",
+   "veh_condition": "battle-worn, scarred",
+   "ms_animation_style": "claymation animation",
+   "cloth_fabric": "velvet, soft plush pile",
+   "lighting_style": "soft light"
+  },
+  "expected": "Unboxing, fresh from packaging, velvet, soft plush pile, battle-worn, scarred. Isolated on a pure black background, void, no reflections. Soft light."
+ },
+ {
+  "fields": {
+   "sfx_environment": "wind blowing",
+   "ms_camera_body": "shot on iPhone",
+   "hair_color": "light brown hair",
+   "ms_social_media_style": "tutorial how-to video",
+   "ms_color_science": "RED Log3G10 flat log footage, ungraded",
+   "ms_genre": "drama",
+   "ms_lens_brand": "Hawk V-Lite Anamorphic",
+   "commercial_type": "fitness commercial",
+   "age_range": "in their 40s",
+   "film_stock": "Lomography Color 400 film, saturated unpredictable colors",
+   "obj_condition": "polished, gleaming",
+   "food_presentation": "rustic plating on wooden board",
+   "cloth_fabric": "satin, glossy smooth",
+   "veh_era": "racing"
+  },
+  "expected": "In their 40s, light brown hair, polished, gleaming, rustic plating on wooden board, satin, glossy smooth, racing. Lomography Color 400 film, saturated unpredictable colors. Wind blowing."
+ },
+ {
+  "fields": {
+   "lens_brand": "Kowa Anamorphic vintage",
+   "ms_lighting_style": "soft light",
+   "ms_commercial_type": "military defense commercial",
+   "ms_color_science": "RED Log3G10 flat log footage, ungraded",
+   "shot_type": "cowboy shot, framed from mid-thigh up",
+   "film_stock": "Kodak Gold 200 film colors, warm golden cast",
+   "age_range": "in their 60s",
+   "build": "tall",
+   "ms_lens_brand": "Petzval vintage swirl",
+   "ms_dof": "deep focus",
+   "abs_quality": "organic",
+   "color_grade": "cool tones",
+   "botan_type": "moss, covering a surface",
+   "interaction_type": "character interacting with object"
+  },
+  "expected": "In their 60s, tall, moss, covering a surface, organic. Character interacting with object. Cowboy shot, framed from mid-thigh up. Kowa Anamorphic vintage. Kodak Gold 200 film colors, warm golden cast, cool tones."
+ },
+ {
+  "fields": {
+   "dof": "deep focus",
+   "ms_commercial_type": "fitness commercial",
+   "art_medium": "bronze cast sculpture",
+   "media_type": "cinematic",
+   "sfx_dramatic": "glass shattering",
+   "prod_material": "brushed metal finish",
+   "animation_style": "pixel art animation",
+   "ms_genre": "horror",
+   "creature_skin": "shadowy, made of darkness",
+   "music_video_style": "animated music video",
+   "veh_era": "post-apocalyptic",
+   "sfx_interior": "footsteps on hard floor",
+   "documentary_style": "social political documentary",
+   "art_setting": "in a museum, dramatic lighting"
+  },
+  "expected": "Cinematic. Shadowy, made of darkness, brushed metal finish, bronze cast sculpture, in a museum, dramatic lighting, post-apocalyptic. Deep focus. Footsteps on hard floor. Glass shattering."
+ },
+ {
+  "fields": {
+   "social_media_style": "vlog style video",
+   "ms_color_grade": "cross-processed colors",
+   "ms_media_type": "behind-the-scenes",
+   "sfx_environment": "rain falling",
+   "lens_filter": "ND filter",
+   "ms_dof": "deep focus",
+   "veh_era": "military",
+   "hair_style": "long hair"
+  },
+  "expected": "Long hair, military. ND filter. Rain falling."
+ },
+ {
+  "fields": {
+   "ms_format": "35mm film",
+   "music_genre": "jazz score",
+   "veh_subtype": "fighter spacecraft",
+   "ms_film_stock": "Kodak Portra 400 film colors, warm pastels",
+   "obj_scale": "massive, monumental",
+   "botan_detail": "rain-soaked, water droplets clinging",
+   "ms_genre": "romance",
+   "framing": "tiny figure dwarfed by surrounding architecture, off-center",
+   "media_type": "documentary",
+   "age_range": "in their teens"
+  },
+  "expected": "Documentary. In their teens; tiny figure dwarfed by surrounding architecture, off-center, massive, monumental, rain-soaked, water droplets clinging, fighter spacecraft. Jazz score."
+ },
+ {
+  "fields": {
+   "color_science": "Blackmagic RAW flat log footage, ungraded",
+   "movement": "push in",
+   "ms_dof": "deep focus",
+   "ms_music_video_style": "lyric video",
+   "art_condition": "weathered by the elements, outdoor patina",
+   "ms_lens_filter": "streak filter, anamorphic flare",
+   "hair_style": "slicked back hair",
+   "ms_film_stock": "CineStill 800T film colors, halation glow on highlights",
+   "ms_lens_brand": "ARRI Signature Prime",
+   "commercial_type": "alcohol spirits commercial",
+   "pacing": "hyperlapse",
+   "abstract_environment": "in a vast empty desert landscape",
+   "abs_movement": "spiraling inward",
+   "sfx_mechanical": "camera shutter clicking",
+   "lighting_type": "candlelight",
+   "focal_length": "200mm lens",
+   "mood": "whimsical",
+   "ms_genre": "superhero",
+   "ms_commercial_type": "eyewear commercial"
+  },
+  "expected": "Slicked back hair, weathered by the elements, outdoor patina, spiraling inward. Hyperlapse. In a vast empty desert landscape. Push in camera movement. Blackmagic RAW flat log footage, ungraded, 200mm lens. Candlelight. Camera shutter clicking."
+ },
+ {
+  "fields": {
+   "art_medium": "digital art on display screen",
+   "food_texture": "creamy, smooth",
+   "veh_condition": "rusty, abandoned",
+   "commercial_type": "alcohol spirits commercial",
+   "music_video_style": "live concert music video",
+   "ms_color_grade": "vintage film look",
+   "mood": "ominous",
+   "ms_dof": "tilt-shift miniature effect",
+   "land_scale": "vast panoramic landscape",
+   "music_mood": "driving, relentless energy",
+   "dof": "shallow depth of field, bokeh"
+  },
+  "expected": "Creamy, smooth, digital art on display screen, rusty, abandoned, vast panoramic landscape. Shallow depth of field, bokeh. Driving, relentless energy."
+ },
+ {
+  "fields": {
+   "sfx_interior": "door creaking",
+   "creature_category": "wild animal",
+   "shot_type": "medium shot",
+   "abstract_environment": "in an industrial factory space, metal and concrete",
+   "ms_format": "hand-cranked early cinema",
+   "sfx_mechanical": "helicopter rotors overhead",
+   "botan_type": "moss, covering a surface",
+   "ms_media_type": "home video"
+  },
+  "expected": "Wild animal, moss, covering a surface. In an industrial factory space, metal and concrete. Medium shot. Door creaking. Helicopter rotors overhead."
+ },
+ {
+  "fields": {
+   "prod_staging": "on a clean white surface, soft studio lighting, subtle shadow",
+   "ms_film_stock": "Ektachrome E100 slide film colors, clean cool tones",
+   "creature_skin": "scaled",
+   "botan_detail": "dusted with pollen",
+   "prod_condition": "unboxing, fresh from packaging"
+  },
+  "expected": "Scaled, on a clean white surface, soft studio lighting, subtle shadow, unboxing, fresh from packaging, dusted with pollen."
+ },
+ {
+  "fields": {
+   "land_scale": "vast panoramic landscape",
+   "abs_movement": "spiraling inward",
+   "art_setting": "displayed in a home, living space",
+   "art_medium": "watercolor on paper",
+   "ms_commercial_type": "pet commercial",
+   "ms_music_video_style": "abstract visual music video",
+   "ms_lens_filter": "Black Pro-Mist 1/2 filter",
+   "movement_type": "pulsing rhythmically",
+   "dof": "tilt-shift miniature effect",
+   "ms_lighting_style": "hard light",
+   "lighting_style": "low contrast lighting",
+   "creature_size": "small, hand-sized",
+   "format": "360-degree video",
+   "social_media_style": "unboxing video",
+   "veh_subtype": "space station",
+   "sfx_environment": "ocean waves crashing",
+   "env_time": "blue hour",
+   "sfx_dramatic": "heartbeat, slow and heavy"
+  },
+  "expected": "360-degree video. Small, hand-sized, watercolor on paper, displayed in a home, living space, space station, vast panoramic landscape, spiraling inward. Pulsing rhythmically. Blue hour. Tilt-shift miniature effect. Low contrast lighting. Ocean waves crashing. Heartbeat, slow and heavy."
+ },
+ {
+  "fields": {
+   "format": "8mm film",
+   "build": "stocky build",
+   "ms_mood": "ethereal",
+   "ms_music_video_style": "experimental music video",
+   "animation_style": "motion graphics animation",
+   "lens_filter": "graduated ND filter",
+   "setting": "interior transitioning to exterior",
+   "art_setting": "outdoors, public installation",
+   "color_science": "RED Log3G10 flat log footage, ungraded",
+   "ms_genre": "western",
+   "ms_color_science": "Sony S-Log3 flat log footage, ungraded",
+   "film_stock": "Fujifilm Velvia 50 slide film, hyper-saturated vivid colors",
+   "hair_color": "silver hair",
+   "obj_condition": "aged, vintage patina",
+   "land_scale": "intimate, small detail",
+   "prod_staging": "held in hand, demonstrating scale"
+  },
+  "expected": "8mm film. Stocky build, silver hair, aged, vintage patina, held in hand, demonstrating scale, outdoors, public installation, intimate, small detail. Interior transitioning to exterior. RED Log3G10 flat log footage, ungraded, graduated ND filter. Fujifilm Velvia 50 slide film, hyper-saturated vivid colors."
+ },
+ {
+  "fields": {
+   "ms_camera_body": "shot on Kodak Brownie 8mm",
+   "sfx_mechanical": "electrical buzzing and sparking",
+   "sfx_interior": "glass clinking, bar ambience",
+   "ms_lens_filter": "Hollywood Black Magic filter"
+  },
+  "expected": "Glass clinking, bar ambience. Electrical buzzing and sparking."
+ },
+ {
+  "fields": {
+   "documentary_style": "war conflict documentary",
+   "creature_category": "domestic animal",
+   "movement": "tilt",
+   "focal_length": "300mm telephoto lens"
+  },
+  "expected": "Domestic animal. Tilt camera movement. 300mm telephoto lens."
+ },
+ {
+  "fields": {
+   "obj_scale": "tabletop size",
+   "abstract_environment": "submerged underwater, deep ocean",
+   "creature_skin": "shadowy, made of darkness",
+   "veh_condition": "mud-covered, dirty",
+   "movement_type": "dancing",
+   "art_condition": "freshly created, paint still wet",
+   "art_setting": "hanging in a gallery, white walls, spot-lit",
+   "interaction_type": "objects interacting with each other",
+   "build": "heavy build",
+   "abs_quality": "crystalline",
+   "sfx_mechanical": "camera shutter clicking",
+   "ms_film_stock": "Kodak Portra 160 film colors, soft warm tones"
+  },
+  "expected": "Heavy build, shadowy, made of darkness, tabletop size, hanging in a gallery, white walls, spot-lit, freshly created, paint still wet, mud-covered, dirty, crystalline. Dancing. Objects interacting with each other. Submerged underwater, deep ocean. Camera shutter clicking."
+ },
+ {
+  "fields": {
+   "interaction_type": "transformation",
+   "ms_lighting_type": "mixed light sources",
+   "env_time": "afternoon",
+   "animation_style": "pixel art animation",
+   "ms_commercial_type": "hotel commercial",
+   "sfx_mechanical": "machinery humming, factory sounds",
+   "creature_subtype": "flamingo"
+  },
+  "expected": "Flamingo. Transformation. Afternoon. Machinery humming, factory sounds."
+ },
+ {
+  "fields": {
+   "ms_lighting_style": "hard light",
+   "camera_body": "shot on RED One",
+   "movement": "push in",
+   "art_medium": "ceramic, pottery artwork",
+   "obj_material": "fabric texture",
+   "ms_film_stock": "expired film stock, color shifted unpredictable faded",
+   "mood": "nostalgic",
+   "sfx_dramatic": "explosion, heavy impact",
+   "creature_subtype": "parrot",
+   "ms_documentary_style": "nature documentary"
+  },
+  "expected": "Parrot, fabric texture, ceramic, pottery artwork. Push in camera movement. Shot on RED One. Explosion, heavy impact."
+ },
+ {
+  "fields": {
+   "creature_skin": "bioluminescent, glowing",
+   "ms_genre": "surreal",
+   "veh_condition": "weathered, worn from use",
+   "interaction_type": "confrontation between characters",
+   "ms_media_type": "corporate",
+   "music_mood": "haunting, eerie",
+   "ms_social_media_style": "reaction video",
+   "creature_body": "aquatic, streamlined for water",
+   "abstract_environment": "in an industrial factory space, metal and concrete",
+   "sfx_mechanical": "elevator ding and doors",
+   "cloth_fit": "fitted, body-hugging",
+   "ms_animation_style": "stop motion animation",
+   "hair_color": "white hair",
+   "color_grade": "natural colors",
+   "art_condition": "freshly created, paint still wet",
+   "music_video_style": "narrative music video"
+  },
+  "expected": "White hair, aquatic, streamlined for water, bioluminescent, glowing, fitted, body-hugging, freshly created, paint still wet, weathered, worn from use. Confrontation between characters. In an industrial factory space, metal and concrete. Natural colors. Elevator ding and doors. Haunting, eerie."
+ },
+ {
+  "fields": {
+   "age_range": "in their 60s",
+   "pacing": "in real-time",
+   "sfx_environment": "river flowing, running water"
+  },
+  "expected": "In their 60s. In real-time. River flowing, running water."
+ },
+ {
+  "fields": {
+   "obj_condition": "pristine, brand new",
+   "abs_quality": "crystalline"
+  },
+  "expected": "Pristine, brand new, crystalline."
+ },
+ {
+  "fields": {
+   "art_condition": "decaying, crumbling, reclaimed by nature",
+   "age_range": "in their 40s",
+   "color_grade": "natural colors",
+   "social_media_style": "day in the life video",
+   "ms_lens_filter": "streak filter, anamorphic flare",
+   "interaction_type": "character interacting with object",
+   "isolation": "isolated on a pure black background, void, no reflections",
+   "abs_quality": "organic",
+   "lighting_style": "top light"
+  },
+  "expected": "In their 40s, decaying, crumbling, reclaimed by nature, organic. Character interacting with object. Isolated on a pure black background, void, no reflections. Top light. Natural colors."
+ },
+ {
+  "fields": {
+   "commercial_type": "alcohol spirits commercial",
+   "lighting_type": "neon light",
+   "camera_body": "shot on Canon 814 XL-S Super 8",
+   "animation_style": "mixed media animation"
+  },
+  "expected": "Shot on Canon 814 XL-S Super 8. Neon light."
+ },
+ {
+  "fields": {
+   "creature_skin": "bioluminescent, glowing",
+   "env_time": "blue hour",
+   "camera_body": "shot on ARRI Alexa 65",
+   "music_genre": "world music, ethnic percussion",
+   "movement_type": "fragmenting into pieces",
+   "prod_condition": "unboxing, fresh from packaging",
+   "color_science": "ARRI LogC4 flat log footage, ungraded",
+   "social_media_style": "day in the life video",
+   "ms_music_video_style": "performance music video",
+   "veh_type": "boat",
+   "documentary_style": "war conflict documentary",
+   "veh_subtype": "bullet train",
+   "ms_media_type": "music video",
+   "film_stock": "Lomography Color 400 film, saturated unpredictable colors",
+   "botan_type": "moss, covering a surface",
+   "cloth_fit": "oversized, exaggerated proportions",
+   "lens_brand": "Cooke Varotal zoom",
+   "ms_lens_filter": "Black Pro-Mist 1/2 filter",
+   "ms_lighting_type": "fire light"
+  },
+  "expected": "Bioluminescent, glowing, unboxing, fresh from packaging, oversized, exaggerated proportions, moss, covering a surface, bullet train. Fragmenting into pieces. Blue hour. Shot on ARRI Alexa 65 in LogC4, flat log footage, ungraded, Cooke Varotal zoom. Lomography Color 400 film, saturated unpredictable colors. World music, ethnic percussion."
+ },
+ {
+  "fields": {
+   "interaction_type": "solo, alone in frame",
+   "ms_film_stock": "CineStill 50D film colors, fine grain daylight",
+   "ms_color_grade": "black and white",
+   "botan_stage": "in full bloom, peak growth",
+   "dof": "deep focus",
+   "veh_era": "modern",
+   "cloth_fabric": "chiffon, sheer and lightweight",
+   "lighting_type": "volumetric god rays",
+   "food_texture": "crispy, crunchy exterior",
+   "prod_condition": "pristine, brand new, factory fresh",
+   "color_science": "flat ungraded log footage, maximum dynamic range preserved",
+   "cloth_presentation": "flat lay arrangement from above",
+   "sfx_environment": "river flowing, running water"
+  },
+  "expected": "Pristine, brand new, factory fresh, crispy, crunchy exterior, chiffon, sheer and lightweight, flat lay arrangement from above, in full bloom, peak growth, modern. Solo, alone in frame. Flat ungraded log footage, maximum dynamic range preserved. Deep focus. Volumetric god rays. River flowing, running water."
+ },
+ {
+  "fields": {
+   "pacing": "in extreme slow motion",
+   "botan_type": "coral, underwater growth",
+   "ms_lighting_type": "artificial light",
+   "isolation": "isolated on a clean white studio background, white cyclorama, no shadows"
+  },
+  "expected": "Coral, underwater growth. In extreme slow motion. Isolated on a clean white studio background, white cyclorama, no shadows."
+ },
+ {
+  "fields": {
+   "cloth_presentation": "close-up detail of stitching and texture",
+   "ms_lighting_type": "mixed light sources",
+   "format": "MiniDV",
+   "abs_movement": "shattering, fragmenting",
+   "creature_size": "massive, elephant-sized",
+   "age_range": "in their 60s",
+   "ms_lens_brand": "Leica Summicron-C",
+   "hair_color": "red hair",
+   "ms_color_science": "Panasonic V-Log flat log footage, ungraded",
+   "sfx_dramatic": "sudden silence, all sound drops out",
+   "ms_social_media_style": "ASMR video",
+   "lighting_type": "sodium vapor light",
+   "abs_quality": "organic",
+   "ms_dof": "tilt-shift miniature effect",
+   "lens_filter": "ND filter",
+   "sfx_interior": "glass clinking, bar ambience",
+   "music_mood": "haunting, eerie",
+   "env_time": "blue hour"
+  },
+  "expected": "MiniDV. In their 60s, red hair, massive, elephant-sized, close-up detail of stitching and texture, organic, shattering, fragmenting. Blue hour. ND filter. Sodium vapor light. Glass clinking, bar ambience. Sudden silence, all sound drops out. Haunting, eerie."
+ },
+ {
+  "fields": {
+   "pacing": "time-lapse",
+   "creature_size": "small, hand-sized",
+   "sfx_interior": "fluorescent lights buzzing",
+   "weather": "mist, haze",
+   "ms_pacing": "in extreme slow motion",
+   "ms_genre": "surreal",
+   "framing": "silhouetted against sky",
+   "art_medium": "bronze cast sculpture",
+   "veh_condition": "mud-covered, dirty",
+   "format": "infrared film",
+   "lighting_type": "candlelight",
+   "abs_quality": "particle-based",
+   "botan_detail": "frost-edged, ice crystals on petals",
+   "creature_subtype": "cat",
+   "ms_mood": "ominous",
+   "obj_scale": "large, imposing"
+  },
+  "expected": "Infrared film. Silhouetted against sky, cat, small, hand-sized, large, imposing, bronze cast sculpture, frost-edged, ice crystals on petals, mud-covered, dirty, particle-based. Time-lapse. Mist, haze. Candlelight. Fluorescent lights buzzing."
+ },
+ {
+  "fields": {
+   "media_type": "behind-the-scenes",
+   "food_presentation": "overhead flat-lay arrangement",
+   "art_medium": "street art mural, spray paint",
+   "ms_genre": "romance"
+  },
+  "expected": "Behind-the-scenes. Overhead flat-lay arrangement, street art mural, spray paint."
+ },
+ {
+  "fields": {
+   "pacing": "in reverse motion",
+   "weather": "dust in the air",
+   "ms_media_type": "social media",
+   "movement_type": "catching light, sequins or texture shimmering",
+   "ms_camera_body": "shot on Aaton LTR",
+   "ms_film_stock": "Fujifilm Pro 400H film colors, soft greens and pastels",
+   "ms_animation_style": "anime style animation",
+   "ms_color_grade": "black and white",
+   "dof": "tilt-shift miniature effect"
+  },
+  "expected": "Catching light, sequins or texture shimmering. In reverse motion. Dust in the air. Tilt-shift miniature effect."
+ },
+ {
+  "fields": {
+   "sfx_environment": "desert wind, vast emptiness",
+   "obj_condition": "rustic, handmade",
+   "food_state": "steaming hot, steam rising",
+   "abs_quality": "organic",
+   "dof": "shallow depth of field, bokeh",
+   "ms_lighting_type": "fire light",
+   "camera_body": "shot on Blackmagic Pocket Cinema Camera 6K",
+   "ms_documentary_style": "biographical documentary",
+   "creature_skin": "armored exoskeleton"
+  },
+  "expected": "Armored exoskeleton, rustic, handmade, steaming hot, steam rising, organic. Shot on Blackmagic Pocket Cinema Camera 6K. Shallow depth of field, bokeh. Desert wind, vast emptiness."
+ },
+ {
+  "fields": {
+   "documentary_style": "science documentary",
+   "movement_type": "melting slowly, oozing",
+   "obj_condition": "aged, vintage patina",
+   "veh_type": "car",
+   "music_genre": "rock score",
+   "ms_genre": "anime",
+   "ms_film_stock": "CineStill 50D film colors, fine grain daylight",
+   "creature_subtype": "cheetah",
+   "cloth_presentation": "close-up detail of stitching and texture",
+   "dof": "deep focus",
+   "veh_era": "futuristic",
+   "veh_condition": "battle-worn, scarred",
+   "hair_color": "white hair",
+   "creature_category": "cryptid",
+   "land_scale": "intimate, small detail",
+   "cloth_fit": "flowing, loose drape",
+   "commercial_type": "health and beauty commercial",
+   "sfx_dramatic": "metal impact, clang"
+  },
+  "expected": "White hair, cryptid, cheetah, aged, vintage patina, close-up detail of stitching and texture, flowing, loose drape, car, futuristic, battle-worn, scarred, intimate, small detail. Melting slowly, oozing. Deep focus. Metal impact, clang. Rock score."
+ },
+ {
+  "fields": {
+   "abs_movement": "rippling outward",
+   "film_stock": "expired film stock, color shifted unpredictable faded",
+   "setting": "exterior",
+   "obj_material": "wood grain"
+  },
+  "expected": "Wood grain, rippling outward. Exterior. Expired film stock, color shifted unpredictable faded."
+ },
+ {
+  "fields": {
+   "land_scale": "medium vista",
+   "focal_length": "21mm lens",
+   "camera_body": "shot on Fujifilm X-T5",
+   "creature_skin": "fur-covered",
+   "ms_social_media_style": "ASMR video",
+   "format": "16mm film",
+   "sfx_dramatic": "metal impact, clang",
+   "botan_type": "seed pod, splitting open",
+   "music_genre": "rock score",
+   "animation_style": "anime style animation",
+   "sfx_environment": "city traffic and urban noise",
+   "ms_color_science": "Sony S-Log3 flat log footage, ungraded",
+   "ms_animation_style": "rotoscope animation"
+  },
+  "expected": "16mm film. Fur-covered, seed pod, splitting open, medium vista. Shot on Fujifilm X-T5, 21mm lens. City traffic and urban noise. Metal impact, clang. Rock score."
+ },
+ {
+  "fields": {
+   "lens_filter": "Hollywood Black Magic filter",
+   "abs_quality": "luminous, glowing",
+   "setting": "exterior transitioning to interior",
+   "art_medium": "marble sculpture",
+   "camera_body": "shot on Canon EOS R5",
+   "veh_subtype": "news helicopter",
+   "age_range": "in their teens",
+   "ms_lighting_type": "neon light",
+   "sfx_environment": "river flowing, running water",
+   "weather": "storm, lightning",
+   "music_genre": "choral, voices and choir",
+   "veh_condition": "rusty, abandoned",
+   "build": "average build",
+   "dof": "tilt-shift miniature effect",
+   "land_scale": "intimate, small detail"
+  },
+  "expected": "In their teens, average build, marble sculpture, news helicopter, rusty, abandoned, intimate, small detail, luminous, glowing. Exterior transitioning to interior. Storm, lightning. Shot on Canon EOS R5, Hollywood Black Magic filter. Tilt-shift miniature effect. River flowing, running water. Choral, voices and choir."
+ },
+ {
+  "fields": {
+   "obj_scale": "life-size",
+   "ms_genre": "slice of life",
+   "ms_lens_filter": "Black Pro-Mist 1/2 filter",
+   "creature_subtype": "leopard",
+   "pacing": "in reverse motion",
+   "ms_pacing": "in reverse motion",
+   "food_texture": "flaky, layered pastry",
+   "food_presentation": "fine dining plating, elegant arrangement",
+   "social_media_style": "mukbang eating video",
+   "art_condition": "partially restored, visible conservation work",
+   "cloth_presentation": "caught in wind, fabric flowing freely"
+  },
+  "expected": "Leopard, life-size, fine dining plating, elegant arrangement, flaky, layered pastry, caught in wind, fabric flowing freely, partially restored, visible conservation work. In reverse motion."
+ },
+ {
+  "fields": {
+   "shot_type": "high angle shot, looking down on the subject",
+   "build": "stocky build",
+   "dof": "shallow depth of field, bokeh",
+   "ms_social_media_style": "tutorial how-to video",
+   "creature_size": "tiny, insect-sized",
+   "music_video_style": "experimental music video",
+   "botan_type": "coral, underwater growth",
+   "animation_style": "mixed media animation",
+   "format": "MiniDV",
+   "veh_era": "military",
+   "camera_body": "shot on Panasonic GH5",
+   "lens_filter": "streak filter, anamorphic flare",
+   "prod_condition": "well-loved, showing character from use",
+   "botan_stage": "budding, about to open",
+   "veh_condition": "battle-worn, scarred",
+   "abs_movement": "rippling outward",
+   "ms_documentary_style": "sports documentary",
+   "food_state": "sizzling on a hot surface"
+  },
+  "expected": "MiniDV. Stocky build, tiny, insect-sized, well-loved, showing character from use, sizzling on a hot surface, coral, underwater growth, budding, about to open, military, battle-worn, scarred, rippling outward. High angle shot, looking down on the subject. Shot on Panasonic GH5, streak filter, anamorphic flare. Shallow depth of field, bokeh."
+ },
+ {
+  "fields": {
+   "isolation": "isolated on a pure black background, void, no reflections",
+   "age_range": "in their 70s",
+   "abstract_environment": "in a glitching, corrupted digital space"
+  },
+  "expected": "In their 70s. Isolated on a pure black background, void, no reflections. In a glitching, corrupted digital space."
+ },
+ {
+  "fields": {
+   "format": "8mm film",
+   "hair_color": "gray hair",
+   "pacing": "in reverse motion",
+   "shot_type": "full shot, head to toe",
+   "ms_lens_brand": "Kowa Anamorphic vintage",
+   "ms_camera_body": "shot on GoPro",
+   "movement": "jib",
+   "env_time": "late night, deep darkness",
+   "botan_stage": "budding, about to open"
+  },
+  "expected": "8mm film. Gray hair, budding, about to open. In reverse motion. Late night, deep darkness. Full shot, head to toe with jib camera movement."
+ },
+ {
+  "fields": {
+   "genre": "gothic",
+   "media_type": "social media",
+   "documentary_style": "wildlife documentary",
+   "obj_scale": "handheld size",
+   "veh_subtype": "bomber aircraft",
+   "cloth_fabric": "satin, glossy smooth",
+   "ms_media_type": "corporate",
+   "social_media_style": "reaction video",
+   "dof": "tilt-shift miniature effect",
+   "food_texture": "crispy, crunchy exterior",
+   "ms_lens_filter": "infrared filter"
+  },
+  "expected": "Reaction video. Handheld size, crispy, crunchy exterior, satin, glossy smooth, bomber aircraft. Tilt-shift miniature effect."
+ },
+ {
+  "fields": {
+   "camera_body": "shot on Sony Venice 2",
+   "film_stock": "Kodak Tri-X 400 black and white, punchy contrast grain",
+   "age_range": "elderly",
+   "sfx_dramatic": "gunshot",
+   "prod_staging": "lifestyle setting, in natural context",
+   "abs_quality": "smoky, vaporous",
+   "social_media_style": "get ready with me GRWM video",
+   "ms_lens_filter": "star filter, starburst highlights",
+   "location_type": "restaurant",
+   "botan_stage": "budding, about to open",
+   "ms_camera_body": "shot on Kodak Brownie 8mm"
+  },
+  "expected": "Elderly, lifestyle setting, in natural context, budding, about to open, smoky, vaporous. Restaurant. Shot on Sony Venice 2. Kodak Tri-X 400 black and white, punchy contrast grain. Gunshot."
+ },
+ {
+  "fields": {
+   "animation_style": "watercolor animation",
+   "ms_pacing": "in extreme slow motion",
+   "framing": "positioned left-third of frame",
+   "lighting_type": "sodium vapor light",
+   "ms_dof": "shallow depth of field, bokeh",
+   "movement": "tracking",
+   "art_medium": "charcoal drawing",
+   "location_type": "river",
+   "creature_size": "large",
+   "dof": "tilt-shift miniature effect",
+   "prod_condition": "unboxing, fresh from packaging",
+   "ms_animation_style": "pixel art animation",
+   "film_stock": "Kodak Gold 200 film colors, warm golden cast",
+   "art_setting": "in a museum, dramatic lighting",
+   "creature_category": "reptile",
+   "abs_quality": "glitch",
+   "ms_color_science": "RED Log3G10 flat log footage, ungraded"
+  },
+  "expected": "Positioned left-third of frame, reptile, large, unboxing, fresh from packaging, charcoal drawing, in a museum, dramatic lighting, glitch. River. Tracking camera movement. Tilt-shift miniature effect. Sodium vapor light. Kodak Gold 200 film colors, warm golden cast."
+ },
+ {
+  "fields": {
+   "env_time": "afternoon",
+   "music_mood": "chaotic, frenetic"
+  },
+  "expected": "Afternoon. Chaotic, frenetic."
+ },
+ {
+  "fields": {
+   "color_science": "Sony S-Log3 flat log footage, ungraded",
+   "ms_pacing": "in real-time",
+   "genre": "western",
+   "ms_commercial_type": "airline commercial",
+   "veh_type": "train",
+   "ms_film_stock": "Fujifilm Pro 400H film colors, soft greens and pastels",
+   "sfx_mechanical": "camera shutter clicking",
+   "abs_quality": "geometric",
+   "movement_type": "pulling away into the distance",
+   "ms_color_grade": "bleach bypass, desaturated contrast",
+   "movement": "aerial drone",
+   "commercial_type": "tech SaaS product commercial",
+   "ms_lens_brand": "Hawk V-Lite Anamorphic",
+   "documentary_style": "biographical documentary",
+   "media_type": "social media",
+   "pacing": "in extreme slow motion",
+   "botan_type": "ice formation, frost patterns"
+  },
+  "expected": "Social media. Ice formation, frost patterns, train, geometric. Pulling away into the distance. In extreme slow motion. Aerial drone camera movement. Sony S-Log3 flat log footage, ungraded. Camera shutter clicking."
+ },
+ {
+  "fields": {
+   "movement_type": "wilting slowly, petals dropping",
+   "ms_camera_body": "shot on Panavision DXL2",
+   "creature_size": "tiny, insect-sized",
+   "food_presentation": "poured into glass, layered drink",
+   "ms_media_type": "broadcast news",
+   "obj_material": "paper texture",
+   "lighting_style": "low-key lighting",
+   "ms_color_science": "ARRI LogC4 flat log footage, ungraded",
+   "lighting_type": "reflected light",
+   "obj_condition": "aged, vintage patina",
+   "botan_stage": "budding, about to open",
+   "hair_style": "buzz cut",
+   "prod_staging": "floating, suspended in mid-air",
+   "sfx_dramatic": "alarm blaring",
+   "obj_scale": "miniature, tiny",
+   "media_type": "music video",
+   "setting": "interior"
+  },
+  "expected": "Music video. Buzz cut, tiny, insect-sized, paper texture, aged, vintage patina, miniature, tiny, floating, suspended in mid-air, poured into glass, layered drink, budding, about to open. Wilting slowly, petals dropping. Interior. Low-key reflected light. Alarm blaring."
+ },
+ {
+  "fields": {
+   "food_state": "melting slowly",
+   "veh_subtype": "diesel train",
+   "music_mood": "haunting, eerie",
+   "mood": "whimsical",
+   "abstract_environment": "in an industrial factory space, metal and concrete",
+   "film_stock": "Fujifilm Velvia 50 slide film, hyper-saturated vivid colors",
+   "movement_type": "walking slowly",
+   "ms_mood": "whimsical",
+   "lighting_style": "low contrast lighting",
+   "ms_lighting_type": "fluorescent light",
+   "framing": "seen from behind, back to camera",
+   "botan_stage": "seed, dormant",
+   "ms_pacing": "hyperlapse",
+   "media_type": "music video",
+   "prod_condition": "well-loved, showing character from use",
+   "art_setting": "at auction, on an easel"
+  },
+  "expected": "Music video. Seen from behind, back to camera, well-loved, showing character from use, melting slowly, at auction, on an easel, seed, dormant, diesel train. Walking slowly. In an industrial factory space, metal and concrete. Low contrast lighting. Fujifilm Velvia 50 slide film, hyper-saturated vivid colors. Haunting, eerie."
+ },
+ {
+  "fields": {
+   "creature_size": "tiny, insect-sized",
+   "food_state": "sizzling on a hot surface",
+   "obj_scale": "massive, monumental",
+   "documentary_style": "war conflict documentary",
+   "creature_category": "undead creature",
+   "cloth_presentation": "flat lay arrangement from above",
+   "weather": "smoke drifting through scene",
+   "ms_genre": "fantasy",
+   "creature_subtype": "moose",
+   "hair_style": "wavy hair"
+  },
+  "expected": "Wavy hair, undead creature, moose, tiny, insect-sized, massive, monumental, sizzling on a hot surface, flat lay arrangement from above. Smoke drifting through scene."
+ },
+ {
+  "fields": {
+   "abstract_environment": "in a dense, overgrown forest",
+   "sfx_interior": "door creaking",
+   "age_range": "in their teens",
+   "art_medium": "charcoal drawing",
+   "prod_material": "natural wood grain",
+   "build": "tall",
+   "food_state": "raw, uncooked",
+   "creature_body": "centauroid, human upper body with animal lower body",
+   "art_setting": "being created, artist's hands visible",
+   "weather": "overcast, flat light",
+   "cloth_presentation": "draped on hanger",
+   "ms_genre": "musical",
+   "cloth_fit": "oversized, exaggerated proportions",
+   "ms_lens_brand": "Panavision C-Series Anamorphic",
+   "sfx_environment": "forest ambience, rustling leaves",
+   "botan_type": "ice formation, frost patterns"
+  },
+  "expected": "In their teens, tall, centauroid, human upper body with animal lower body, natural wood grain, raw, uncooked, draped on hanger, oversized, exaggerated proportions, charcoal drawing, being created, artist's hands visible, ice formation, frost patterns. In a dense, overgrown forest. Overcast, flat light. Forest ambience, rustling leaves. Door creaking."
+ },
+ {
+  "fields": {
+   "veh_era": "classic vintage",
+   "build": "stocky build",
+   "ms_media_type": "animation",
+   "sfx_dramatic": "scream, distant",
+   "ms_lens_brand": "Panavision G-Series Anamorphic",
+   "ms_lighting_style": "underlight",
+   "lighting_type": "mixed light sources",
+   "format": "anamorphic 35mm film",
+   "ms_color_grade": "monochromatic tinted",
+   "creature_body": "centauroid, human upper body with animal lower body",
+   "setting": "interior",
+   "ms_animation_style": "pixel art animation",
+   "ms_format": "VistaVision",
+   "ms_dof": "shallow depth of field, bokeh",
+   "ms_commercial_type": "travel commercial",
+   "ms_film_stock": "Ilford HP5 Plus 400 black and white, classic grain",
+   "hair_style": "bald"
+  },
+  "expected": "Anamorphic 35mm film. Stocky build, bald, centauroid, human upper body with animal lower body, classic vintage. Interior. Mixed light sources. Scream, distant."
+ },
+ {
+  "fields": {
+   "env_time": "dawn, first light",
+   "movement_type": "bouncing",
+   "movement": "dolly",
+   "creature_subtype": "elephant",
+   "sfx_interior": "clock ticking",
+   "color_grade": "warm tones",
+   "creature_skin": "metallic, chrome surface",
+   "botan_stage": "mature, fully grown",
+   "pacing": "hyperlapse"
+  },
+  "expected": "Elephant, metallic, chrome surface, mature, fully grown. Bouncing. Hyperlapse. Dawn, first light. Dolly camera movement. Warm tones. Clock ticking."
+ },
+ {
+  "fields": {
+   "build": "athletic build",
+   "creature_skin": "bark-like, wooden",
+   "art_setting": "being created, artist's hands visible",
+   "lens_filter": "infrared filter"
+  },
+  "expected": "Athletic build, bark-like, wooden, being created, artist's hands visible. Infrared filter."
+ },
+ {
+  "fields": {
+   "cloth_fabric": "chiffon, sheer and lightweight",
+   "hair_color": "red hair",
+   "format": "infrared film"
+  },
+  "expected": "Infrared film. Red hair, chiffon, sheer and lightweight."
+ },
+ {
+  "fields": {
+   "prod_condition": "pristine, brand new, factory fresh",
+   "food_texture": "crumbly, soft texture",
+   "art_setting": "hanging in a gallery, white walls, spot-lit",
+   "setting": "exterior",
+   "pacing": "in extreme slow motion",
+   "prod_material": "woven fabric texture",
+   "focal_length": "600mm super telephoto lens",
+   "art_medium": "ceramic, pottery artwork",
+   "ms_color_science": "Panasonic V-Log flat log footage, ungraded",
+   "abstract_environment": "in an underground tunnel, dim and claustrophobic",
+   "music_video_style": "narrative music video",
+   "ms_mood": "bittersweet",
+   "weather": "storm, lightning",
+   "ms_media_type": "home video",
+   "ms_camera_body": "shot on Sony A7S III",
+   "creature_subtype": "fox",
+   "ms_lens_brand": "Panavision C-Series Anamorphic"
+  },
+  "expected": "Fox, woven fabric texture, pristine, brand new, factory fresh, crumbly, soft texture, ceramic, pottery artwork, hanging in a gallery, white walls, spot-lit. In extreme slow motion. Exterior. In an underground tunnel, dim and claustrophobic. Storm, lightning. 600mm super telephoto lens."
+ },
+ {
+  "fields": {
+   "framing": "walking toward camera",
+   "animation_style": "pixel art animation",
+   "creature_subtype": "owl",
+   "mood": "serene"
+  },
+  "expected": "Walking toward camera, owl."
+ },
+ {
+  "fields": {
+   "abs_quality": "geometric",
+   "format": "360-degree video",
+   "color_grade": "desaturated",
+   "social_media_style": "ASMR video",
+   "ms_lighting_style": "soft light",
+   "lens_filter": "circular polarizer CPL filter",
+   "ms_format": "DSLR / mirrorless",
+   "shot_type": "eye level shot",
+   "ms_dof": "shallow depth of field, bokeh",
+   "prod_staging": "on a dark reflective surface, dramatic rim lighting, moody",
+   "ms_animation_style": "paper cut-out animation"
+  },
+  "expected": "360-degree video. On a dark reflective surface, dramatic rim lighting, moody, geometric. Eye level shot. Circular polarizer CPL filter. Desaturated."
+ },
+ {
+  "fields": {
+   "ms_pacing": "speed ramp from fast to slow",
+   "ms_mood": "ominous",
+   "focal_length": "85mm lens",
+   "art_condition": "freshly created, paint still wet",
+   "social_media_style": "tutorial how-to video",
+   "location_type": "bridge",
+   "ms_format": "digital large format",
+   "ms_lighting_type": "mixed light sources",
+   "veh_type": "train",
+   "creature_category": "undead creature",
+   "mood": "serene",
+   "ms_commercial_type": "jewelry commercial",
+   "cloth_fabric": "leather, supple hide",
+   "creature_body": "serpentine, elongated body",
+   "ms_social_media_style": "product review video",
+   "ms_color_grade": "natural colors",
+   "art_setting": "displayed in a home, living space",
+   "lens_brand": "Bausch & Lomb Super Baltar vintage",
+   "lens_filter": "ND filter"
+  },
+  "expected": "Undead creature, serpentine, elongated body, leather, supple hide, displayed in a home, living space, freshly created, paint still wet, train. Bridge. 85mm Bausch & Lomb Super Baltar vintage, ND filter."
+ },
+ {
+  "fields": {
+   "veh_era": "racing",
+   "interaction_type": "reaction to environment",
+   "color_grade": "natural colors",
+   "art_condition": "partially restored, visible conservation work"
+  },
+  "expected": "Partially restored, visible conservation work, racing. Reaction to environment. Natural colors."
+ },
+ {
+  "fields": {
+   "art_setting": "at auction, on an easel",
+   "ms_camera_body": "shot on Canon C500 Mark II",
+   "food_presentation": "rustic plating on wooden board",
+   "pacing": "in real-time",
+   "prod_material": "carbon fiber weave",
+   "food_texture": "crispy, crunchy exterior",
+   "creature_skin": "scaled",
+   "ms_documentary_style": "travel adventure documentary",
+   "botan_type": "crystal, mineral formation",
+   "ms_music_video_style": "dance music video",
+   "ms_lens_filter": "split diopter filter",
+   "art_medium": "marble sculpture",
+   "lens_filter": "split diopter filter",
+   "sfx_interior": "echoing hallway, reverberant space",
+   "location_type": "rooftop",
+   "film_stock": "Kodachrome 200 film colors, warm saturated grain",
+   "veh_condition": "mud-covered, dirty",
+   "ms_animation_style": "claymation animation",
+   "botan_detail": "bioluminescent, softly glowing"
+  },
+  "expected": "Scaled, carbon fiber weave, rustic plating on wooden board, crispy, crunchy exterior, marble sculpture, at auction, on an easel, crystal, mineral formation, bioluminescent, softly glowing, mud-covered, dirty. In real-time. Rooftop. Split diopter filter. Kodachrome 200 film colors, warm saturated grain. Echoing hallway, reverberant space."
+ },
+ {
+  "fields": {
+   "art_condition": "partially restored, visible conservation work",
+   "format": "digital",
+   "cloth_fabric": "silk fabric, smooth and luminous",
+   "ms_music_video_style": "animated music video",
+   "shot_type": "low angle shot, looking up at the subject",
+   "obj_condition": "rustic, handmade",
+   "movement_type": "vibrating intensely",
+   "land_scale": "vast panoramic landscape",
+   "focal_length": "18mm lens",
+   "veh_era": "classic vintage",
+   "ms_genre": "drama"
+  },
+  "expected": "Digital. Rustic, handmade, silk fabric, smooth and luminous, partially restored, visible conservation work, classic vintage, vast panoramic landscape. Vibrating intensely. Low angle shot, looking up at the subject. 18mm lens."
+ },
+ {
+  "fields": {
+   "music_video_style": "animated music video",
+   "ms_film_stock": "Kodak T-Max 400 black and white, sharp grain",
+   "framing": "positioned at bottom of frame with overwhelming headroom above",
+   "sfx_interior": "HVAC, air conditioning hum",
+   "creature_category": "alien creature",
+   "dof": "deep focus",
+   "food_state": "steaming hot, steam rising",
+   "genre": "adventure",
+   "sfx_environment": "distant sirens",
+   "lens_brand": "Atlas Orion Anamorphic",
+   "art_medium": "charcoal drawing",
+   "ms_lens_brand": "Panavision C-Series Anamorphic"
+  },
+  "expected": "Positioned at bottom of frame with overwhelming headroom above, alien creature, steaming hot, steam rising, charcoal drawing. Atlas Orion Anamorphic. Deep focus. Distant sirens. HVAC, air conditioning hum."
+ },
+ {
+  "fields": {
+   "age_range": "in their 50s",
+   "botan_stage": "sprouting, first growth pushing through",
+   "obj_condition": "pristine, brand new",
+   "abs_quality": "smoky, vaporous",
+   "cloth_fit": "asymmetric, unconventional cut",
+   "art_setting": "displayed in a home, living space",
+   "ms_lens_filter": "infrared filter",
+   "lens_filter": "graduated ND filter",
+   "botan_detail": "bioluminescent, softly glowing",
+   "veh_condition": "mud-covered, dirty",
+   "ms_format": "MiniDV",
+   "genre": "crime",
+   "format": "16mm film",
+   "veh_type": "car",
+   "art_condition": "weathered by the elements, outdoor patina"
+  },
+  "expected": "16mm film. In their 50s, pristine, brand new, asymmetric, unconventional cut, displayed in a home, living space, weathered by the elements, outdoor patina, sprouting, first growth pushing through, bioluminescent, softly glowing, car, mud-covered, dirty, smoky, vaporous. Graduated ND filter."
+ },
+ {
+  "fields": {
+   "setting": "exterior transitioning to interior",
+   "music_genre": "electronic synth score",
+   "isolation": "isolated on a bright green screen background, chroma key, evenly lit",
+   "sfx_dramatic": "ringing ears, tinnitus after loud event",
+   "ms_lighting_style": "backlight",
+   "veh_condition": "mud-covered, dirty",
+   "framing": "seen from above, bird's eye",
+   "ms_mood": "ominous",
+   "mood": "whimsical",
+   "creature_skin": "armored exoskeleton",
+   "ms_documentary_style": "nature documentary",
+   "shot_type": "bird's eye view, directly overhead",
+   "ms_camera_body": "shot on DJI Inspire",
+   "art_medium": "mixed media installation",
+   "documentary_style": "wildlife documentary"
+  },
+  "expected": "Seen from above, bird's eye, armored exoskeleton, mixed media installation, mud-covered, dirty. Exterior transitioning to interior. Isolated on a bright green screen background, chroma key, evenly lit. Bird's eye view, directly overhead. Ringing ears, tinnitus after loud event. Electronic synth score."
+ },
+ {
+  "fields": {
+   "ms_color_science": "Sony S-Log3 flat log footage, ungraded",
+   "music_video_style": "retro throwback music video",
+   "abs_movement": "expanding outward",
+   "creature_size": "colossal, towering over buildings",
+   "age_range": "elderly",
+   "camera_body": "shot on iPhone",
+   "sfx_environment": "distant sirens",
+   "weather": "clear sky",
+   "ms_music_video_style": "experimental music video",
+   "food_presentation": "rustic plating on wooden board",
+   "obj_material": "glass surface",
+   "veh_era": "military",
+   "botan_stage": "in full bloom, peak growth",
+   "setting": "exterior transitioning to interior",
+   "media_type": "social media",
+   "cloth_fit": "asymmetric, unconventional cut",
+   "veh_subtype": "submarine",
+   "obj_condition": "damaged, broken"
+  },
+  "expected": "Social media. Elderly, colossal, towering over buildings, glass surface, damaged, broken, rustic plating on wooden board, asymmetric, unconventional cut, in full bloom, peak growth, submarine, military, expanding outward. Exterior transitioning to interior. Clear sky. Shot on iPhone. Distant sirens."
+ },
+ {
+  "fields": {
+   "art_setting": "in a museum, dramatic lighting",
+   "location_type": "classroom",
+   "pacing": "speed ramp from fast to slow",
+   "ms_media_type": "educational"
+  },
+  "expected": "In a museum, dramatic lighting. Speed ramp from fast to slow. Classroom."
+ },
+ {
+  "fields": {
+   "food_texture": "glossy, glazed surface",
+   "sfx_interior": "fluorescent lights buzzing",
+   "ms_media_type": "animation",
+   "veh_era": "modern",
+   "prod_material": "frosted glass surface",
+   "dof": "shallow depth of field, bokeh",
+   "veh_type": "ship",
+   "hair_color": "dark brown hair",
+   "framing": "seen from behind, back to camera",
+   "weather": "overcast, flat light",
+   "media_type": "broadcast news",
+   "ms_lighting_type": "sunny, direct sun",
+   "sfx_dramatic": "scream, distant",
+   "lens_brand": "Leica Summicron-C",
+   "creature_skin": "smooth skin"
+  },
+  "expected": "Broadcast news. Dark brown hair; seen from behind, back to camera, smooth skin, frosted glass surface, glossy, glazed surface, ship, modern. Overcast, flat light. Leica Summicron-C. Shallow depth of field, bokeh. Fluorescent lights buzzing. Scream, distant."
+ },
+ {
+  "fields": {
+   "lighting_style": "high contrast lighting",
+   "movement": "zoom",
+   "sfx_mechanical": "electrical buzzing and sparking",
+   "creature_size": "medium-sized",
+   "media_type": "behind-the-scenes",
+   "creature_subtype": "beetle",
+   "art_medium": "photography print, framed",
+   "ms_color_science": "Panasonic V-Log flat log footage, ungraded",
+   "lighting_type": "volumetric god rays",
+   "veh_subtype": "tanker ship",
+   "veh_type": "truck",
+   "veh_era": "racing",
+   "ms_documentary_style": "nature documentary",
+   "sfx_dramatic": "glass shattering",
+   "documentary_style": "true crime documentary",
+   "ms_genre": "period drama",
+   "weather": "snow falling",
+   "obj_condition": "polished, gleaming",
+   "ms_mood": "bittersweet"
+  },
+  "expected": "Behind-the-scenes. Beetle, medium-sized, polished, gleaming, photography print, framed, tanker ship, racing. Snow falling. Zoom camera movement. High contrast volumetric god rays. Electrical buzzing and sparking. Glass shattering."
+ },
+ {
+  "fields": {
+   "media_type": "educational",
+   "focal_length": "50mm lens",
+   "sfx_dramatic": "scream, distant",
+   "food_state": "raw, uncooked",
+   "lighting_style": "soft light",
+   "prod_staging": "held in hand, demonstrating scale",
+   "hair_style": "wavy hair",
+   "ms_lighting_type": "volumetric god rays",
+   "documentary_style": "war conflict documentary",
+   "hair_color": "white hair",
+   "build": "petite",
+   "ms_pacing": "speed ramp from fast to slow",
+   "botan_type": "fern, unfurling fronds",
+   "ms_documentary_style": "cinéma vérité documentary",
+   "cloth_fit": "asymmetric, unconventional cut",
+   "cloth_presentation": "caught in wind, fabric flowing freely",
+   "dof": "tilt-shift miniature effect",
+   "ms_camera_body": "shot on Panavision Panaflex",
+   "music_video_style": "animated music video"
+  },
+  "expected": "Educational. Petite, wavy white hair, held in hand, demonstrating scale, raw, uncooked, caught in wind, fabric flowing freely, asymmetric, unconventional cut, fern, unfurling fronds. 50mm lens. Tilt-shift miniature effect. Soft light. Scream, distant."
+ },
+ {
+  "fields": {
+   "prod_condition": "pristine, brand new, factory fresh",
+   "food_presentation": "street food, casual handheld",
+   "build": "slim build",
+   "ms_format": "65mm film",
+   "format": "Super 8mm film",
+   "focal_length": "21mm lens",
+   "botan_detail": "sun-bleached, faded by light",
+   "social_media_style": "tutorial how-to video",
+   "ms_film_stock": "Kodak Portra 800 film colors, warm grain",
+   "ms_music_video_style": "lyric video",
+   "setting": "exterior transitioning to interior",
+   "botan_stage": "decaying, returning to earth",
+   "obj_scale": "massive, monumental"
+  },
+  "expected": "Super 8mm film. Slim build, massive, monumental, pristine, brand new, factory fresh, street food, casual handheld, decaying, returning to earth, sun-bleached, faded by light. Exterior transitioning to interior. 21mm lens."
+ },
+ {
+  "fields": {
+   "land_scale": "vast panoramic landscape",
+   "ms_camera_body": "shot on Aaton LTR",
+   "cloth_fit": "asymmetric, unconventional cut",
+   "ms_format": "35mm film",
+   "obj_material": "ceramic surface",
+   "framing": "silhouetted against sky",
+   "lens_brand": "Fujinon Premista zoom",
+   "botan_detail": "sun-bleached, faded by light",
+   "prod_staging": "flat lay arrangement, overhead view",
+   "ms_film_stock": "Fujifilm Velvia 100 slide film, saturated colors",
+   "creature_subtype": "snake",
+   "sfx_interior": "room tone, quiet interior",
+   "genre": "film noir"
+  },
+  "expected": "Silhouetted against sky, snake, ceramic surface, flat lay arrangement, overhead view, asymmetric, unconventional cut, sun-bleached, faded by light, vast panoramic landscape. Fujinon Premista zoom. Room tone, quiet interior."
+ },
+ {
+  "fields": {
+   "botan_stage": "mature, fully grown",
+   "genre": "comedy",
+   "obj_material": "stone surface",
+   "lens_filter": "split diopter filter",
+   "setting": "exterior",
+   "format": "MiniDV",
+   "veh_era": "post-apocalyptic",
+   "creature_skin": "slimy, wet surface",
+   "ms_camera_body": "shot on IMAX 65mm"
+  },
+  "expected": "MiniDV. Slimy, wet surface, stone surface, mature, fully grown, post-apocalyptic. Exterior. Split diopter filter."
+ },
+ {
+  "fields": {
+   "ms_social_media_style": "TikTok Reels short-form vertical video",
+   "sfx_interior": "glass clinking, bar ambience",
+   "location_type": "diner",
+   "color_grade": "teal and orange",
+   "music_mood": "nostalgic, bittersweet",
+   "shot_type": "over-the-shoulder",
+   "media_type": "documentary",
+   "ms_media_type": "behind-the-scenes",
+   "veh_subtype": "BMX bike",
+   "camera_body": "shot on RED One",
+   "botan_stage": "in full bloom, peak growth",
+   "food_presentation": "deconstructed, ingredients artfully separated",
+   "sfx_dramatic": "glass shattering",
+   "ms_pacing": "in reverse motion",
+   "sfx_mechanical": "machinery humming, factory sounds",
+   "ms_film_stock": "Fujifilm Pro 400H film colors, soft greens and pastels",
+   "ms_animation_style": "2D traditional animation",
+   "build": "heavy build",
+   "ms_lighting_style": "top light",
+   "documentary_style": "cinéma vérité documentary"
+  },
+  "expected": "Cinéma vérité documentary. Heavy build, deconstructed, ingredients artfully separated, in full bloom, peak growth, BMX bike. Diner. Over-the-shoulder. Shot on RED One. Teal and orange. Glass clinking, bar ambience. Machinery humming, factory sounds. Glass shattering. Nostalgic, bittersweet."
+ },
+ {
+  "fields": {
+   "lighting_style": "edge light",
+   "env_time": "midday, sun overhead",
+   "sfx_dramatic": "alarm blaring",
+   "ms_lens_filter": "ND filter",
+   "hair_color": "blonde hair",
+   "ms_format": "35mm film",
+   "veh_era": "racing",
+   "format": "surveillance CCTV",
+   "lens_filter": "streak filter, anamorphic flare",
+   "interaction_type": "confrontation between characters",
+   "creature_size": "colossal, towering over buildings",
+   "commercial_type": "sports athletic commercial"
+  },
+  "expected": "Surveillance CCTV. Blonde hair, colossal, towering over buildings, racing. Confrontation between characters. Midday, sun overhead. Streak filter, anamorphic flare. Edge light. Alarm blaring."
+ },
+ {
+  "fields": {
+   "ms_mood": "serene",
+   "ms_genre": "thriller",
+   "ms_color_grade": "monochromatic tinted"
+  },
+  "expected": ""
+ },
+ {
+  "fields": {
+   "music_video_style": "animated music video",
+   "abs_quality": "fractal",
+   "sfx_mechanical": "engine rumbling",
+   "lens_brand": "Leica Summilux-C",
+   "pacing": "in fast motion",
+   "ms_lighting_style": "split lighting",
+   "ms_lens_filter": "ND filter",
+   "shot_type": "wide shot",
+   "weather": "clear sky",
+   "film_stock": "Lomography Color 400 film, saturated unpredictable colors"
+  },
+  "expected": "Fractal. In fast motion. Clear sky. Wide shot. Leica Summilux-C. Lomography Color 400 film, saturated unpredictable colors. Engine rumbling."
+ },
+ {
+  "fields": {
+   "animation_style": "anime style animation",
+   "cloth_fit": "oversized, exaggerated proportions",
+   "ms_social_media_style": "get ready with me GRWM video",
+   "color_grade": "bleach bypass, desaturated contrast",
+   "food_texture": "flaky, layered pastry",
+   "ms_commercial_type": "fitness commercial",
+   "music_genre": "rock score",
+   "framing": "tiny figure dwarfed by surrounding architecture, off-center",
+   "ms_media_type": "avant-garde",
+   "lighting_type": "moonlight",
+   "ms_color_grade": "natural colors",
+   "documentary_style": "historical documentary",
+   "sfx_dramatic": "heartbeat, slow and heavy",
+   "botan_stage": "dried, preserved"
+  },
+  "expected": "Tiny figure dwarfed by surrounding architecture, off-center, flaky, layered pastry, oversized, exaggerated proportions, dried, preserved. Moonlight. Bleach bypass, desaturated contrast. Heartbeat, slow and heavy. Rock score."
+ },
+ {
+  "fields": {
+   "age_range": "in their 60s",
+   "ms_dof": "shallow depth of field, bokeh",
+   "camera_body": "shot on Canon Scoopic 16mm",
+   "prod_condition": "unboxing, fresh from packaging",
+   "botan_stage": "dried, preserved",
+   "setting": "exterior transitioning to interior",
+   "veh_subtype": "sports car",
+   "creature_category": "demon",
+   "ms_commercial_type": "testimonial commercial"
+  },
+  "expected": "In their 60s, demon, unboxing, fresh from packaging, dried, preserved, sports car. Exterior transitioning to interior. Shot on Canon Scoopic 16mm."
+ },
+ {
+  "fields": {
+   "ms_film_stock": "Lomography Color 400 film, saturated unpredictable colors",
+   "obj_material": "liquid surface",
+   "prod_staging": "on a clean white surface, soft studio lighting, subtle shadow"
+  },
+  "expected": "Liquid surface, on a clean white surface, soft studio lighting, subtle shadow."
+ },
+ {
+  "fields": {
+   "movement_type": "lying down",
+   "ms_lens_filter": "Classic Soft diffusion filter",
+   "isolation": "isolated on a bright green screen background, chroma key, evenly lit",
+   "music_video_style": "animated music video",
+   "veh_era": "racing",
+   "ms_lens_brand": "Panavision C-Series Anamorphic",
+   "prod_staging": "lifestyle setting, in natural context"
+  },
+  "expected": "Lifestyle setting, in natural context, racing. Lying down. Isolated on a bright green screen background, chroma key, evenly lit."
+ },
+ {
+  "fields": {
+   "creature_skin": "fur-covered",
+   "land_scale": "infinite horizon, endless expanse",
+   "abs_quality": "organic",
+   "prod_staging": "flat lay arrangement, overhead view",
+   "obj_condition": "polished, gleaming",
+   "cloth_fabric": "sequined, covered in reflective discs",
+   "botan_stage": "mature, fully grown",
+   "sfx_environment": "wind blowing",
+   "commercial_type": "makeup cosmetics commercial",
+   "cloth_presentation": "on a mannequin",
+   "weather": "smoke drifting through scene",
+   "music_genre": "minimal, sparse piano"
+  },
+  "expected": "Fur-covered, polished, gleaming, flat lay arrangement, overhead view, sequined, covered in reflective discs, on a mannequin, mature, fully grown, infinite horizon, endless expanse, organic. Smoke drifting through scene. Wind blowing. Minimal, sparse piano."
+ },
+ {
+  "fields": {
+   "env_time": "late night, deep darkness",
+   "movement_type": "prowling slowly",
+   "creature_subtype": "komodo dragon",
+   "ms_color_grade": "bleach bypass, desaturated contrast",
+   "creature_category": "robotic creature",
+   "ms_lighting_style": "underlight",
+   "art_setting": "outdoors, public installation",
+   "movement": "push in",
+   "creature_skin": "bark-like, wooden",
+   "weather": "overcast, flat light",
+   "prod_staging": "surrounded by complementary props",
+   "food_state": "frozen, frosted with ice crystals",
+   "prod_material": "natural wood grain",
+   "obj_scale": "life-size",
+   "ms_format": "35mm film",
+   "music_video_style": "narrative music video",
+   "land_scale": "intimate, small detail"
+  },
+  "expected": "Robotic creature, komodo dragon, bark-like, wooden, life-size, natural wood grain, surrounded by complementary props, frozen, frosted with ice crystals, outdoors, public installation, intimate, small detail. Prowling slowly. Late night, deep darkness, overcast, flat light. Push in camera movement."
+ },
+ {
+  "fields": {
+   "veh_subtype": "private jet",
+   "ms_format": "360-degree video",
+   "ms_lens_filter": "star filter, starburst highlights",
+   "shot_type": "bird's eye view, directly overhead",
+   "lighting_type": "neon light",
+   "creature_skin": "scaled",
+   "ms_social_media_style": "ASMR video",
+   "sfx_environment": "rain falling",
+   "movement_type": "charging forward",
+   "ms_documentary_style": "cinéma vérité documentary",
+   "location_type": "laboratory",
+   "lens_brand": "Zeiss Master Prime",
+   "ms_color_science": "Panasonic V-Log flat log footage, ungraded"
+  },
+  "expected": "Scaled, private jet. Charging forward. Laboratory. Bird's eye view, directly overhead. Zeiss Master Prime. Neon light. Rain falling."
+ },
+ {
+  "fields": {
+   "ms_commercial_type": "jewelry commercial",
+   "abs_quality": "fractal",
+   "veh_type": "motorcycle",
+   "hair_style": "straight hair",
+   "dof": "shallow depth of field, bokeh",
+   "documentary_style": "observational documentary",
+   "veh_era": "classic vintage",
+   "ms_color_science": "RED Log3G10 flat log footage, ungraded",
+   "social_media_style": "unboxing video",
+   "shot_type": "extreme wide shot",
+   "land_scale": "vast panoramic landscape",
+   "art_condition": "freshly created, paint still wet",
+   "ms_pacing": "in extreme slow motion",
+   "ms_film_stock": "Kodak Tri-X 400 black and white, punchy contrast grain",
+   "hair_color": "auburn hair"
+  },
+  "expected": "Straight auburn hair, freshly created, paint still wet, motorcycle, classic vintage, vast panoramic landscape, fractal. Extreme wide shot. Shallow depth of field, bokeh."
+ },
+ {
+  "fields": {
+   "media_type": "music video",
+   "lighting_style": "hard light",
+   "ms_social_media_style": "TikTok Reels short-form vertical video",
+   "ms_music_video_style": "abstract visual music video",
+   "interaction_type": "character observing from a distance"
+  },
+  "expected": "Music video. Character observing from a distance. Hard light."
+ },
+ {
+  "fields": {
+   "media_type": "avant-garde",
+   "lighting_type": "window light",
+   "abstract_environment": "in a glitching, corrupted digital space"
+  },
+  "expected": "Avant-garde. In a glitching, corrupted digital space. Window light."
+ },
+ {
+  "fields": {
+   "botan_stage": "dried, preserved",
+   "creature_subtype": "falcon",
+   "veh_subtype": "dirt bike",
+   "hair_color": "black hair",
+   "interaction_type": "objects interacting with each other",
+   "obj_scale": "miniature, tiny",
+   "ms_color_grade": "high saturation, vivid colors",
+   "sfx_dramatic": "ringing ears, tinnitus after loud event",
+   "lighting_type": "neon light"
+  },
+  "expected": "Black hair, falcon, miniature, tiny, dried, preserved, dirt bike. Objects interacting with each other. Neon light. Ringing ears, tinnitus after loud event."
+ },
+ {
+  "fields": {
+   "creature_size": "medium-sized",
+   "social_media_style": "mukbang eating video",
+   "setting": "exterior transitioning to interior",
+   "format": "DSLR / mirrorless",
+   "media_type": "avant-garde",
+   "env_time": "night",
+   "genre": "mystery",
+   "color_grade": "day for night",
+   "mood": "bittersweet",
+   "movement": "pull out",
+   "botan_detail": "sun-bleached, faded by light",
+   "ms_lens_filter": "streak filter, anamorphic flare",
+   "music_mood": "romantic, tender",
+   "food_state": "steaming hot, steam rising",
+   "hair_style": "bald",
+   "ms_color_science": "ARRI LogC3 flat log footage, ungraded",
+   "cloth_fit": "structured, sharp tailoring",
+   "prod_material": "frosted glass surface"
+  },
+  "expected": "Avant-garde. DSLR / mirrorless. Bald, medium-sized, frosted glass surface, steaming hot, steam rising, structured, sharp tailoring, sun-bleached, faded by light. Exterior transitioning to interior. Night. Pull out camera movement. Day for night. Romantic, tender."
+ },
+ {
+  "fields": {
+   "animation_style": "stop motion animation",
+   "cloth_fit": "structured, sharp tailoring",
+   "art_condition": "decaying, crumbling, reclaimed by nature",
+   "lens_filter": "diopter close-up filter",
+   "framing": "perfectly symmetrical center-frame composition, one-point perspective",
+   "build": "heavy build",
+   "documentary_style": "cinéma vérité documentary",
+   "obj_condition": "damaged, broken",
+   "movement": "tracking",
+   "color_grade": "vintage film look",
+   "music_genre": "folk, acoustic guitar",
+   "abs_quality": "luminous, glowing"
+  },
+  "expected": "Heavy build; perfectly symmetrical center-frame composition, one-point perspective, damaged, broken, structured, sharp tailoring, decaying, crumbling, reclaimed by nature, luminous, glowing. Tracking camera movement. Diopter close-up filter. Vintage film look. Folk, acoustic guitar."
+ },
+ {
+  "fields": {
+   "documentary_style": "travel adventure documentary",
+   "mood": "serene",
+   "ms_animation_style": "watercolor animation",
+   "movement_type": "walking slowly"
+  },
+  "expected": "Walking slowly."
+ },
+ {
+  "fields": {
+   "interaction_type": "character observing from a distance",
+   "framing": "tiny figure dwarfed by surrounding architecture, off-center",
+   "ms_music_video_style": "live concert music video",
+   "veh_subtype": "bullet train",
+   "hair_style": "slicked back hair",
+   "food_state": "bubbling, actively cooking",
+   "movement": "steadicam",
+   "ms_pacing": "in fast motion",
+   "music_genre": "blues, slow guitar",
+   "lighting_style": "split lighting",
+   "food_presentation": "poured into glass, layered drink"
+  },
+  "expected": "Slicked back hair; tiny figure dwarfed by surrounding architecture, off-center, bubbling, actively cooking, poured into glass, layered drink, bullet train. Character observing from a distance. Steadicam camera movement. Split lighting. Blues, slow guitar."
+ },
+ {
+  "fields": {
+   "mood": "dreamlike",
+   "lens_brand": "Panavision Primo",
+   "env_time": "twilight, fading light",
+   "creature_body": "bipedal, two-legged",
+   "lighting_style": "hard light",
+   "shot_type": "insert shot, detail cutaway",
+   "ms_film_stock": "Kodachrome 64 film colors, rich warm reds and deep blues",
+   "botan_stage": "wilting, beginning to fade",
+   "ms_camera_body": "shot on Panasonic GH5",
+   "hair_color": "auburn hair",
+   "ms_lighting_type": "sunny, direct sun",
+   "abstract_environment": "in a brutalist concrete structure",
+   "prod_material": "premium leather",
+   "creature_size": "tiny, insect-sized",
+   "veh_condition": "chrome polished, gleaming",
+   "ms_genre": "mystery",
+   "creature_skin": "bioluminescent, glowing"
+  },
+  "expected": "Auburn hair, tiny, insect-sized, bipedal, two-legged, bioluminescent, glowing, premium leather, wilting, beginning to fade, chrome polished, gleaming. In a brutalist concrete structure. Twilight, fading light. Insert shot, detail cutaway. Panavision Primo. Hard light."
+ },
+ {
+  "fields": {
+   "creature_body": "serpentine, elongated body",
+   "music_genre": "orchestral score",
+   "prod_condition": "pristine, brand new, factory fresh",
+   "social_media_style": "TikTok Reels short-form vertical video",
+   "music_mood": "ominous, foreboding",
+   "ms_lens_brand": "ARRI Master Prime",
+   "prod_material": "brushed metal finish",
+   "botan_type": "moss, covering a surface",
+   "hair_color": "silver hair",
+   "lighting_style": "silhouette lighting",
+   "sfx_mechanical": "engine rumbling",
+   "documentary_style": "true crime documentary",
+   "sfx_dramatic": "gunshot",
+   "food_presentation": "fine dining plating, elegant arrangement",
+   "ms_format": "8mm film",
+   "art_condition": "decaying, crumbling, reclaimed by nature"
+  },
+  "expected": "Silver hair, serpentine, elongated body, brushed metal finish, pristine, brand new, factory fresh, fine dining plating, elegant arrangement, decaying, crumbling, reclaimed by nature, moss, covering a surface. Silhouette lighting. Engine rumbling. Gunshot. Ominous orchestral score."
+ },
+ {
+  "fields": {
+   "music_mood": "uplifting, hopeful",
+   "botan_stage": "sprouting, first growth pushing through",
+   "prod_staging": "held in hand, demonstrating scale"
+  },
+  "expected": "Held in hand, demonstrating scale, sprouting, first growth pushing through. Uplifting, hopeful."
+ },
+ {
+  "fields": {
+   "creature_size": "massive, elephant-sized",
+   "documentary_style": "cinéma vérité documentary",
+   "creature_category": "marine creature",
+   "pacing": "frozen in time, completely still",
+   "framing": "pushed to extreme edge of frame with vast negative space",
+   "cloth_fit": "fitted, body-hugging"
+  },
+  "expected": "Pushed to extreme edge of frame with vast negative space, marine creature, massive, elephant-sized, fitted, body-hugging. Frozen in time, completely still."
+ },
+ {
+  "fields": {
+   "ms_color_science": "ARRI LogC4 flat log footage, ungraded",
+   "ms_lighting_style": "underlight",
+   "veh_subtype": "touring motorcycle",
+   "media_type": "educational",
+   "ms_film_stock": "Ilford Delta 3200 black and white, heavy grain high ISO",
+   "color_grade": "bleach bypass, desaturated contrast",
+   "music_video_style": "live concert music video",
+   "botan_detail": "covered in morning dew drops",
+   "ms_color_grade": "cool tones",
+   "env_time": "afternoon",
+   "sfx_mechanical": "machinery humming, factory sounds",
+   "pacing": "speed ramp from slow to fast",
+   "sfx_interior": "footsteps on hard floor",
+   "creature_skin": "translucent, semi-transparent",
+   "ms_media_type": "commercial",
+   "prod_staging": "held in hand, demonstrating scale",
+   "dof": "tilt-shift miniature effect",
+   "movement_type": "standing still"
+  },
+  "expected": "Educational. Translucent, semi-transparent, held in hand, demonstrating scale, covered in morning dew drops, touring motorcycle. Standing still. Speed ramp from slow to fast. Afternoon. Tilt-shift miniature effect. Bleach bypass, desaturated contrast. Footsteps on hard floor. Machinery humming, factory sounds."
+ },
+ {
+  "fields": {
+   "ms_animation_style": "pixel art animation",
+   "prod_staging": "held in hand, demonstrating scale",
+   "food_presentation": "rustic plating on wooden board",
+   "sfx_dramatic": "gunshot",
+   "media_type": "found footage"
+  },
+  "expected": "Found footage. Held in hand, demonstrating scale, rustic plating on wooden board. Gunshot."
+ },
+ {
+  "fields": {
+   "color_grade": "high saturation, vivid colors",
+   "cloth_fit": "asymmetric, unconventional cut",
+   "framing": "partially hidden, emerging from shadows",
+   "focal_length": "14mm lens",
+   "ms_mood": "ethereal",
+   "art_condition": "weathered by the elements, outdoor patina",
+   "ms_commercial_type": "military defense commercial",
+   "cloth_fabric": "leather, supple hide",
+   "documentary_style": "social political documentary",
+   "prod_material": "frosted glass surface",
+   "creature_size": "massive, elephant-sized",
+   "build": "heavy build"
+  },
+  "expected": "Heavy build; partially hidden, emerging from shadows, massive, elephant-sized, frosted glass surface, leather, supple hide, asymmetric, unconventional cut, weathered by the elements, outdoor patina. 14mm lens. High saturation, vivid colors."
+ },
+ {
+  "fields": {
+   "social_media_style": "reaction video",
+   "framing": "silhouetted in doorway",
+   "cloth_fit": "asymmetric, unconventional cut",
+   "obj_material": "wood grain"
+  },
+  "expected": "Silhouetted in doorway, wood grain, asymmetric, unconventional cut."
+ },
+ {
+  "fields": {
+   "botan_stage": "budding, about to open",
+   "creature_body": "winged, with large wings",
+   "cloth_fabric": "lace, delicate openwork",
+   "animation_style": "watercolor animation",
+   "ms_documentary_style": "nature documentary",
+   "commercial_type": "fitness commercial",
+   "film_stock": "Fujifilm Velvia 50 slide film, hyper-saturated vivid colors",
+   "ms_commercial_type": "testimonial commercial",
+   "food_texture": "flaky, layered pastry",
+   "lighting_style": "soft light",
+   "food_state": "bubbling, actively cooking",
+   "hair_color": "black hair"
+  },
+  "expected": "Black hair, winged, with large wings, bubbling, actively cooking, flaky, layered pastry, lace, delicate openwork, budding, about to open. Soft light. Fujifilm Velvia 50 slide film, hyper-saturated vivid colors."
+ },
+ {
+  "fields": {
+   "veh_era": "post-apocalyptic",
+   "creature_subtype": "seal",
+   "hair_color": "red hair",
+   "ms_mood": "nostalgic",
+   "ms_lens_brand": "Panavision C-Series Anamorphic",
+   "ms_social_media_style": "ASMR video",
+   "setting": "exterior transitioning to interior",
+   "prod_condition": "well-loved, showing character from use",
+   "land_scale": "medium vista",
+   "creature_skin": "fur-covered",
+   "ms_dof": "shallow depth of field, bokeh"
+  },
+  "expected": "Red hair, seal, fur-covered, well-loved, showing character from use, post-apocalyptic, medium vista. Exterior transitioning to interior."
+ },
+ {
+  "fields": {
+   "veh_condition": "battle-worn, scarred",
+   "botan_detail": "covered in morning dew drops",
+   "format": "35mm film",
+   "ms_documentary_style": "cinéma vérité documentary",
+   "ms_dof": "shallow depth of field, bokeh",
+   "social_media_style": "day in the life video",
+   "ms_lighting_type": "candlelight",
+   "art_medium": "photography print, framed",
+   "weather": "rain",
+   "documentary_style": "biographical documentary",
+   "isolation": "isolated on a bright green screen background, chroma key, evenly lit",
+   "creature_size": "colossal, towering over buildings",
+   "prod_staging": "surrounded by complementary props",
+   "ms_mood": "dreamlike"
+  },
+  "expected": "35mm film. Colossal, towering over buildings, surrounded by complementary props, photography print, framed, covered in morning dew drops, battle-worn, scarred. Isolated on a bright green screen background, chroma key, evenly lit. Rain."
+ },
+ {
+  "fields": {
+   "shot_type": "full shot, head to toe",
+   "creature_category": "robotic creature",
+   "lens_brand": "Cooke Varotal zoom",
+   "sfx_interior": "clock ticking",
+   "social_media_style": "reaction video",
+   "food_texture": "gooey, stretching",
+   "prod_condition": "pristine, brand new, factory fresh",
+   "interaction_type": "character interacting with crowd",
+   "age_range": "in their 30s",
+   "hair_style": "short hair",
+   "ms_commercial_type": "celebrity interview commercial",
+   "sfx_mechanical": "train on tracks, rhythmic clatter",
+   "weather": "wind, movement in air",
+   "lighting_style": "cross light"
+  },
+  "expected": "In their 30s, short hair, robotic creature, pristine, brand new, factory fresh, gooey, stretching. Character interacting with crowd. Wind, movement in air. Full shot, head to toe. Cooke Varotal zoom. Cross light. Clock ticking. Train on tracks, rhythmic clatter."
+ },
+ {
+  "fields": {
+   "location_type": "prison cell",
+   "abs_movement": "shattering, fragmenting",
+   "ms_lens_filter": "graduated ND filter",
+   "animation_style": "claymation animation",
+   "movement": "push in",
+   "music_video_style": "one-take music video",
+   "ms_camera_body": "shot on Sony FX6",
+   "cloth_fabric": "denim, sturdy cotton twill",
+   "env_time": "late night, deep darkness",
+   "ms_dof": "tilt-shift miniature effect",
+   "art_setting": "in a museum, dramatic lighting",
+   "focal_length": "12mm lens",
+   "pacing": "in fast motion",
+   "food_texture": "juicy, glistening with moisture",
+   "food_state": "bubbling, actively cooking",
+   "ms_pacing": "speed ramp from slow to fast",
+   "veh_era": "modern"
+  },
+  "expected": "Bubbling, actively cooking, juicy, glistening with moisture, denim, sturdy cotton twill, in a museum, dramatic lighting, modern, shattering, fragmenting. In fast motion. Prison cell. Late night, deep darkness. Push in camera movement. 12mm lens."
+ },
+ {
+  "fields": {
+   "prod_staging": "floating, suspended in mid-air",
+   "camera_body": "shot on Blackmagic Pocket Cinema Camera 6K",
+   "creature_size": "small, hand-sized",
+   "ms_mood": "bittersweet",
+   "animation_style": "3D CGI animation",
+   "env_time": "sunset",
+   "food_texture": "crumbly, soft texture",
+   "abstract_environment": "on a volcanic landscape, lava and ash",
+   "ms_lighting_type": "fire light",
+   "sfx_mechanical": "engine rumbling",
+   "lighting_style": "butterfly lighting",
+   "veh_era": "futuristic",
+   "pacing": "speed ramp from slow to fast",
+   "ms_music_video_style": "performance music video",
+   "land_scale": "intimate, small detail",
+   "build": "stocky build"
+  },
+  "expected": "Stocky build, small, hand-sized, floating, suspended in mid-air, crumbly, soft texture, futuristic, intimate, small detail. Speed ramp from slow to fast. On a volcanic landscape, lava and ash. Sunset. Shot on Blackmagic Pocket Cinema Camera 6K. Butterfly lighting. Engine rumbling."
+ },
+ {
+  "fields": {
+   "sfx_environment": "distant sirens",
+   "hair_color": "light brown hair",
+   "color_science": "Panasonic V-Log flat log footage, ungraded",
+   "creature_body": "serpentine, elongated body",
+   "hair_style": "long hair",
+   "ms_color_grade": "bleach bypass, desaturated contrast",
+   "veh_condition": "rusty, abandoned",
+   "movement_type": "pouncing",
+   "ms_social_media_style": "mukbang eating video",
+   "prod_condition": "pristine, brand new, factory fresh",
+   "ms_dof": "shallow depth of field, bokeh",
+   "color_grade": "vintage film look",
+   "music_mood": "ominous, foreboding"
+  },
+  "expected": "Long light brown hair, serpentine, elongated body, pristine, brand new, factory fresh, rusty, abandoned. Pouncing. Panasonic V-Log flat log footage, ungraded. Vintage film look. Distant sirens. Ominous, foreboding."
+ },
+ {
+  "fields": {
+   "botan_type": "vine, climbing and twisting",
+   "commercial_type": "airline commercial",
+   "ms_mood": "contemplative",
+   "cloth_presentation": "caught in wind, fabric flowing freely",
+   "veh_type": "spacecraft",
+   "ms_lighting_type": "tungsten light",
+   "botan_stage": "sprouting, first growth pushing through",
+   "veh_subtype": "biplane",
+   "ms_color_science": "Canon C-Log3 flat log footage, ungraded",
+   "animation_style": "3D CGI animation",
+   "format": "digital large format",
+   "obj_scale": "handheld size",
+   "art_medium": "mixed media installation",
+   "weather": "fog, low visibility",
+   "ms_camera_body": "shot on Sony A7S III",
+   "prod_material": "soft-touch rubber",
+   "ms_music_video_style": "performance music video"
+  },
+  "expected": "Digital large format. Handheld size, soft-touch rubber, caught in wind, fabric flowing freely, mixed media installation, vine, climbing and twisting, sprouting, first growth pushing through, biplane. Fog, low visibility."
+ },
+ {
+  "fields": {
+   "camera_body": "shot on Canon C500 Mark II",
+   "commercial_type": "airline commercial",
+   "abstract_environment": "on a neon grid, Tron-like digital plane",
+   "setting": "interior transitioning to exterior",
+   "dof": "deep focus",
+   "weather": "clear sky",
+   "veh_type": "aircraft"
+  },
+  "expected": "Aircraft. Interior transitioning to exterior. On a neon grid, Tron-like digital plane. Clear sky. Shot on Canon C500 Mark II. Deep focus."
+ },
+ {
+  "fields": {
+   "obj_material": "wood grain",
+   "ms_film_stock": "Kodak Vision3 500T cinema film, tungsten balanced",
+   "movement": "pull out",
+   "veh_subtype": "monorail",
+   "ms_commercial_type": "watch commercial",
+   "lens_brand": "Cooke Speed Panchro",
+   "abs_movement": "spiraling inward",
+   "cloth_fit": "layered, multiple pieces stacked",
+   "genre": "experimental",
+   "prod_condition": "pristine, brand new, factory fresh",
+   "media_type": "corporate",
+   "music_genre": "cinematic trailer music, epic",
+   "weather": "smoke drifting through scene",
+   "social_media_style": "get ready with me GRWM video",
+   "cloth_presentation": "flat lay arrangement from above",
+   "creature_category": "wild animal"
+  },
+  "expected": "Corporate. Wild animal, wood grain, pristine, brand new, factory fresh, flat lay arrangement from above, layered, multiple pieces stacked, monorail, spiraling inward. Smoke drifting through scene. Pull out camera movement. Cooke Speed Panchro. Cinematic trailer music, epic."
+ },
+ {
+  "fields": {
+   "creature_skin": "shadowy, made of darkness",
+   "creature_category": "stampede of creatures",
+   "sfx_dramatic": "sudden silence, all sound drops out",
+   "ms_lens_brand": "Cooke Speed Panchro",
+   "art_medium": "marble sculpture",
+   "art_condition": "partially restored, visible conservation work",
+   "build": "slim build",
+   "ms_lighting_style": "top light",
+   "creature_size": "small, hand-sized",
+   "shot_type": "bird's eye view, directly overhead",
+   "veh_subtype": "military helicopter",
+   "movement": "shoulder rig"
+  },
+  "expected": "Slim build, stampede of creatures, small, hand-sized, shadowy, made of darkness, marble sculpture, partially restored, visible conservation work, military helicopter. Bird's eye view, directly overhead with shoulder rig camera movement. Sudden silence, all sound drops out."
+ },
+ {
+  "fields": {
+   "food_state": "melting slowly",
+   "ms_pacing": "in fast motion",
+   "cloth_fit": "asymmetric, unconventional cut",
+   "shot_type": "medium close-up",
+   "ms_lens_brand": "Leica Summilux-C",
+   "botan_stage": "in full bloom, peak growth",
+   "ms_animation_style": "watercolor animation",
+   "botan_type": "mushroom, fruiting body",
+   "setting": "exterior transitioning to interior",
+   "land_scale": "infinite horizon, endless expanse",
+   "art_condition": "partially restored, visible conservation work",
+   "focal_length": "85mm lens",
+   "animation_style": "pixel art animation"
+  },
+  "expected": "Melting slowly, asymmetric, unconventional cut, partially restored, visible conservation work, mushroom, fruiting body, in full bloom, peak growth, infinite horizon, endless expanse. Exterior transitioning to interior. Medium close-up. 85mm lens."
+ },
+ {
+  "fields": {
+   "obj_condition": "damaged, broken",
+   "prod_staging": "floating, suspended in mid-air",
+   "botan_type": "seed pod, splitting open",
+   "hair_color": "dark brown hair",
+   "movement": "whip pan",
+   "ms_dof": "shallow depth of field, bokeh",
+   "sfx_interior": "echoing hallway, reverberant space",
+   "obj_scale": "large, imposing",
+   "location_type": "dock, waterfront pier"
+  },
+  "expected": "Dark brown hair, damaged, broken, large, imposing, floating, suspended in mid-air, seed pod, splitting open. Dock, waterfront pier. Whip pan camera movement. Echoing hallway, reverberant space."
+ },
+ {
+  "fields": {
+   "ms_animation_style": "rotoscope animation",
+   "commercial_type": "tech SaaS product commercial",
+   "media_type": "corporate",
+   "social_media_style": "day in the life video",
+   "art_setting": "being created, artist's hands visible",
+   "cloth_presentation": "on a model walking runway",
+   "focal_length": "75mm lens",
+   "obj_material": "metal surface"
+  },
+  "expected": "Corporate. Metal surface, on a model walking runway, being created, artist's hands visible. 75mm lens."
+ },
+ {
+  "fields": {
+   "shot_type": "reaction shot, subject responding to off-screen action",
+   "weather": "rain",
+   "creature_skin": "stone-like, rocky surface",
+   "mood": "whimsical",
+   "veh_type": "aircraft",
+   "land_scale": "intimate, small detail",
+   "sfx_interior": "glass clinking, bar ambience"
+  },
+  "expected": "Stone-like, rocky surface, aircraft, intimate, small detail. Rain. Reaction shot, subject responding to off-screen action. Glass clinking, bar ambience."
+ },
+ {
+  "fields": {
+   "abstract_environment": "on a neon grid, Tron-like digital plane",
+   "documentary_style": "observational documentary",
+   "dof": "tilt-shift miniature effect",
+   "framing": "silhouetted in doorway",
+   "setting": "interior transitioning to exterior",
+   "music_genre": "world music, ethnic percussion",
+   "ms_color_science": "RED Log3G10 flat log footage, ungraded",
+   "ms_music_video_style": "lyric video",
+   "movement_type": "burrowing into the ground",
+   "ms_documentary_style": "food documentary",
+   "ms_lens_brand": "Leica Summilux-C",
+   "ms_mood": "nostalgic"
+  },
+  "expected": "Silhouetted in doorway. Burrowing into the ground. Interior transitioning to exterior. On a neon grid, Tron-like digital plane. Tilt-shift miniature effect. World music, ethnic percussion."
+ },
+ {
+  "fields": {
+   "color_grade": "day for night",
+   "abstract_environment": "on a neon grid, Tron-like digital plane",
+   "ms_documentary_style": "cinéma vérité documentary",
+   "movement": "steadicam",
+   "creature_body": "centauroid, human upper body with animal lower body",
+   "build": "petite",
+   "hair_style": "braided hair"
+  },
+  "expected": "Petite, braided hair, centauroid, human upper body with animal lower body. On a neon grid, Tron-like digital plane. Steadicam camera movement. Day for night."
+ },
+ {
+  "fields": {
+   "veh_type": "car",
+   "ms_genre": "war",
+   "ms_documentary_style": "biographical documentary",
+   "creature_skin": "stone-like, rocky surface",
+   "veh_subtype": "road bike",
+   "veh_era": "futuristic",
+   "camera_body": "shot on Canon Scoopic 16mm",
+   "prod_staging": "on a dark reflective surface, dramatic rim lighting, moody",
+   "ms_commercial_type": "food commercial",
+   "ms_lens_brand": "Kowa Anamorphic vintage"
+  },
+  "expected": "Stone-like, rocky surface, on a dark reflective surface, dramatic rim lighting, moody, road bike, futuristic. Shot on Canon Scoopic 16mm."
+ },
+ {
+  "fields": {
+   "obj_scale": "tabletop size",
+   "ms_animation_style": "claymation animation",
+   "ms_pacing": "in reverse motion",
+   "art_condition": "weathered by the elements, outdoor patina",
+   "creature_subtype": "pelican",
+   "isolation": "isolated on a pure black background, void, no reflections",
+   "botan_type": "seed pod, splitting open",
+   "music_genre": "jazz score",
+   "veh_condition": "battle-worn, scarred",
+   "cloth_fabric": "sequined, covered in reflective discs",
+   "age_range": "a child"
+  },
+  "expected": "A child, pelican, tabletop size, sequined, covered in reflective discs, weathered by the elements, outdoor patina, seed pod, splitting open, battle-worn, scarred. Isolated on a pure black background, void, no reflections. Jazz score."
+ },
+ {
+  "fields": {
+   "obj_material": "metal surface",
+   "ms_color_grade": "teal and orange",
+   "art_condition": "aged, cracked varnish, yellowed with time",
+   "lens_brand": "Bausch & Lomb Super Baltar vintage",
+   "age_range": "in their 40s",
+   "color_science": "Sony S-Log3 flat log footage, ungraded",
+   "shot_type": "medium close-up",
+   "social_media_style": "tutorial how-to video"
+  },
+  "expected": "In their 40s, metal surface, aged, cracked varnish, yellowed with time. Medium close-up. Sony S-Log3 flat log footage, ungraded, Bausch & Lomb Super Baltar vintage."
+ },
+ {
+  "fields": {
+   "creature_body": "centauroid, human upper body with animal lower body",
+   "botan_detail": "bioluminescent, softly glowing",
+   "food_presentation": "street food, casual handheld",
+   "ms_animation_style": "motion graphics animation",
+   "ms_lighting_style": "low contrast lighting",
+   "film_stock": "Ektachrome E100 slide film colors, clean cool tones"
+  },
+  "expected": "Centauroid, human upper body with animal lower body, street food, casual handheld, bioluminescent, softly glowing. Ektachrome E100 slide film colors, clean cool tones."
+ },
+ {
+  "fields": {
+   "interaction_type": "confrontation between characters",
+   "land_scale": "infinite horizon, endless expanse",
+   "veh_condition": "chrome polished, gleaming"
+  },
+  "expected": "Chrome polished, gleaming, infinite horizon, endless expanse. Confrontation between characters."
+ },
+ {
+  "fields": {
+   "art_medium": "ceramic, pottery artwork",
+   "color_science": "Canon C-Log3 flat log footage, ungraded",
+   "sfx_interior": "glass clinking, bar ambience"
+  },
+  "expected": "Ceramic, pottery artwork. Canon C-Log3 flat log footage, ungraded. Glass clinking, bar ambience."
+ },
+ {
+  "fields": {
+   "cloth_presentation": "caught in wind, fabric flowing freely",
+   "cloth_fit": "oversized, exaggerated proportions",
+   "social_media_style": "unboxing video",
+   "ms_lighting_style": "rim light",
+   "creature_category": "undead creature",
+   "animation_style": "3D CGI animation",
+   "genre": "thriller",
+   "framing": "in the midground",
+   "creature_skin": "armored exoskeleton"
+  },
+  "expected": "In the midground, undead creature, armored exoskeleton, caught in wind, fabric flowing freely, oversized, exaggerated proportions."
+ },
+ {
+  "fields": {
+   "shot_type": "top-down god shot, extreme overhead graphic composition",
+   "hair_color": "gray hair",
+   "ms_lighting_type": "window light",
+   "dof": "shallow depth of field, bokeh",
+   "ms_dof": "shallow depth of field, bokeh",
+   "veh_condition": "battle-worn, scarred",
+   "art_setting": "at auction, on an easel",
+   "cloth_fit": "layered, multiple pieces stacked",
+   "env_time": "night",
+   "cloth_fabric": "lace, delicate openwork",
+   "format": "surveillance CCTV",
+   "animation_style": "mixed media animation",
+   "ms_pacing": "speed ramp from slow to fast",
+   "ms_genre": "cyberpunk"
+  },
+  "expected": "Surveillance CCTV. Gray hair, lace, delicate openwork, layered, multiple pieces stacked, at auction, on an easel, battle-worn, scarred. Night. Top-down god shot, extreme overhead graphic composition. Shallow depth of field, bokeh."
+ },
+ {
+  "fields": {
+   "ms_lens_filter": "fog filter",
+   "ms_color_grade": "cross-processed colors",
+   "botan_stage": "decaying, returning to earth",
+   "movement_type": "swimming",
+   "media_type": "music video",
+   "obj_material": "plastic surface",
+   "ms_lighting_type": "artificial light",
+   "movement": "dolly",
+   "hair_style": "shoulder-length hair",
+   "isolation": "isolated on a clean white studio background, white cyclorama, no shadows",
+   "format": "Super 8mm film",
+   "prod_material": "brushed metal finish",
+   "setting": "exterior",
+   "creature_body": "serpentine, elongated body"
+  },
+  "expected": "Music video. Super 8mm film. Shoulder-length hair, serpentine, elongated body, plastic surface, brushed metal finish, decaying, returning to earth. Swimming. Exterior. Isolated on a clean white studio background, white cyclorama, no shadows. Dolly camera movement."
+ },
+ {
+  "fields": {
+   "camera_body": "shot on Panavision Panaflex",
+   "framing": "framed in reflection, seen through mirror or glass",
+   "build": "athletic build",
+   "art_medium": "photography print, framed",
+   "animation_style": "paper cut-out animation",
+   "lens_brand": "Panavision G-Series Anamorphic",
+   "sfx_environment": "distant sirens",
+   "food_state": "sizzling on a hot surface",
+   "ms_color_grade": "day for night",
+   "location_type": "stairwell",
+   "media_type": "documentary",
+   "veh_subtype": "cruiser motorcycle",
+   "hair_color": "white hair",
+   "ms_commercial_type": "celebrity interview commercial",
+   "cloth_fabric": "leather, supple hide",
+   "creature_category": "alien creature",
+   "sfx_dramatic": "alarm blaring",
+   "ms_media_type": "avant-garde"
+  },
+  "expected": "Documentary. Athletic build, white hair; framed in reflection, seen through mirror or glass, alien creature, sizzling on a hot surface, leather, supple hide, photography print, framed, cruiser motorcycle. Stairwell. Shot on Panavision Panaflex, Panavision G-Series Anamorphic. Distant sirens. Alarm blaring."
+ },
+ {
+  "fields": {
+   "ms_format": "16mm film",
+   "creature_body": "quadruped, four-legged",
+   "build": "heavy build",
+   "commercial_type": "fashion commercial",
+   "ms_mood": "bittersweet",
+   "documentary_style": "true crime documentary",
+   "creature_size": "small, hand-sized",
+   "lighting_style": "silhouette lighting",
+   "abs_movement": "pulsing rhythmically",
+   "weather": "overcast, flat light",
+   "food_state": "raw, uncooked",
+   "hair_color": "black hair",
+   "setting": "interior"
+  },
+  "expected": "Heavy build, black hair, small, hand-sized, quadruped, four-legged, raw, uncooked, pulsing rhythmically. Interior. Overcast, flat light. Silhouette lighting."
+ },
+ {
+  "fields": {
+   "land_scale": "vast panoramic landscape",
+   "sfx_mechanical": "electrical buzzing and sparking",
+   "ms_documentary_style": "observational documentary",
+   "shot_type": "reaction shot, subject responding to off-screen action",
+   "weather": "rain",
+   "ms_lighting_type": "candlelight",
+   "camera_body": "shot on Arriflex 35 BL",
+   "veh_type": "aircraft",
+   "ms_pacing": "frozen in time, completely still",
+   "focal_length": "100mm lens",
+   "abstract_environment": "against a void black background, infinite darkness",
+   "isolation": "isolated on a clean white studio background, white cyclorama, no shadows",
+   "social_media_style": "tutorial how-to video",
+   "prod_staging": "on a clean white surface, soft studio lighting, subtle shadow",
+   "ms_film_stock": "Lomography Color 400 film, saturated unpredictable colors",
+   "pacing": "frozen in time, completely still"
+  },
+  "expected": "On a clean white surface, soft studio lighting, subtle shadow, aircraft, vast panoramic landscape. Frozen in time, completely still. Isolated on a clean white studio background, white cyclorama, no shadows. Against a void black background, infinite darkness. Rain. Reaction shot, subject responding to off-screen action. Shot on Arriflex 35 BL, 100mm lens. Electrical buzzing and sparking."
+ },
+ {
+  "fields": {
+   "lighting_style": "butterfly lighting",
+   "age_range": "a child",
+   "cloth_fabric": "sequined, covered in reflective discs"
+  },
+  "expected": "A child, sequined, covered in reflective discs. Butterfly lighting."
+ },
+ {
+  "fields": {
+   "ms_lens_filter": "infrared filter",
+   "hair_style": "shoulder-length hair",
+   "land_scale": "vast panoramic landscape",
+   "weather": "wind, movement in air",
+   "sfx_interior": "restaurant ambience, cutlery and murmur",
+   "ms_media_type": "corporate",
+   "botan_type": "succulent, fleshy leaves",
+   "age_range": "in their teens"
+  },
+  "expected": "In their teens, shoulder-length hair, succulent, fleshy leaves, vast panoramic landscape. Wind, movement in air. Restaurant ambience, cutlery and murmur."
+ },
+ {
+  "fields": {
+   "cloth_fit": "oversized, exaggerated proportions",
+   "build": "heavy build",
+   "pacing": "frozen in time, completely still",
+   "veh_condition": "rusty, abandoned",
+   "music_mood": "tense, building suspense",
+   "interaction_type": "objects interacting with each other",
+   "obj_condition": "damaged, broken",
+   "ms_film_stock": "Kodachrome 64 film colors, rich warm reds and deep blues",
+   "art_medium": "stained glass",
+   "ms_animation_style": "motion graphics animation",
+   "ms_mood": "ethereal",
+   "obj_material": "stone surface",
+   "ms_format": "infrared film"
+  },
+  "expected": "Heavy build, stone surface, damaged, broken, oversized, exaggerated proportions, stained glass, rusty, abandoned. Frozen in time, completely still. Objects interacting with each other. Tense, building suspense."
+ },
+ {
+  "fields": {
+   "ms_film_stock": "Kodak Ultramax 400 film colors, contrasty warm",
+   "food_state": "raw, uncooked",
+   "botan_stage": "sprouting, first growth pushing through",
+   "media_type": "broadcast news",
+   "music_mood": "romantic, tender",
+   "sfx_mechanical": "camera shutter clicking",
+   "shot_type": "wide shot",
+   "abs_movement": "shattering, fragmenting"
+  },
+  "expected": "Broadcast news. Raw, uncooked, sprouting, first growth pushing through, shattering, fragmenting. Wide shot. Camera shutter clicking. Romantic, tender."
+ },
+ {
+  "fields": {
+   "documentary_style": "historical documentary",
+   "ms_media_type": "educational",
+   "veh_condition": "rusty, abandoned",
+   "shot_type": "POV, point of view",
+   "lighting_type": "window light",
+   "isolation": "isolated on a pure black background, void, no reflections"
+  },
+  "expected": "Rusty, abandoned. Isolated on a pure black background, void, no reflections. POV, point of view. Window light."
+ },
+ {
+  "fields": {
+   "ms_film_stock": "Kodak Vision3 250D cinema film, daylight balanced",
+   "abs_movement": "shattering, fragmenting",
+   "cloth_presentation": "folded neatly",
+   "creature_skin": "armored exoskeleton",
+   "art_setting": "at auction, on an easel",
+   "hair_style": "straight hair",
+   "veh_subtype": "dump truck",
+   "build": "slim build",
+   "color_grade": "Technicolor",
+   "dof": "shallow depth of field, bokeh"
+  },
+  "expected": "Slim build, straight hair, armored exoskeleton, folded neatly, at auction, on an easel, dump truck, shattering, fragmenting. Shallow depth of field, bokeh. Technicolor."
+ },
+ {
+  "fields": {
+   "pacing": "in reverse motion",
+   "film_stock": "Kodak Ultramax 400 film colors, contrasty warm",
+   "creature_body": "aquatic, streamlined for water",
+   "lens_filter": "Hollywood Black Magic filter",
+   "lighting_style": "hard light",
+   "veh_subtype": "cafe racer",
+   "obj_scale": "massive, monumental",
+   "sfx_environment": "forest ambience, rustling leaves",
+   "ms_dof": "tilt-shift miniature effect",
+   "ms_genre": "thriller",
+   "sfx_interior": "room tone, quiet interior",
+   "color_science": "RED Log3G10 flat log footage, ungraded",
+   "ms_mood": "bittersweet",
+   "abs_quality": "crystalline",
+   "ms_camera_body": "shot on Sony FX6"
+  },
+  "expected": "Aquatic, streamlined for water, massive, monumental, cafe racer, crystalline. In reverse motion. RED Log3G10 flat log footage, ungraded, Hollywood Black Magic filter. Hard light. Kodak Ultramax 400 film colors, contrasty warm. Forest ambience, rustling leaves. Room tone, quiet interior."
+ },
+ {
+  "fields": {
+   "cloth_fabric": "sequined, covered in reflective discs",
+   "sfx_mechanical": "engine rumbling",
+   "obj_scale": "large, imposing",
+   "creature_body": "avian, bird-like body",
+   "abstract_environment": "surrounded by dense fog and mist",
+   "weather": "mist, haze",
+   "prod_condition": "unboxing, fresh from packaging",
+   "lighting_type": "practical light",
+   "obj_condition": "pristine, brand new",
+   "dof": "shallow depth of field, bokeh",
+   "commercial_type": "pet commercial",
+   "media_type": "avant-garde",
+   "creature_category": "wild animal",
+   "creature_skin": "fur-covered",
+   "sfx_environment": "wind blowing",
+   "interaction_type": "two characters in dialogue",
+   "sfx_interior": "room tone, quiet interior"
+  },
+  "expected": "Avant-garde. Wild animal, avian, bird-like body, fur-covered, pristine, brand new, large, imposing, unboxing, fresh from packaging, sequined, covered in reflective discs. Two characters in dialogue. Surrounded by dense fog and mist. Mist, haze. Shallow depth of field, bokeh. Practical light. Wind blowing. Room tone, quiet interior. Engine rumbling."
+ },
+ {
+  "fields": {
+   "ms_lighting_type": "daylight",
+   "lens_filter": "fog filter",
+   "ms_camera_body": "shot on GoPro",
+   "format": "anamorphic 35mm film",
+   "weather": "clear sky",
+   "creature_size": "tiny, insect-sized",
+   "cloth_fit": "fitted, body-hugging",
+   "movement_type": "being plated, chef arranging on plate"
+  },
+  "expected": "Anamorphic 35mm film. Tiny, insect-sized, fitted, body-hugging. Being plated, chef arranging on plate. Clear sky. Fog filter."
+ },
+ {
+  "fields": {
+   "ms_lens_filter": "ND filter",
+   "creature_subtype": "songbird",
+   "prod_staging": "flat lay arrangement, overhead view",
+   "creature_category": "bird",
+   "art_medium": "watercolor on paper",
+   "veh_condition": "showroom condition",
+   "lens_filter": "Classic Soft diffusion filter",
+   "obj_condition": "aged, vintage patina",
+   "media_type": "behind-the-scenes",
+   "food_texture": "fizzy, carbonated bubbles rising",
+   "prod_condition": "well-loved, showing character from use",
+   "botan_type": "tree, branches and leaves",
+   "movement_type": "swimming through water"
+  },
+  "expected": "Behind-the-scenes. Bird, songbird, aged, vintage patina, flat lay arrangement, overhead view, well-loved, showing character from use, fizzy, carbonated bubbles rising, watercolor on paper, tree, branches and leaves, showroom condition. Swimming through water. Classic Soft diffusion filter."
+ },
+ {
+  "fields": {
+   "color_science": "Blackmagic RAW flat log footage, ungraded",
+   "format": "digital",
+   "ms_media_type": "cinematic",
+   "creature_body": "serpentine, elongated body",
+   "lens_brand": "Hawk V-Lite Anamorphic",
+   "interaction_type": "transformation",
+   "lighting_style": "rim light",
+   "camera_body": "shot on Blackmagic Pocket Cinema Camera 6K",
+   "movement_type": "burrowing into the ground",
+   "creature_subtype": "heron",
+   "food_texture": "creamy, smooth"
+  },
+  "expected": "Digital. Heron, serpentine, elongated body, creamy, smooth. Burrowing into the ground. Transformation. Shot on Blackmagic Pocket Cinema Camera 6K in RAW, flat log footage, ungraded, Hawk V-Lite Anamorphic. Rim light."
+ },
+ {
+  "fields": {
+   "sfx_environment": "birds singing, nature ambience",
+   "ms_media_type": "found footage",
+   "weather": "humid, tropical heat",
+   "obj_material": "wood grain",
+   "ms_film_stock": "CineStill 800T film colors, halation glow on highlights"
+  },
+  "expected": "Wood grain. Humid, tropical heat. Birds singing, nature ambience."
+ },
+ {
+  "fields": {
+   "genre": "experimental",
+   "ms_dof": "shallow depth of field, bokeh",
+   "sfx_environment": "city traffic and urban noise",
+   "ms_lens_brand": "Panavision Primo",
+   "ms_social_media_style": "day in the life video",
+   "obj_scale": "massive, monumental"
+  },
+  "expected": "Massive, monumental. City traffic and urban noise."
+ },
+ {
+  "fields": {
+   "music_video_style": "narrative music video",
+   "pacing": "in real-time",
+   "obj_material": "stone surface",
+   "cloth_presentation": "on a mannequin",
+   "sfx_dramatic": "heartbeat, slow and heavy",
+   "creature_skin": "slimy, wet surface",
+   "veh_condition": "showroom condition",
+   "prod_staging": "on a clean white surface, soft studio lighting, subtle shadow",
+   "sfx_mechanical": "elevator ding and doors",
+   "abs_movement": "shattering, fragmenting",
+   "framing": "tiny figure dwarfed by surrounding architecture, off-center",
+   "abs_quality": "fractal",
+   "ms_lighting_type": "fire light",
+   "setting": "interior transitioning to exterior",
+   "isolation": "isolated on a clean white studio background, white cyclorama, no shadows"
+  },
+  "expected": "Tiny figure dwarfed by surrounding architecture, off-center, slimy, wet surface, stone surface, on a clean white surface, soft studio lighting, subtle shadow, on a mannequin, showroom condition, fractal, shattering, fragmenting. In real-time. Interior transitioning to exterior. Isolated on a clean white studio background, white cyclorama, no shadows. Elevator ding and doors. Heartbeat, slow and heavy."
+ },
+ {
+  "fields": {
+   "cloth_fit": "structured, sharp tailoring",
+   "ms_format": "MiniDV",
+   "art_medium": "marble sculpture",
+   "isolation": "isolated on a pure black background, void, no reflections",
+   "ms_music_video_style": "one-take music video",
+   "veh_subtype": "steam locomotive",
+   "movement_type": "bouncing",
+   "art_setting": "displayed in a home, living space",
+   "movement": "static",
+   "sfx_interior": "echoing hallway, reverberant space",
+   "veh_type": "boat",
+   "food_presentation": "scattered ingredients, mise en place",
+   "ms_camera_body": "shot on Panasonic GH5",
+   "creature_skin": "feathered",
+   "genre": "gothic",
+   "animation_style": "rotoscope animation",
+   "framing": "pushed to extreme edge of frame with vast negative space",
+   "sfx_dramatic": "ringing ears, tinnitus after loud event",
+   "abs_movement": "shattering, fragmenting",
+   "obj_scale": "massive, monumental"
+  },
+  "expected": "Pushed to extreme edge of frame with vast negative space, feathered, massive, monumental, scattered ingredients, mise en place, structured, sharp tailoring, marble sculpture, displayed in a home, living space, steam locomotive, shattering, fragmenting. Bouncing. Isolated on a pure black background, void, no reflections. Locked-off static camera. Echoing hallway, reverberant space. Ringing ears, tinnitus after loud event."
+ },
+ {
+  "fields": {
+   "creature_subtype": "hippo",
+   "botan_detail": "rain-soaked, water droplets clinging",
+   "obj_condition": "pristine, brand new",
+   "abs_quality": "glitch",
+   "commercial_type": "makeup cosmetics commercial",
+   "media_type": "music video",
+   "food_state": "chilled, condensation on glass",
+   "location_type": "highway",
+   "veh_condition": "weathered, worn from use",
+   "hair_color": "gray hair",
+   "color_science": "Blackmagic RAW flat log footage, ungraded"
+  },
+  "expected": "Music video. Gray hair, hippo, pristine, brand new, chilled, condensation on glass, rain-soaked, water droplets clinging, weathered, worn from use, glitch. Highway. Blackmagic RAW flat log footage, ungraded."
+ },
+ {
+  "fields": {
+   "botan_type": "succulent, fleshy leaves",
+   "ms_documentary_style": "observational documentary",
+   "creature_category": "undead creature",
+   "focal_length": "18mm lens",
+   "abs_quality": "fluid",
+   "food_state": "steaming hot, steam rising",
+   "location_type": "desert",
+   "obj_condition": "polished, gleaming",
+   "interaction_type": "character interacting with crowd",
+   "abstract_environment": "on a studio cyclorama, seamless studio backdrop",
+   "ms_media_type": "avant-garde",
+   "art_condition": "aged, cracked varnish, yellowed with time",
+   "obj_scale": "miniature, tiny",
+   "mood": "dreamlike",
+   "ms_color_grade": "black and white",
+   "social_media_style": "mukbang eating video",
+   "creature_size": "medium-sized"
+  },
+  "expected": "Undead creature, medium-sized, polished, gleaming, miniature, tiny, steaming hot, steam rising, aged, cracked varnish, yellowed with time, succulent, fleshy leaves, fluid. Character interacting with crowd. Desert. On a studio cyclorama, seamless studio backdrop. 18mm lens."
+ },
+ {
+  "fields": {
+   "ms_color_science": "Sony S-Log3 flat log footage, ungraded",
+   "documentary_style": "observational documentary",
+   "ms_media_type": "avant-garde",
+   "ms_mood": "whimsical",
+   "ms_music_video_style": "experimental music video",
+   "obj_scale": "handheld size",
+   "abstract_environment": "against a void black background, infinite darkness",
+   "lighting_style": "high-key lighting",
+   "build": "petite",
+   "veh_condition": "weathered, worn from use",
+   "shot_type": "cowboy shot, framed from mid-thigh up",
+   "prod_staging": "surrounded by complementary props",
+   "ms_documentary_style": "nature documentary",
+   "ms_pacing": "speed ramp from fast to slow",
+   "music_genre": "jazz score",
+   "creature_subtype": "snake"
+  },
+  "expected": "Petite, snake, handheld size, surrounded by complementary props, weathered, worn from use. Against a void black background, infinite darkness. Cowboy shot, framed from mid-thigh up. High-key lighting. Jazz score."
+ },
+ {
+  "fields": {
+   "setting": "interior",
+   "lens_brand": "Angenieux Optimo zoom",
+   "abs_quality": "organic",
+   "art_medium": "stained glass",
+   "ms_lighting_style": "top light",
+   "botan_detail": "sun-bleached, faded by light"
+  },
+  "expected": "Stained glass, sun-bleached, faded by light, organic. Interior. Angenieux Optimo zoom."
+ },
+ {
+  "fields": {
+   "veh_subtype": "private jet",
+   "art_setting": "outdoors, public installation",
+   "age_range": "in their 50s",
+   "creature_body": "aquatic, streamlined for water",
+   "land_scale": "medium vista",
+   "commercial_type": "military defense commercial",
+   "lighting_style": "chiaroscuro",
+   "hair_style": "shoulder-length hair",
+   "color_grade": "desaturated",
+   "ms_film_stock": "CineStill 800T film colors, halation glow on highlights",
+   "ms_lighting_type": "artificial light",
+   "ms_animation_style": "paper cut-out animation"
+  },
+  "expected": "In their 50s, shoulder-length hair, aquatic, streamlined for water, outdoors, public installation, private jet, medium vista. Chiaroscuro. Desaturated."
+ },
+ {
+  "fields": {
+   "creature_skin": "stone-like, rocky surface",
+   "shot_type": "full shot, head to toe",
+   "dof": "deep focus",
+   "interaction_type": "reaction to environment",
+   "ms_film_stock": "Kodak Portra 160 film colors, soft warm tones",
+   "sfx_interior": "footsteps on hard floor",
+   "ms_lighting_style": "hard light",
+   "music_genre": "orchestral score",
+   "creature_category": "alien creature",
+   "ms_animation_style": "stop motion animation",
+   "veh_type": "bicycle",
+   "art_setting": "displayed in a home, living space"
+  },
+  "expected": "Alien creature, stone-like, rocky surface, displayed in a home, living space, bicycle. Reaction to environment. Full shot, head to toe. Deep focus. Footsteps on hard floor. Orchestral score."
+ },
+ {
+  "fields": {
+   "ms_social_media_style": "mukbang eating video",
+   "sfx_environment": "snow falling, muffled silence",
+   "film_stock": "Fujifilm Velvia 100 slide film, saturated colors",
+   "focal_length": "12mm lens",
+   "ms_animation_style": "2D traditional animation"
+  },
+  "expected": "12mm lens. Fujifilm Velvia 100 slide film, saturated colors. Snow falling, muffled silence."
+ },
+ {
+  "fields": {
+   "sfx_environment": "wind blowing",
+   "veh_subtype": "raft",
+   "ms_dof": "shallow depth of field, bokeh",
+   "creature_subtype": "owl",
+   "camera_body": "shot on Canon EOS 5D Mark II",
+   "color_grade": "bleach bypass, desaturated contrast",
+   "ms_lighting_type": "fire light",
+   "prod_staging": "surrounded by complementary props",
+   "ms_animation_style": "2D traditional animation"
+  },
+  "expected": "Owl, surrounded by complementary props, raft. Shot on Canon EOS 5D Mark II. Bleach bypass, desaturated contrast. Wind blowing."
+ },
+ {
+  "fields": {
+   "movement": "orbit",
+   "botan_detail": "frost-edged, ice crystals on petals",
+   "music_mood": "ominous, foreboding",
+   "land_scale": "medium vista"
+  },
+  "expected": "Frost-edged, ice crystals on petals, medium vista. Orbit camera movement. Ominous, foreboding."
+ },
+ {
+  "fields": {
+   "pacing": "in extreme slow motion",
+   "food_presentation": "scattered ingredients, mise en place",
+   "ms_commercial_type": "pharmaceutical commercial",
+   "age_range": "in their 70s",
+   "art_setting": "at auction, on an easel",
+   "color_grade": "vintage film look"
+  },
+  "expected": "In their 70s, scattered ingredients, mise en place, at auction, on an easel. In extreme slow motion. Vintage film look."
+ },
+ {
+  "fields": {
+   "land_scale": "infinite horizon, endless expanse",
+   "sfx_dramatic": "ringing ears, tinnitus after loud event",
+   "env_time": "blue hour",
+   "ms_genre": "western",
+   "creature_size": "large",
+   "ms_lens_filter": "streak filter, anamorphic flare",
+   "veh_type": "aircraft",
+   "art_condition": "aged, cracked varnish, yellowed with time",
+   "format": "digital"
+  },
+  "expected": "Digital. Large, aged, cracked varnish, yellowed with time, aircraft, infinite horizon, endless expanse. Blue hour. Ringing ears, tinnitus after loud event."
+ },
+ {
+  "fields": {
+   "ms_color_grade": "Technicolor",
+   "pacing": "time-lapse",
+   "music_genre": "blues, slow guitar",
+   "ms_music_video_style": "experimental music video",
+   "food_presentation": "fine dining plating, elegant arrangement",
+   "art_medium": "watercolor on paper",
+   "ms_format": "35mm film",
+   "lens_filter": "streak filter, anamorphic flare"
+  },
+  "expected": "Fine dining plating, elegant arrangement, watercolor on paper. Time-lapse. Streak filter, anamorphic flare. Blues, slow guitar."
+ },
+ {
+  "fields": {
+   "ms_genre": "western",
+   "movement": "dolly zoom, vertigo effect",
+   "creature_skin": "bioluminescent, glowing",
+   "interaction_type": "two characters in dialogue",
+   "ms_documentary_style": "science documentary",
+   "prod_condition": "limited edition, special colorway",
+   "ms_lighting_style": "edge light",
+   "film_stock": "Kodachrome 64 film colors, rich warm reds and deep blues",
+   "botan_stage": "sprouting, first growth pushing through"
+  },
+  "expected": "Bioluminescent, glowing, limited edition, special colorway, sprouting, first growth pushing through. Two characters in dialogue. Dolly zoom, vertigo effect camera movement. Kodachrome 64 film colors, rich warm reds and deep blues."
+ },
+ {
+  "fields": {
+   "ms_color_science": "ARRI LogC3 flat log footage, ungraded",
+   "art_medium": "digital art on display screen",
+   "location_type": "museum, gallery",
+   "ms_documentary_style": "war conflict documentary",
+   "abs_movement": "floating, suspended",
+   "lens_brand": "Canon K-35",
+   "creature_skin": "stone-like, rocky surface",
+   "prod_condition": "well-loved, showing character from use",
+   "veh_condition": "battle-worn, scarred",
+   "social_media_style": "product review video",
+   "framing": "walking toward camera",
+   "obj_material": "stone surface",
+   "art_condition": "pristine, museum-quality condition",
+   "ms_mood": "ominous"
+  },
+  "expected": "Walking toward camera, stone-like, rocky surface, stone surface, well-loved, showing character from use, digital art on display screen, pristine, museum-quality condition, battle-worn, scarred, floating, suspended. Museum, gallery. Canon K-35."
+ },
+ {
+  "fields": {
+   "land_scale": "infinite horizon, endless expanse",
+   "botan_detail": "rain-soaked, water droplets clinging",
+   "media_type": "corporate",
+   "ms_color_grade": "warm tones",
+   "music_video_style": "performance music video",
+   "dof": "deep focus",
+   "shot_type": "low angle shot, looking up at the subject",
+   "creature_skin": "scaled",
+   "animation_style": "cel-shaded animation",
+   "setting": "interior transitioning to exterior",
+   "social_media_style": "tutorial how-to video",
+   "ms_genre": "western",
+   "build": "tall",
+   "music_mood": "triumphant, victorious",
+   "sfx_interior": "fireplace crackling",
+   "ms_lens_filter": "circular polarizer CPL filter",
+   "creature_size": "massive, elephant-sized",
+   "format": "35mm film"
+  },
+  "expected": "Corporate. 35mm film. Tall, massive, elephant-sized, scaled, rain-soaked, water droplets clinging, infinite horizon, endless expanse. Interior transitioning to exterior. Low angle shot, looking up at the subject. Deep focus. Fireplace crackling. Triumphant, victorious."
+ },
+ {
+  "fields": {
+   "ms_media_type": "social media",
+   "food_presentation": "poured into glass, layered drink",
+   "ms_lens_filter": "graduated ND filter",
+   "mood": "dreamlike",
+   "dof": "tilt-shift miniature effect",
+   "cloth_presentation": "on a model walking runway",
+   "setting": "exterior",
+   "art_setting": "displayed in a home, living space",
+   "hair_style": "braided hair",
+   "sfx_mechanical": "machinery humming, factory sounds",
+   "abs_movement": "floating, suspended",
+   "color_grade": "muted earth tones",
+   "ms_dof": "tilt-shift miniature effect"
+  },
+  "expected": "Braided hair, poured into glass, layered drink, on a model walking runway, displayed in a home, living space, floating, suspended. Exterior. Tilt-shift miniature effect. Muted earth tones. Machinery humming, factory sounds."
+ },
+ {
+  "fields": {
+   "creature_subtype": "tropical fish",
+   "prod_condition": "unboxing, fresh from packaging",
+   "abstract_environment": "against a void black background, infinite darkness",
+   "veh_condition": "rusty, abandoned",
+   "prod_staging": "on a clean white surface, soft studio lighting, subtle shadow",
+   "music_mood": "driving, relentless energy",
+   "env_time": "blue hour",
+   "age_range": "in their 70s",
+   "veh_era": "racing"
+  },
+  "expected": "In their 70s, tropical fish, on a clean white surface, soft studio lighting, subtle shadow, unboxing, fresh from packaging, racing, rusty, abandoned. Against a void black background, infinite darkness. Blue hour. Driving, relentless energy."
+ },
+ {
+  "fields": {
+   "art_medium": "ceramic, pottery artwork",
+   "social_media_style": "haul video",
+   "ms_music_video_style": "performance music video",
+   "lens_filter": "streak filter, anamorphic flare",
+   "genre": "cyberpunk",
+   "env_time": "midday, sun overhead",
+   "art_setting": "in an artist's studio, work in progress",
+   "obj_material": "metal surface",
+   "setting": "exterior transitioning to interior",
+   "format": "Super 8mm film"
+  },
+  "expected": "Super 8mm film. Metal surface, ceramic, pottery artwork, in an artist's studio, work in progress. Exterior transitioning to interior. Midday, sun overhead. Streak filter, anamorphic flare."
+ },
+ {
+  "fields": {
+   "ms_genre": "gothic",
+   "land_scale": "infinite horizon, endless expanse",
+   "art_condition": "freshly created, paint still wet",
+   "ms_dof": "tilt-shift miniature effect",
+   "location_type": "bridge",
+   "media_type": "broadcast news",
+   "ms_commercial_type": "sports athletic commercial",
+   "animation_style": "paper cut-out animation",
+   "sfx_interior": "glass clinking, bar ambience"
+  },
+  "expected": "Broadcast news. Freshly created, paint still wet, infinite horizon, endless expanse. Bridge. Glass clinking, bar ambience."
+ },
+ {
+  "fields": {
+   "ms_camera_body": "shot on IMAX 65mm",
+   "abstract_environment": "inside a flowing data stream, digital matrix",
+   "shot_type": "medium shot",
+   "ms_commercial_type": "beverage commercial",
+   "framing": "entering frame from right",
+   "ms_media_type": "documentary",
+   "ms_music_video_style": "one-take music video"
+  },
+  "expected": "Entering frame from right. Inside a flowing data stream, digital matrix. Medium shot."
+ },
+ {
+  "fields": {
+   "ms_film_stock": "Ilford Delta 3200 black and white, heavy grain high ISO",
+   "movement_type": "dissolving",
+   "camera_body": "shot on iPhone",
+   "art_condition": "aged, cracked varnish, yellowed with time",
+   "botan_stage": "in full bloom, peak growth"
+  },
+  "expected": "Aged, cracked varnish, yellowed with time, in full bloom, peak growth. Dissolving. Shot on iPhone."
+ },
+ {
+  "fields": {
+   "ms_film_stock": "Kodak T-Max 400 black and white, sharp grain",
+   "ms_genre": "action",
+   "creature_subtype": "elephant",
+   "social_media_style": "vlog style video",
+   "music_video_style": "experimental music video",
+   "format": "Super 8mm film",
+   "creature_skin": "scaled"
+  },
+  "expected": "Super 8mm film. Elephant, scaled."
+ },
+ {
+  "fields": {
+   "ms_music_video_style": "live concert music video",
+   "ms_lens_filter": "diopter close-up filter",
+   "botan_stage": "decaying, returning to earth",
+   "focal_length": "8mm fisheye lens",
+   "hair_style": "long hair",
+   "lens_brand": "Bausch & Lomb Super Baltar vintage",
+   "pacing": "speed ramp from fast to slow",
+   "ms_dof": "deep focus",
+   "veh_type": "bicycle",
+   "setting": "exterior",
+   "obj_scale": "massive, monumental",
+   "abstract_environment": "on a neon grid, Tron-like digital plane",
+   "prod_staging": "on a dark reflective surface, dramatic rim lighting, moody",
+   "creature_body": "winged, with large wings",
+   "art_medium": "digital art on display screen"
+  },
+  "expected": "Long hair, winged, with large wings, massive, monumental, on a dark reflective surface, dramatic rim lighting, moody, digital art on display screen, decaying, returning to earth, bicycle. Speed ramp from fast to slow. Exterior. On a neon grid, Tron-like digital plane. 8mm fisheye Bausch & Lomb Super Baltar vintage."
+ },
+ {
+  "fields": {
+   "music_video_style": "abstract visual music video",
+   "art_setting": "in an artist's studio, work in progress",
+   "media_type": "avant-garde",
+   "film_stock": "CineStill 50D film colors, fine grain daylight",
+   "abs_movement": "rippling outward",
+   "veh_era": "military",
+   "genre": "period drama",
+   "botan_type": "mushroom, fruiting body",
+   "movement": "pull out",
+   "land_scale": "medium vista",
+   "ms_animation_style": "stop motion animation",
+   "documentary_style": "observational documentary",
+   "age_range": "in their 20s"
+  },
+  "expected": "Avant-garde. In their 20s, in an artist's studio, work in progress, mushroom, fruiting body, military, medium vista, rippling outward. Pull out camera movement. CineStill 50D film colors, fine grain daylight."
+ }
+]
