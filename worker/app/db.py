@@ -550,32 +550,66 @@ async def stats() -> dict[str, Any]:
 # API Data Fetchers (Inbox & Drafts)
 # ---------------------------------------------------------------------------
 
-async def get_pending_stories() -> list[dict[str, Any]]:
-    """Fetch stories with status 'inbox', along with their linked items."""
+async def get_pending_stories(*, fresh_hours: int = 48) -> list[dict[str, Any]]:
+    """Fetch only current, source-dated Inbox stories plus manual ideas.
+
+    Historical data stays in the database for audit and deduplication, but a
+    source story is reviewable only when at least one linked item was published
+    inside the current-news window. This prevents a newly-imported old RSS
+    entry from masquerading as breaking news.
+    """
     pool = await get_pool()
     async with pool.connection() as conn:
         # Fetch inbox stories
         stories = await _fetchall(
             conn,
-            "SELECT id, headline, status, channel_id, created_at FROM stories WHERE status = 'inbox' ORDER BY created_at DESC"
+            """
+            SELECT s.id, s.headline, s.status, s.channel_id, s.created_at
+              FROM stories s
+             WHERE s.status = 'inbox'
+               AND (
+                    NOT EXISTS (SELECT 1 FROM story_items si WHERE si.story_id = s.id)
+                    OR EXISTS (
+                        SELECT 1
+                          FROM story_items si
+                          JOIN items i ON i.id = si.item_id
+                         WHERE si.story_id = s.id
+                           AND i.published_at >= now() - make_interval(hours := %s)
+                           AND NOT (i.warnings @> '["date_missing"]'::jsonb)
+                    )
+               )
+             ORDER BY s.created_at DESC
+            """,
+            fresh_hours,
         )
-        
+
         # For each story, fetch its items
         for story in stories:
             items = await _fetchall(
                 conn,
                 """
-                SELECT i.id, i.title, i.url, s.name as source_name, i.published_at 
+                SELECT i.id, i.title, i.url, s.name as source_name, i.published_at
                 FROM items i
                 JOIN story_items si ON i.id = si.item_id
                 JOIN sources s ON i.source_id = s.id
                 WHERE si.story_id = %s
+                  AND i.published_at >= now() - make_interval(hours := %s)
+                  AND NOT (i.warnings @> '["date_missing"]'::jsonb)
                 ORDER BY i.published_at DESC
                 """,
-                story["id"]
+                story["id"], fresh_hours
             )
             story["items"] = items
-            
+    # The source date—not the time a worker happened to import it—decides
+    # what appears first. Manual ideas retain their creation-time ordering.
+    stories.sort(
+        key=lambda story: (
+            story["items"][0]["published_at"]
+            if story["items"]
+            else story["created_at"]
+        ),
+        reverse=True,
+    )
     return stories
 
 
