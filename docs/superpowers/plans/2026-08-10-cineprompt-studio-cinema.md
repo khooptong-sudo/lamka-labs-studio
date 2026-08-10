@@ -57,17 +57,17 @@ CREATE INDEX IF NOT EXISTS idx_cineprompt_generations_created_at
 Run:
 ```powershell
 cd "F:\Content Creation Project"
-docker exec -i fce-db psql -U postgres -d fce -p 5433 -f - < supabase/migrations/011_cineprompt_generations.sql
+docker exec -i fce-db psql -U postgres -d fce -f - < supabase/migrations/011_cineprompt_generations.sql
 ```
 Expected: `CREATE TABLE`, `CREATE INDEX` (or `NOTICE: relation already exists, skipping` on a re-run — the `IF NOT EXISTS` guards make this idempotent).
 
-If the container/port differs from `fce-db`/`5433`, check `docker ps` and `worker/.env`'s `DATABASE_URL` first — don't guess.
+Note: no `-p` flag — `docker exec` runs `psql` inside the container, where Postgres always listens on its own internal 5432 regardless of the host-side port mapping in `docker-compose.yml`. (5433 is a VPS-deploy-only convention from a different Postgres instance on that host; it does not apply here.) If the container name differs from `fce-db`, check `docker ps` first — don't guess.
 
 - [ ] **Step 3: Verify the schema**
 
 Run:
 ```powershell
-docker exec -i fce-db psql -U postgres -d fce -p 5433 -c "\d cineprompt_generations"
+docker exec -i fce-db psql -U postgres -d fce -c "\d cineprompt_generations"
 ```
 Expected: lists all 8 columns and the `idx_cineprompt_generations_created_at` index.
 
