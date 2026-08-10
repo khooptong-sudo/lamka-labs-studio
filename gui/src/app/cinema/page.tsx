@@ -3,11 +3,15 @@
 import { useEffect, useState } from "react";
 import { Loader2, Sparkles, Wand2 } from "lucide-react";
 
-type FieldState = Record<string, string>;
+type FieldState = Record<string, string | string[]>;
 
 const MODES = ["single", "frame_motion"] as const;
 const LEVELS = ["simple", "complex"] as const;
 const MODELS = ["universal", "veo", "sora", "kling", "seedance", "grok", "ltx", "pixverse", "luma", "wan"] as const;
+
+function fieldDisplayValue(value: string | string[]): string {
+  return Array.isArray(value) ? value.join(", ") : value;
+}
 
 export default function CinemaPage() {
   const [description, setDescription] = useState("");
@@ -231,7 +235,7 @@ export default function CinemaPage() {
                 <label key={key} className="text-xs text-[var(--muted)]">
                   {key}
                   <input
-                    value={value}
+                    value={fieldDisplayValue(value)}
                     onChange={(e) => updateField(key, e.target.value)}
                     className="mt-1 min-h-9 w-full rounded-lg border border-border bg-[var(--surface-recessed)] px-2 text-sm text-foreground"
                   />
