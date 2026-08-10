@@ -24,6 +24,16 @@ def test_overlay_extends_and_overrides(tmp_path, monkeypatch):
     assert vocab.values_for("brand_beat") == ["logo settles into frame"]
 
 
+def test_values_for_has_no_duplicates_for_any_field():
+    """base.json carries at least one internal duplicate ('pouring, liquid
+    flowing' appears twice under movement_type) — a React key collision in
+    the GUI picker surfaced this. values_for must dedupe regardless of
+    which source (base, overlay, or both) repeats a value."""
+    for field in vocab.all_fields():
+        values = vocab.values_for(field)
+        assert len(values) == len(set(values)), f"{field} has duplicate values"
+
+
 def test_returned_list_cannot_corrupt_cache():
     got = vocab.values_for("camera_body")
     got.append("not a real value")

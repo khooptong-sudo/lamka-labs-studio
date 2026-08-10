@@ -13,6 +13,31 @@ function fieldDisplayValue(value: string | string[]): string {
   return Array.isArray(value) ? value.join(", ") : value;
 }
 
+// Minor words stay lowercase unless they open or close the string, matching
+// standard title-case style (e.g. Chicago/APA). Applied only to display
+// text — the underlying field/value strings sent to the worker are never
+// altered.
+const TITLE_CASE_MINOR_WORDS = new Set([
+  "a", "an", "the", "is", "at", "of", "in", "on", "to", "for",
+  "and", "or", "but", "nor", "as", "by", "with",
+]);
+
+function toTitleCase(text: string): string {
+  const words = text.replace(/_/g, " ").split(" ").filter(Boolean);
+  return words
+    .map((word, index) => {
+      // Preserve existing acronyms (ARRI, RED, DOF, ...) rather than
+      // re-casing them into "Arri"/"Red"/"Dof".
+      if (word.length > 1 && word === word.toUpperCase() && /[A-Z]/.test(word)) {
+        return word;
+      }
+      const lower = word.toLowerCase();
+      const isMinor = index !== 0 && index !== words.length - 1 && TITLE_CASE_MINOR_WORDS.has(lower);
+      return isMinor ? lower : lower.charAt(0).toUpperCase() + lower.slice(1);
+    })
+    .join(" ");
+}
+
 export default function CinemaPage() {
   const [description, setDescription] = useState("");
   const [mode, setMode] = useState<(typeof MODES)[number]>("single");
@@ -287,7 +312,7 @@ export default function CinemaPage() {
                 <div className="space-y-3 pt-2">
                   {Object.entries(sectionFields).map(([field, { values, free_text }]) => (
                     <div key={field}>
-                      <p className="text-xs text-[var(--muted)]">{field}</p>
+                      <p className="text-xs text-[var(--muted)]">{toTitleCase(field)}</p>
                       {free_text ? (
                         <textarea
                           value={typeof fields[field] === "string" ? (fields[field] as string) : ""}
@@ -308,7 +333,7 @@ export default function CinemaPage() {
                                   : "border-border text-[var(--muted)]"
                               }`}
                             >
-                              {value}
+                              {toTitleCase(value)}
                             </button>
                           ))}
                         </div>
@@ -327,7 +352,7 @@ export default function CinemaPage() {
             <div className="grid gap-2 sm:grid-cols-2">
               {Object.entries(fields).map(([key, value]) => (
                 <label key={key} className="text-xs text-[var(--muted)]">
-                  {key}
+                  {toTitleCase(key)}
                   <input
                     value={fieldDisplayValue(value)}
                     onChange={(e) => updateField(key, e.target.value)}

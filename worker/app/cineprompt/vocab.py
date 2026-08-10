@@ -25,12 +25,15 @@ _CACHE: dict[str, list[str]] = {}
 def values_for(field: str) -> list[str]:
     """Allowed values for a field. Empty list means free text or unknown.
 
+    Deduplicated against both sources: base.json itself carries at least one
+    internal duplicate (a vendor data quality issue, not something we can fix
+    by editing that file), and overlay values may repeat base ones too.
     Returns a fresh copy each call so callers cannot mutate the cache.
     """
     if field in _CACHE:
         return list(_CACHE[field])
-    merged = list(_BASE.get(field, []))
-    for value in _OVERLAY.get(field, []):
+    merged: list[str] = []
+    for value in _BASE.get(field, []) + _OVERLAY.get(field, []):
         if value not in merged:
             merged.append(value)
     _CACHE[field] = merged
