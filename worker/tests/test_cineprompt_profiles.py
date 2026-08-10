@@ -53,6 +53,11 @@ def test_cap_drops_trailing_segments_not_mid_string():
     assert len(out) <= 2048
     assert out.endswith((".", "!", '"'))
 
+    # Retained sentences must be whole: the drop loop keeps complete sentences,
+    # whereas the mid-string fallback would truncate one. This assertion fails if
+    # the loop body is removed, proving the test actually exercises sentence-dropping.
+    assert out.split(". ")[0] == raw.split(". ")[0]
+
 
 def test_cap_never_returns_partial_sentence():
     fields = {f"beat_{i}": "x" * 900 for i in (1, 2, 3)}
