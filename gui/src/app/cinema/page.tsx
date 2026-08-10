@@ -160,7 +160,7 @@ export default function CinemaPage() {
       const res = await fetch("/api/cineprompt/fill", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ description, mode, level }),
+        body: JSON.stringify({ description, mode, level, locked: fields }),
       });
       const body = await res.json();
       if (!res.ok) {

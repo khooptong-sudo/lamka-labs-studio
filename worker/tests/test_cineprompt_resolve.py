@@ -66,6 +66,28 @@ def test_global_format_prunes_shot_fields():
     assert out[0] == {"format": "VHS"}
 
 
+def test_build_prompt_handles_two_value_selection_for_every_pickable_field():
+    """Every field the vocabulary picker can multi-select must survive a
+    two-value selection without raising and without leaking Python list
+    syntax into the prompt. Regression test for the final-review finding:
+    ~23 merge-rule fields raised TypeError, `movement` silently emitted
+    "['static', 'pan'] camera movement." with no error at all.
+    """
+    from app.cineprompt import build_prompt, prompts, vocab
+
+    in_scope = prompts.fields_in_scope("single", "complex")
+    for field in in_scope:
+        values = vocab.values_for(field)
+        if len(values) < 2:
+            continue  # free-text or single-valued fields aren't multi-select targets
+        result = build_prompt({"mode": "single", "model": "universal", "fields": {field: values[:2]}})
+        text = result[0]
+        # Detect Python list-repr artifacts specifically (e.g. "['static', 'pan']"),
+        # not any apostrophe — some vocab values are legitimate contractions
+        # (e.g. art_setting's "an artist's studio").
+        assert "[" not in text and "', '" not in text, f"{field} leaked list syntax: {text!r}"
+
+
 def test_shot_format_prunes_global_fields():
     """Shot format should prune incompatible global fields, even after merge."""
     state = {"mode": "multi",

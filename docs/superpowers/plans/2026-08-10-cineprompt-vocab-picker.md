@@ -346,13 +346,13 @@ Expected: build succeeds, no TypeScript errors.
 
 With the worker running (`python run_worker.py`), open `/cinema`:
 1. Confirm the "Browse fields" section appears with 8 open-by-default sections (STYLE, SUBJECT, ACTIONS, ENVIRONMENT, CINEMATOGRAPHY, PALETTE, DIALOGUE, SOUND), each listing clickable value chips for its enum fields and a textarea for free-text fields (e.g. DIALOGUE's `dialogue` field).
-2. Click a chip (e.g. `genre` → `thriller`). Confirm it visually toggles active, and the same field appears in the Fields section below (Task 2's existing render) showing `thriller`.
-3. Click a second chip in the same field (e.g. `genre` → `drama`). Confirm the Fields section now shows `thriller, drama` (via `fieldDisplayValue`'s join).
+2. Click a `media_type` chip (e.g. `cinematic`), then a `genre` chip (e.g. `thriller`). `genre` is in `assemble.py`'s `MEDIA_ABSORBED` set and only renders once `media_type` is also set, so both are needed for step 8's prompt to be non-empty. Confirm each chip visually toggles active, and the same field appears in the Fields section below (Task 2's existing render) showing `thriller`.
+3. Click a second chip in the `genre` field (e.g. `drama`). Confirm the Fields section now shows `thriller, drama` (via `fieldDisplayValue`'s join).
 4. Click `thriller` again to deselect it. Confirm the Fields section now shows just `drama`.
 5. Deselect `drama` too (the last remaining chip for that field). Confirm the field disappears from the Fields section entirely (proves the empty-array-deletes-the-key behavior).
 6. Type a scene description, click Fill, confirm a Fill-populated field's chip(s) show as pre-toggled in the browser (proves picker and Fill share state correctly).
 7. Change the `level` dropdown from `complex` to `simple`. Confirm the "Browse fields" section's field list shrinks (fewer fields per section, some sections may disappear) — proves the `useEffect` re-fetches on `level` change.
-8. Click Build Prompt with at least one manually-picked field (no Fill). Confirm a prompt is produced — proves the picker's output reaches `build_prompt` correctly.
+8. With `media_type` still set (re-pick it if step 4/5 cleared `genre`'s section state), click Build Prompt with at least one manually-picked field (no Fill). Confirm a prompt is produced — proves the picker's output reaches `build_prompt` correctly.
 
 - [ ] **Step 6: Commit**
 

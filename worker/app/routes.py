@@ -408,7 +408,7 @@ async def cineprompt_build(req: CinepromptBuildRequest) -> dict:
 
     try:
         prompts = build_prompt({"mode": req.mode, "model": req.model, "fields": req.fields})
-    except ValueError as exc:
+    except (ValueError, TypeError) as exc:
         raise HTTPException(status_code=422, detail=str(exc)) from exc
     return {"prompts": prompts}
 

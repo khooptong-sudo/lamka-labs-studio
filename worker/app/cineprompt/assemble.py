@@ -195,7 +195,7 @@ def build_text(fields: dict, section_order: list[str] | None = None) -> str:
                 continue
             if field in rules:
                 partner, fn = rules[field]
-                v1, v2 = fields.get(field), fields.get(partner)
+                v1, v2 = nl_join(fields.get(field)), nl_join(fields.get(partner))
                 if v1 or v2:
                     values.append({"text": fn(v1, v2), "section": section, "field": field})
                 continue

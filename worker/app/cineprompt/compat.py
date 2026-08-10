@@ -38,7 +38,12 @@ DROPPED: dict[str, tuple[str, ...]] = {
 }
 
 
-def category_of(format_value: str | None) -> str | None:
+def category_of(format_value: str | list[str] | None) -> str | None:
+    """Multiple selected formats have no single clean category to prune by
+    (a film/digital mix isn't "one" category) — use the first selection as
+    the dominant one, same simplification `nl_join` makes for prose."""
+    if isinstance(format_value, list):
+        format_value = format_value[0] if format_value else None
     if not format_value:
         return None
     return FORMAT_CATEGORY.get(format_value)
