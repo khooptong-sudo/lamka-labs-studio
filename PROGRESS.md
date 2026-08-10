@@ -22,6 +22,7 @@
 | **YT P4 — YouTube API Upload** | ❌ Dropped | Uploads are manual. Publish path deleted 2026-08-06; see YT P5. |
 | **YT P5 — Per-channel config** | ✅ **DEPLOYED** | Two channels (finance, kids) off one engine. Compliance floor as code constants. Every render ships `upload.txt` with title + SEO description. Migration 008 + channels config applied to local and VPS Postgres. Deployed to VPS 2026-08-06 (was stuck behind safe.directory). |
 | **YT P6 — Research-first 3D Shorts** | 🟡 Live smoke complete; review/hardening open | `/films` makes the normal Short flow a 1080×1920 image-led 3D route. One Kids short rendered locally with its manual-upload packet on 2026-08-09. A second ComfyUI run was interrupted by a GPU thermal shutdown after narration, before image generation/render; it is not a draft. Migrations 009–010 add official feeds and enforce a 48-hour, dated-only fresh-news Inbox. |
+| **CinePrompt — Studio Cinema page** | 🟡 Shipped, visual pass pending | `/cinema`: describe a scene → CinePrompt engine (`worker/app/cineprompt/`, 318 tests incl. golden fixtures) fills fields via LLM or manual category-grouped picker (8 sections, ~130 fields, multi-select) → build prompt → BYOK fal.run (Kling 2.0) generation → save + history. 4 worker routes (`/cineprompt/fill`, `/build`, `/save`, `/history`, `/vocab`), migration 011. Key never reaches the worker. Deferred: aesthetic/visual design pass, blocked on `frontend-design` skill needing a session restart to activate. |
 
 ---
 
@@ -116,6 +117,10 @@
 | 47 | Metadata validated **before** the render | channels | an empty description used to burn a full ffmpeg render before failing |
 | 48 | Autopilot uses each story's own channel, skips those without one | channels | one env-var channel applied to every story would publish kids topics in the finance voice, on a daily timer |
 | 49 | Image-led cinematic shorts are a separate backend, not an extension of low-poly Three.js films | youtube | character-led animated storytelling needs high-fidelity keyframes; the existing code-generated landscape film remains intact and its verification path is not weakened |
+| 50 | fal.run generation stays entirely client-side (BYOK key never sent to the worker) | cineprompt | matches the original cineprompt.io architecture; zero new secret-handling surface on the backend |
+| 51 | Vocabulary picker reuses `fields_in_scope(mode, level)`, the exact function Fill's system prompt already uses | cineprompt | one scoping rule, not two copies that can drift apart |
+| 52 | `base.json` (vendor data) deduped defensively inside `values_for`, never hand-edited | cineprompt | the file's own docstring forbids hand edits; an internal duplicate is a vendor data-quality issue, not something to patch at the source |
+| 53 | Final whole-branch review must execute code, not just read it | cineprompt | task-scoped review traced `build_prompt`'s "accepts a list" claim as written in the plan and passed it; only running it against every pickable field surfaced that ~23 merge-rule fields actually crash or silently corrupt output on a list input |
 
 ---
 

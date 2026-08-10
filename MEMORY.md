@@ -6,7 +6,7 @@
 
 **Project:** AI pipeline for compliant US/India finance content (X + IG).
 **Owner:** UMinkoo (sole publish authority).
-**Started:** 2026-07-25. **Last update:** 2026-08-09.
+**Started:** 2026-07-25. **Last update:** 2026-08-10.
 
 ---
 
@@ -28,6 +28,13 @@ by three cheap, tireless LLMs.
 - The 3D Short path is image-led and vertical; Story Film remains the separate low-poly Three.js landscape backend. Local ComfyUI and OpenAI image providers are selectable per run.
 - Disk recovery after a GPU thermal shutdown found one complete Kids render (`videos/story-c88b4e8b-52bc-425b-860e-3c8d2feb9f05/renders/video.mp4`, 41 MB, with `upload.txt`) and one non-publishable interrupted Kids run (`videos/story-b9e889ee-c6e8-4b33-9e3e-9d636d021f04`): storyboard, index, and six voice clips exist, but no cinematic images, frame compositions, render, thumbnail, or upload packet.
 - Do not resume the interrupted run blindly. Confirm cooling and ComfyUI readiness first, then rerun it as a new job; only a completed render plus review is a draft.
+
+### Session-close update — 2026-08-10
+
+- Shipped the CinePrompt Studio **Cinema page** (`/cinema`): the finished-but-previously-unwired `worker/app/cineprompt/` prompt-assembly engine (318 tests incl. golden fixtures against the JS oracle) now has a real consumer. Scene description → LLM Fill or manual category-grouped picker (8 sections, ~130 fields, multi-select chips) → assembled prompt → BYOK fal.run (Kling 2.0) generation → save + history. Four new worker routes, one migration (`cineprompt_generations`). Full detail: `docs/superpowers/specs/2026-08-10-cineprompt-studio-cinema-design.md` and the sibling vocab-picker spec/plan in the same directory.
+- Also recovered a large stash of pre-session work-in-progress that had gotten swept into task commits and then auto-stashed by a `git pull --rebase`: the Lamka Labs Studio GUI redesign, the 48-hour fresh-news-inbox filter, and cinematic-image-provider/voice-key wiring. All landed on `main`, correctly attributed under their own commit messages, not folded into the Cinema work.
+- **Deferred, not forgotten:** the Cinema page's visual/aesthetic design (colors, spacing, motion) is unstyled beyond reusing existing Tailwind tokens. Blocked on the `frontend-design` skill, re-enabled in `.claude/settings.local.json` this session but requiring a Claude Code session restart to actually activate.
+- Live-browser confirmation of the picker's rendered behavior was never fully completed — a Claude-in-Chrome tool outage blocked it mid-session. What WAS verified: two independent code-trace reviews, an API-level `curl` check, and the full 318-test engine suite. Worth 30 seconds in a browser before trusting this further, per the `START_LAMKA_LABS_STUDIO.bat` instructions in `docs/youtube/YT-HANDOFF.md`.
 
 ---
 
@@ -141,6 +148,12 @@ docker exec desk-caddy-1 caddy reload --config /etc/caddy/Caddyfile
 16. **The 7B plans each frame in isolation** — it repeats archetypes and drifts into Chinese unless already-used shapes are excluded from the menu and English is pinned in the prompt.
 17. **Don't run `pytest` during an end-to-end run.** DB tests truncate tables; the seeded story vanishes mid-render and surfaces as a `ForeignKeyViolation` that looks like a pool/commit bug.
 18. **Migration 006's columns were dead.** Everything read `body->>'channel_id'`; the real columns sat NULL/default, so any schema-trusting SQL read every draft as `'manual'`. Now written to both.
+
+### CinePrompt / Cinema page phase
+19. **The FastAPI worker never hot-reloads.** `run_worker.py` has no `--reload`. Editing Python and testing against an already-running process serves stale code with zero warning — silently 404s a brand-new route, or serves a pre-fix bug, with no error pointing at the real cause. Recurred three separate times in one session (a route silently missing, then a data-dedup fix silently not applied twice). Always restart the worker process after a backend code change before trusting a live check against it; a green `pytest` run proves nothing about what a *running* process is currently serving.
+20. **A `git pull --rebase` run by a subagent mid-task can auto-stash unrelated pre-existing uncommitted work.** If the working tree has substantial dirty state when a rebase needs a clean tree, the stash silently absorbs everything, not just what the rebase needed out of the way. Always check `git stash list` after any task that ran a rebase; recovering it later means diffing against the stash's actual base commit, since local history may have moved on since it was created.
+21. **A plan's stated technical premise about existing code needs to be tested, not just read.** The Cinema plan asserted `build_prompt` already accepted a list value for any field ("`nl_join` handles both"). True for simple fields, false for every field routed through a merge rule (`assemble.py`'s `_merge_rules`) — those functions do raw string `.split()`/`.endswith()`/concatenation and either crash or silently embed a Python list repr into a prompt shipped to fal.run. No task-scoped review caught it because no single task's diff contained both the picker's multi-select capability and the merge-rule code it would eventually feed. Only a final whole-branch review that actually *ran* every pickable field through the real pipeline surfaced it.
+22. **Vendor data files can have internal duplicates; dedupe defensively, don't hand-edit the vendor file.** `cineprompt`'s `data/base.json` (MIT-licensed, "never edit by hand") lists one `movement_type` value twice — a vendor data-quality issue. `vocab.py`'s `values_for` now dedupes across base+overlay together (not just overlay-against-merged) so this class of bug can't resurface for any field, present or future.
 
 ---
 
