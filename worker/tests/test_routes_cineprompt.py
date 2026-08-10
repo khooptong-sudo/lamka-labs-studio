@@ -130,3 +130,4 @@ def test_history_returns_saved_generations():
         resp = client.get("/cineprompt/history")
     assert resp.status_code == 200
     assert resp.json()[0]["description"] == "a scene"
+    assert isinstance(resp.json()[0]["id"], str)
