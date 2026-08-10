@@ -1,5 +1,7 @@
+import uuid as uuid_module
 from unittest.mock import AsyncMock, patch
 
+import httpx
 from fastapi.testclient import TestClient
 
 from app.cineprompt import FillError
@@ -64,3 +66,53 @@ def test_build_returns_assembled_prompt():
 def test_build_requires_fields():
     resp = client.post("/cineprompt/build", json={"mode": "single", "model": "veo"})
     assert resp.status_code == 422
+
+
+def test_save_downloads_video_and_returns_id(tmp_path, monkeypatch):
+    monkeypatch.setattr("app.routes._VIDEOS_DIR", tmp_path)
+    fake_id = uuid_module.uuid4()
+    monkeypatch.setattr("app.routes.uuid.uuid4", lambda: fake_id)
+
+    async def fake_get(self, url, **kwargs):
+        return httpx.Response(200, content=b"fake video bytes", request=httpx.Request("GET", url))
+
+    with (
+        patch("httpx.AsyncClient.get", fake_get),
+        patch("app.db.save_cineprompt_generation", AsyncMock(return_value=fake_id)),
+    ):
+        resp = client.post(
+            "/cineprompt/save",
+            json={
+                "description": "a scene", "mode": "single", "model": "veo",
+                "fields": {"genre": "action"}, "prompt": "A scene.",
+                "video_url": "https://fal.media/files/abc/output.mp4",
+            },
+        )
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["id"] == str(fake_id)
+    saved_path = tmp_path / "cineprompt" / f"{fake_id}.mp4"
+    assert saved_path.read_bytes() == b"fake video bytes"
+
+
+def test_save_returns_502_on_download_failure_and_writes_no_row(tmp_path, monkeypatch):
+    monkeypatch.setattr("app.routes._VIDEOS_DIR", tmp_path)
+
+    async def fake_get(self, url, **kwargs):
+        raise httpx.ConnectTimeout("timed out", request=httpx.Request("GET", url))
+
+    with (
+        patch("httpx.AsyncClient.get", fake_get),
+        patch("app.db.save_cineprompt_generation", AsyncMock()) as mock_save,
+    ):
+        resp = client.post(
+            "/cineprompt/save",
+            json={
+                "description": "a scene", "mode": "single", "model": "veo",
+                "fields": {}, "prompt": "A scene.",
+                "video_url": "https://fal.media/files/abc/output.mp4",
+            },
+        )
+    assert resp.status_code == 502
+    mock_save.assert_not_awaited()
+    assert not (tmp_path / "cineprompt").exists() or not any((tmp_path / "cineprompt").iterdir())

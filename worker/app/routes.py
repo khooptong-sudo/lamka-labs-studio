@@ -17,6 +17,7 @@ import os
 import uuid
 from pathlib import Path
 
+import httpx
 from fastapi import APIRouter, HTTPException, Request
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
@@ -407,6 +408,51 @@ async def cineprompt_build(req: CinepromptBuildRequest) -> dict:
 
     prompts = build_prompt({"mode": req.mode, "model": req.model, "fields": req.fields})
     return {"prompt": prompts[0]}
+
+
+class CinepromptSaveRequest(BaseModel):
+    description: str = Field(min_length=1, max_length=5000)
+    mode: str = "single"
+    model: str = "universal"
+    fields: dict
+    prompt: str = Field(min_length=1)
+    video_url: str = Field(min_length=1)
+
+
+@router.post("/cineprompt/save")
+async def cineprompt_save(req: CinepromptSaveRequest) -> dict:
+    """Download the fal.run result and persist it.
+
+    Write-then-insert, in that order: a DB row must never point at a file
+    that doesn't exist. Any download failure cleans up the partial file
+    and leaves no row at all, rather than a half-saved generation.
+    """
+    from app.db import save_cineprompt_generation
+
+    gen_id = uuid.uuid4()
+    dest_dir = _VIDEOS_DIR / "cineprompt"
+    dest_dir.mkdir(parents=True, exist_ok=True)
+    dest_path = dest_dir / f"{gen_id}.mp4"
+
+    try:
+        async with httpx.AsyncClient(timeout=120) as client:
+            response = await client.get(req.video_url)
+            response.raise_for_status()
+        dest_path.write_bytes(response.content)
+    except Exception as exc:
+        dest_path.unlink(missing_ok=True)
+        raise HTTPException(status_code=502, detail=f"could not download video: {exc}") from exc
+
+    await save_cineprompt_generation(
+        description=req.description,
+        mode=req.mode,
+        model=req.model,
+        fields=req.fields,
+        prompt=req.prompt,
+        video_url=req.video_url,
+        local_path=str(dest_path.relative_to(_VIDEOS_DIR.parent)),
+    )
+    return {"id": str(gen_id), "local_path": str(dest_path.relative_to(_VIDEOS_DIR.parent))}
 
 
 __all__ = ["router"]
