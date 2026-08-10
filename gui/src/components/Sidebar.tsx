@@ -2,19 +2,19 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Inbox, FileText, Settings, BookOpen, Clapperboard, Film } from "lucide-react";
+import { BookOpen, Clapperboard, FileText, Film, Inbox, Settings } from "lucide-react";
 import { ThemeToggle } from "./ThemeToggle";
 
 export function Sidebar() {
   const pathname = usePathname();
 
   const navItems = [
-    { name: "Inbox", href: "/", icon: Inbox },
-    { name: "Generate", href: "/films", icon: Clapperboard },
+    { name: "Research", href: "/", icon: Inbox },
+    { name: "Production", href: "/films", icon: Clapperboard },
     { name: "Cinema", href: "/cinema", icon: Film },
-    { name: "Drafts Queue", href: "/drafts", icon: FileText },
-    { name: "Voice & Config", href: "/settings", icon: Settings },
-    { name: "Documentation", href: "/docs", icon: BookOpen },
+    { name: "Drafts", href: "/drafts", icon: FileText },
+    { name: "Studio setup", href: "/settings", icon: Settings },
+    { name: "Guide", href: "/docs", icon: BookOpen },
   ];
 
   return (
