@@ -92,10 +92,17 @@ async def _generate(description: str, mode: str, level: str, provider: str) -> d
     """Call the configured model and return parsed JSON.
 
     Patched wholesale in tests; the engine test suite never reaches a network.
-    Wired for real in Task 7. Named `_generate` rather than `_call_model` so it
-    is not confused with `scene3d.author._call_model`, which it delegates to.
     """
-    raise NotImplementedError("wired in Task 7")
+    from . import prompts
+
+    system = prompts.system_prompt(mode, level)
+    if provider == "local":
+        from ..localllm import ask_local
+        text = await ask_local(system, description)
+    else:
+        from ..scene3d.author import _call_model as call_cloud
+        text = await call_cloud(system, description)
+    return extract_json(text) if text else None
 
 
 async def fill_from_scene(description: str, mode: str = "single", level: str = "complex",

@@ -152,6 +152,30 @@ async def _ask(
         return None, str(exc)[:160]
 
 
+async def ask_local(system: str, user: str, *, num_predict: int = 1200) -> str | None:
+    """One generic Ollama round trip. Returns raw text, or None on any failure.
+
+    OLLAMA_URL is 127.0.0.1, never `localhost`: Windows resolves ::1 first and
+    Ollama binds IPv4 only, so the hostname form fails every connection attempt.
+    """
+    payload = {
+        "model": OLLAMA_MODEL,
+        "prompt": user,
+        "system": system,
+        "stream": False,
+        "format": "json",
+        "options": {"temperature": 0.3, "num_predict": num_predict},
+    }
+    try:
+        async with httpx.AsyncClient(timeout=OLLAMA_TIMEOUT) as client:
+            response = await client.post(f"{OLLAMA_URL}/api/generate", json=payload)
+            response.raise_for_status()
+            return response.json().get("response", "")
+    except Exception as exc:
+        log.warning("ollama_unavailable", error=str(exc)[:160])
+        return None
+
+
 async def plan_frame(
     voiceover: str,
     scene: str,
