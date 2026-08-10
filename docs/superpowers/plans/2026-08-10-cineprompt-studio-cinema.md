@@ -911,10 +911,16 @@ Add to `gui/src/app/cinema/page.tsx`, inside the `CinemaPage` component, after t
   // v1 hardcodes the one BYOK provider this plan scoped (fal.run, Kling).
   const FAL_MODEL_ID = "fal-ai/kling-video/v2/master/text-to-video";
 
+  // 100 attempts * 3s = 5 minutes. A Kling generation typically completes in
+  // under a minute; 5 minutes is generous headroom without hanging the page
+  // indefinitely on a stuck or abandoned fal.run job.
+  const MAX_POLL_ATTEMPTS = 100;
+  const POLL_INTERVAL_MS = 3000;
+
   async function pollUntilComplete(statusUrl: string): Promise<void> {
     const headers = { Authorization: `Key ${falKey}` };
-    for (;;) {
-      await new Promise((resolve) => setTimeout(resolve, 3000));
+    for (let attempt = 0; attempt < MAX_POLL_ATTEMPTS; attempt++) {
+      await new Promise((resolve) => setTimeout(resolve, POLL_INTERVAL_MS));
       const statusRes = await fetch(`${statusUrl}?logs=1`, { headers });
       const statusBody = await statusRes.json();
       if (statusBody.status === "COMPLETED") return;
@@ -923,6 +929,7 @@ Add to `gui/src/app/cinema/page.tsx`, inside the `CinemaPage` component, after t
       }
       // IN_QUEUE / IN_PROGRESS: keep polling.
     }
+    throw new Error("fal.run generation timed out after 5 minutes.");
   }
 
   async function handleGenerate() {
