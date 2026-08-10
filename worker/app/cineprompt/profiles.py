@@ -71,7 +71,7 @@ def _cap(text: str, limit: int) -> str:
     # period — an empty prompt is a worse failure than a shortened one.
     head = parts[0][: limit - 1]
     cut = head.rfind(" ")
-    if cut > 0:
+    if cut > 0 and cut >= len(head) * 0.8:
         head = head[:cut]
     return head.rstrip(" ,;:") + "."
 

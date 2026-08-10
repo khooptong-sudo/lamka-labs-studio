@@ -1,4 +1,4 @@
-from app.cineprompt import profiles
+from app.cineprompt import profiles, assemble
 
 
 def test_veo_leads_with_cinematography():
@@ -36,17 +36,20 @@ def test_dialogue_section_renders():
 
 
 def test_cap_drops_trailing_segments_not_mid_string():
-    # Build fields with enough content to exceed pixverse limit (2048)
-    fields = {
-        "shot_type": "wide shot",
-        "setting": "a cramped office",
-        "camera_body": "shot on ARRI Alexa 65",
-        "music_genre": "orchestral",
-        "beat_1": "x" * 400,
-        "beat_2": "x" * 400,
-        "beat_3": "x" * 400,
-    }
+    # Build fields with content that genuinely exceeds pixverse limit (2048)
+    fields = {f"beat_{i}": ("word " * 180).strip() for i in (1, 2, 3)}
+
+    # Verify the fixture actually exceeds the limit before applying _cap
+    raw = assemble.build_text(fields, profiles.order_for("pixverse"))
+    assert len(raw) > 2048, f"Fixture should exceed limit: raw {len(raw)} chars vs 2048 limit"
+
+    # Now apply render which will cap it
     out = profiles.render(fields, "pixverse")
+
+    # Verify the capping actually happened: result must be shorter than raw
+    assert len(out) < len(raw), "Capping should shorten the output"
+
+    # And verify it's within limits and properly terminated
     assert len(out) <= 2048
     assert out.endswith((".", "!", '"'))
 
@@ -60,11 +63,14 @@ def test_cap_never_returns_partial_sentence():
 
 def test_cap_handles_single_sentence_exceeding_limit():
     # One very long segment with no sentence boundary: _cap must truncate at word boundary
+    # while retaining a meaningful portion of the budget (not collapsing to a few chars)
     fields = {"dialogue": "x" * 5000}
     out = profiles.render(fields, "pixverse")
     assert out  # Non-empty
     assert len(out) <= 2048
     assert out.endswith(".")
+    # The result should retain at least half the limit's budget when input is far longer
+    assert len(out) >= 1024, f"Expected at least 1024 chars retained, got {len(out)}"
 
 
 def test_render_applies_model_order():
