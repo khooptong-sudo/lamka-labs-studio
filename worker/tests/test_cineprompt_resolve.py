@@ -54,3 +54,23 @@ def test_compat_applies_before_assembly():
 def test_unknown_mode_raises():
     with pytest.raises(ValueError, match="unknown mode"):
         resolve.resolve_state({"mode": "nonsense", "fields": {}})
+
+
+def test_global_format_prunes_shot_fields():
+    """Global format should prune incompatible fields from shot, even after merge."""
+    state = {"mode": "multi",
+             "fields": {"ms_format": "VHS"},
+             "shots": [{"fields": {"camera_body": "shot on ARRI Alexa 65"}}]}
+    out = resolve.resolve_state(state)
+    assert "camera_body" not in out[0]
+    assert out[0] == {"format": "VHS"}
+
+
+def test_shot_format_prunes_global_fields():
+    """Shot format should prune incompatible global fields, even after merge."""
+    state = {"mode": "multi",
+             "fields": {"ms_camera_body": "shot on RED V-Raptor"},
+             "shots": [{"fields": {"format": "VHS"}}]}
+    out = resolve.resolve_state(state)
+    assert "camera_body" not in out[0]
+    assert out[0] == {"format": "VHS"}

@@ -25,18 +25,20 @@ def resolve_state(state: dict) -> list[dict]:
     if mode not in MODES:
         raise ValueError(f"unknown mode: {mode!r}")
 
-    fields = compat.prune(state.get("fields") or {})
+    globals_ = strip_ms(state.get("fields") or {})
 
     if mode in ("single", "frame_motion"):
-        return [strip_ms(fields)]
+        return [compat.prune(globals_)]
 
-    globals_ = strip_ms(fields)
     shots = state.get("shots") or []
     if mode == "grid":
         size = int(state.get("grid_size", 2))
         shots = shots[: size * size]
 
-    return [globals_ | compat.prune(shot.get("fields") or {}) for shot in shots]
+    # Prune after merging, not before. A format on one side and an incompatible
+    # field on the other are each individually consistent; the contradiction only
+    # exists in the union, so pruning the inputs separately cannot see it.
+    return [compat.prune(globals_ | (shot.get("fields") or {})) for shot in shots]
 
 
 def build_prompt(state: dict) -> list[str]:
