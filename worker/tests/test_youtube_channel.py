@@ -32,6 +32,28 @@ def _captured_system_instruction(mock_client) -> str:
     return kwargs["config"].system_instruction
 
 
+def _story_with_sources(headline: str = "H") -> dict:
+    """A minimal story carrying one linked research item.
+
+    `_generate_script_for_story` raises before ever reaching the model if a
+    story has no linked sources (the no-fabrication guard) — a bare
+    {"headline": ...} dict, which these tests used before that guard
+    existed, no longer reaches the code under test at all.
+    """
+    return {
+        "headline": headline,
+        "items": [
+            {
+                "url": "https://example.com/source",
+                "title": "Source article",
+                "source_name": "Example Wire",
+                "full_text": "Some research content about the story.",
+                "published_at": "2026-08-01T00:00:00Z",
+            }
+        ],
+    }
+
+
 @pytest.mark.asyncio
 @pytest.mark.parametrize("channel", [FINANCE, KIDS], ids=["finance", "kids"])
 async def test_compliance_rules_present_for_every_channel(channel, monkeypatch):
@@ -43,7 +65,7 @@ async def test_compliance_rules_present_for_every_channel(channel, monkeypatch):
         mock_client.return_value.models.generate_content.return_value = MagicMock(
             text="---\ntitle: T\ndescription: D\n---\n\n# Scene 1\nVoiceover: A\n"
         )
-        await youtube._generate_script_for_story({"headline": "H"}, channel)
+        await youtube._generate_script_for_story(_story_with_sources(), channel)
 
     instruction = _captured_system_instruction(mock_client)
     assert BASE_COMPLIANCE_RULES in instruction
@@ -59,7 +81,7 @@ async def test_channel_prompt_is_used(monkeypatch):
         mock_client.return_value.models.generate_content.return_value = MagicMock(
             text="---\ntitle: T\ndescription: D\n---\n\n# Scene 1\nVoiceover: A\n"
         )
-        await youtube._generate_script_for_story({"headline": "H"}, KIDS)
+        await youtube._generate_script_for_story(_story_with_sources(), KIDS)
 
     instruction = _captured_system_instruction(mock_client)
     assert KIDS.script_prompt in instruction
@@ -76,7 +98,7 @@ async def test_blocklist_terms_all_present(monkeypatch):
         mock_client.return_value.models.generate_content.return_value = MagicMock(
             text="---\ntitle: T\ndescription: D\n---\n\n# Scene 1\nVoiceover: A\n"
         )
-        await youtube._generate_script_for_story({"headline": "H"}, KIDS)
+        await youtube._generate_script_for_story(_story_with_sources(), KIDS)
 
     instruction = _captured_system_instruction(mock_client)
     for term in BASE_BLOCKLIST:
@@ -93,7 +115,7 @@ async def test_instruction_states_frontmatter_is_covered(monkeypatch):
         mock_client.return_value.models.generate_content.return_value = MagicMock(
             text="---\ntitle: T\ndescription: D\n---\n\n# Scene 1\nVoiceover: A\n"
         )
-        await youtube._generate_script_for_story({"headline": "H"}, FINANCE)
+        await youtube._generate_script_for_story(_story_with_sources(), FINANCE)
 
     instruction = _captured_system_instruction(mock_client)
     assert "frontmatter" in instruction.lower()
@@ -111,7 +133,7 @@ async def test_no_voice_profiles_lookup_remains(monkeypatch):
         mock_client.return_value.models.generate_content.return_value = MagicMock(
             text="---\ntitle: T\ndescription: D\n---\n\n# Scene 1\nVoiceover: A\n"
         )
-        await youtube._generate_script_for_story({"headline": "H"}, FINANCE)
+        await youtube._generate_script_for_story(_story_with_sources(), FINANCE)
 
     for call in get_config.await_args_list:
         assert call.args[0] != "voice_profiles"

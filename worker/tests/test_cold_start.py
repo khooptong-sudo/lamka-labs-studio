@@ -17,6 +17,8 @@ from __future__ import annotations
 
 import json
 import uuid
+from datetime import datetime, timedelta, timezone
+from email.utils import format_datetime
 from pathlib import Path
 
 import httpx
@@ -27,6 +29,43 @@ import respx
 pytestmark = pytest.mark.integration
 
 FIXTURES = Path(__file__).resolve().parent / "fixtures" / "feeds"
+
+
+def _fresh_rfc822(hours_ago: float) -> str:
+    """RFC 822 date N hours before now — see _freshen_fixture_dates."""
+    return format_datetime(datetime.now(timezone.utc) - timedelta(hours=hours_ago))
+
+
+def _fresh_iso(hours_ago: float) -> str:
+    """ISO 8601 UTC date N hours before now — see _freshen_fixture_dates."""
+    return (datetime.now(timezone.utc) - timedelta(hours=hours_ago)).strftime("%Y-%m-%dT%H:%M:%SZ")
+
+
+def _freshen_fixture_dates(rss_xml: str, edgar_atom: str) -> tuple[str, str]:
+    """Rewrite the cassette fixtures' recorded dates to be recent.
+
+    The fixtures are a "recorded cassette" with fixed 2025 dates for
+    determinism of everything except time. `_is_fresh_news_item`
+    (app/ingest.py) rejects anything older than `fresh_news_hours` (48h
+    default) relative to wall-clock now, so a fixed date inevitably goes
+    stale as real time passes — this happened, and is why this test started
+    failing. Substituting in dates relative to "now" at test time keeps the
+    cassette's content, shape, and ordering fixed while keeping it forever
+    fresh enough to pass the filter it's meant to exercise.
+    """
+    rss_xml = (
+        rss_xml
+        .replace("Tue, 22 Jul 2025 09:30:00 +0530", _fresh_rfc822(1))
+        .replace("Wed, 08 Oct 2025 10:00:00 +0530", _fresh_rfc822(2))
+        .replace("Mon, 14 Jul 2025 06:00:00 +0530", _fresh_rfc822(3))
+    )
+    edgar_atom = (
+        edgar_atom
+        .replace("2025-07-22T14:00:00Z", _fresh_iso(1))
+        .replace("2025-07-22T13:45:00Z", _fresh_iso(1))
+        .replace("2025-07-22T12:10:00Z", _fresh_iso(2))
+    )
+    return rss_xml, edgar_atom
 
 
 @pytest_asyncio.fixture
@@ -57,11 +96,12 @@ async def test_cold_start_idempotent(test_sources, db, monkeypatch):
     """The §5.5 Layer 1 acceptance test."""
     # Mock the RSS feed response.
     rss_xml = (FIXTURES / "etmarkets.xml").read_text(encoding="utf-8")
+    edgar_atom = (FIXTURES / "edgar.atom").read_text(encoding="utf-8")
+    rss_xml, edgar_atom = _freshen_fixture_dates(rss_xml, edgar_atom)
     respx.get("https://test.example/rss").mock(
         return_value=httpx.Response(200, content=rss_xml.encode("utf-8"))
     )
     # Mock the EDGAR Atom feed response.
-    edgar_atom = (FIXTURES / "edgar.atom").read_text(encoding="utf-8")
     respx.get(url__regex=r"https://www\.sec\.gov/cgi-bin/browse-edgar.*").mock(
         return_value=httpx.Response(200, content=edgar_atom.encode("utf-8"))
     )
