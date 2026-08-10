@@ -7,11 +7,53 @@ on this). Cap truncation: a feed returning 100 items is truncated to the cap.
 from __future__ import annotations
 
 import uuid
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 
 import pytest
 
 from app.sources.base import NormalizedItem
+
+
+class TestFreshNewsGate:
+    def test_accepts_a_recent_dated_item(self):
+        from app.ingest import _is_fresh_news_item
+
+        item = NormalizedItem.build(
+            source_id="s",
+            title="Today",
+            url="https://example.com/today",
+            published_at=datetime.now(timezone.utc) - timedelta(hours=1),
+            full_text="body",
+        )
+
+        assert _is_fresh_news_item(item, fresh_news_hours=48) is True
+
+    def test_rejects_an_old_feed_entry_even_when_it_is_imported_today(self):
+        from app.ingest import _is_fresh_news_item
+
+        item = NormalizedItem.build(
+            source_id="s",
+            title="Old",
+            url="https://example.com/old",
+            published_at=datetime.now(timezone.utc) - timedelta(days=366),
+            full_text="body",
+        )
+
+        assert _is_fresh_news_item(item, fresh_news_hours=48) is False
+
+    def test_rejects_an_entry_without_a_trustworthy_source_date(self):
+        from app.ingest import _is_fresh_news_item
+
+        item = NormalizedItem.build(
+            source_id="s",
+            title="Undated",
+            url="https://example.com/undated",
+            published_at=datetime.now(timezone.utc),
+            full_text="body",
+            warnings=["date_missing"],
+        )
+
+        assert _is_fresh_news_item(item, fresh_news_hours=48) is False
 
 
 class TestHashStability:

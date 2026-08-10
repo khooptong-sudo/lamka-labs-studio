@@ -21,6 +21,7 @@
 | **YT P1/P2 — Scripting & Audio** | ✅ Completed | LLM Markdown scripts (Gemini) + ElevenLabs TTS integrated in Worker. |
 | **YT P4 — YouTube API Upload** | ❌ Dropped | Uploads are manual. Publish path deleted 2026-08-06; see YT P5. |
 | **YT P5 — Per-channel config** | ✅ **DEPLOYED** | Two channels (finance, kids) off one engine. Compliance floor as code constants. Every render ships `upload.txt` with title + SEO description. Migration 008 + channels config applied to local and VPS Postgres. Deployed to VPS 2026-08-06 (was stuck behind safe.directory). |
+| **YT P6 — Research-first 3D Shorts** | 🟡 Live smoke complete; review/hardening open | `/films` makes the normal Short flow a 1080×1920 image-led 3D route. One Kids short rendered locally with its manual-upload packet on 2026-08-09. A second ComfyUI run was interrupted by a GPU thermal shutdown after narration, before image generation/render; it is not a draft. Migrations 009–010 add official feeds and enforce a 48-hour, dated-only fresh-news Inbox. |
 
 ---
 
@@ -114,6 +115,7 @@
 | 46 | Metadata extracted at generation time, not publish time | channels | `_parse_storyboard_frontmatter` was only called from publish; deleting publish would have discarded the SEO description |
 | 47 | Metadata validated **before** the render | channels | an empty description used to burn a full ffmpeg render before failing |
 | 48 | Autopilot uses each story's own channel, skips those without one | channels | one env-var channel applied to every story would publish kids topics in the finance voice, on a daily timer |
+| 49 | Image-led cinematic shorts are a separate backend, not an extension of low-poly Three.js films | youtube | character-led animated storytelling needs high-fidelity keyframes; the existing code-generated landscape film remains intact and its verification path is not weakened |
 
 ---
 

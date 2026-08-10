@@ -1,8 +1,10 @@
 """YouTube video automation pipeline (Path B)."""
 import os
+import re
 import subprocess
 import uuid
 import asyncio
+from dataclasses import replace
 from pathlib import Path
 from typing import Any
 
@@ -10,7 +12,11 @@ import structlog
 
 from app import db
 from app.channels import BASE_COMPLIANCE_RULES, Channel
-from app.scene3d.backend import MIN_VERIFIED_FRAMES, build_3d_frames
+from app.scene3d.backend import (
+    MIN_VERIFIED_FRAMES,
+    build_3d_frames,
+    build_cinematic_frames,
+)
 from app.settings import get_settings
 from app.storyboard import (
     Frame,
@@ -97,6 +103,10 @@ async def generate_youtube_video(
     upload_preference: str = "manual",
     backend: str | None = None,
     job_id: uuid.UUID | None = None,
+    storyboard_override: str | None = None,
+    image_provider: str | None = None,
+    voice_key: str | None = None,
+    cinematic_controls: dict[str, str] | None = None,
 ) -> uuid.UUID | None:
     """
     Main entrypoint for generating a YouTube video from a story.
@@ -114,6 +124,10 @@ async def generate_youtube_video(
 
     from app import channels
     channel = await channels.resolve(channel_id)
+    if voice_key:
+        if voice_key not in VOICE_MAP:
+            raise ValueError(f"unknown voice key {voice_key!r}; expected one of {sorted(VOICE_MAP)}")
+        channel = replace(channel, voice_key=voice_key)
 
     # 1. Fetch story details
     story = await _fetch_story_details(story_id)
@@ -127,10 +141,41 @@ async def generate_youtube_video(
     
     # 2. Scripting & Storyboard Generation
     await _stage(job_id, "script")
-    try:
-        script_content = await _generate_script_for_story(story, channel)
-    except Exception as e:
-        log.error("youtube_generation_aborted", reason="script_generation_failed", error=str(e))
+    if storyboard_override and storyboard_override.strip():
+        # A valid editor board stays byte-for-byte intact. If it was pasted in
+        # a human-friendly outline form, add only the required upload metadata
+        # so title/description validation cannot reject its scenes or narration.
+        script_content = _ensure_storyboard_metadata(
+            storyboard_override,
+            fallback_title=str(story.get("headline") or "Manual storyboard"),
+        )
+        log.info("youtube_storyboard_override_used", story_id=str(story_id))
+    else:
+        try:
+            script_content = await _generate_script_for_story(
+                story, channel, cinematic=(backend == "cinematic")
+            )
+            # Generated boards retain the exact links that constrained the
+            # model. A pasted, editor-reviewed board is intentionally left
+            # untouched, just as before.
+            script_content = _append_research_sources(script_content, story)
+        except Exception as e:
+            log.error("youtube_generation_aborted", reason="script_generation_failed", error=str(e))
+            return None
+
+    script_content = _apply_cinematic_controls(script_content, cinematic_controls)
+
+    blocked_terms = _blocked_storyboard_terms(script_content, channel)
+    if blocked_terms:
+        # A paste field is not an exemption from the channel's immutable safety
+        # floor. Reject before TTS or image generation can turn a prohibited
+        # call-to-action into a polished, publishable video.
+        log.error(
+            "youtube_generation_aborted",
+            reason="storyboard_contains_blocklisted_term",
+            story_id=str(story_id),
+            terms=blocked_terms,
+        )
         return None
     storyboard_path = video_dir / "STORYBOARD.md"
     storyboard_path.write_text(script_content, encoding="utf-8")
@@ -162,7 +207,12 @@ async def generate_youtube_video(
 
     log.info("youtube_audio_generation_started", video_dir=str(video_dir), frames=len(board.frames))
     await _stage(job_id, "narration", 0, len(board.frames))
-    silenced = await _generate_frame_audio(board, video_dir, script_content)
+    silenced = await _generate_frame_audio(
+        board,
+        video_dir,
+        script_content,
+        voice_key=channel.voice_key,
+    )
     if silenced:
         # Silence renders and validates exactly like narration, so nothing
         # downstream notices. A mostly-mute explainer is not the video the story
@@ -192,7 +242,17 @@ async def generate_youtube_video(
     log.info("storyboard_compiled", frames=len(board.frames), duration=duration)
 
     await _stage(job_id, "shots", 0, len(board.frames))
-    placeholders = await _build_frames(board, video_dir, backend=backend)
+
+    async def report_frame_progress(done: int, total: int) -> None:
+        await _stage(job_id, "shots", done, total)
+
+    placeholders = await _build_frames(
+        board,
+        video_dir,
+        backend=backend,
+        image_provider=image_provider,
+        on_frame_complete=report_frame_progress if job_id else None,
+    )
     if placeholders:
         # A placeholder renders fine and passes validation, so nothing downstream
         # would notice that most of the video is fallback title cards. Refuse to
@@ -295,17 +355,157 @@ async def generate_youtube_video(
     log.info("youtube_generation_finished", draft_id=str(draft_id))
     return draft_id
 
+MAX_RESEARCH_SOURCES = 4
+MAX_RESEARCH_EXCERPT_CHARS = 4_000
+
+
 async def _fetch_story_details(story_id: uuid.UUID) -> dict | None:
+    """Load the selected story with the source material that formed it.
+
+    The inbox is an editorial decision point, not a permission slip for a
+    headline-only model call.  A generated finance script therefore receives
+    the same linked articles the editor reviewed.  Manual ideas deliberately
+    return an empty item list; the generation guard below asks for a reviewed
+    storyboard or source-backed story instead of inventing timely facts.
+    """
     pool = await db.get_pool()
     async with pool.connection() as conn:
         async with conn.cursor() as cur:
-            await cur.execute("SELECT headline FROM stories WHERE id = %s", (story_id,))
+            await cur.execute(
+                "SELECT id, headline, channel_id, created_at FROM stories WHERE id = %s",
+                (story_id,),
+            )
             row = await cur.fetchone()
             if row:
-                return {"headline": row["headline"]}
+                await cur.execute(
+                    """
+                    SELECT i.title, i.url, i.published_at, i.full_text, s.name AS source_name
+                    FROM items i
+                    JOIN story_items si ON si.item_id = i.id
+                    JOIN sources s ON s.id = i.source_id
+                    WHERE si.story_id = %s
+                    ORDER BY i.published_at DESC
+                    """,
+                    (story_id,),
+                )
+                row["items"] = await cur.fetchall()
+                return row
     return None
 
-async def _generate_script_for_story(story: dict, channel: Channel) -> str:
+
+def _blocked_storyboard_terms(storyboard: str, channel: Channel) -> list[str]:
+    """Return exact forbidden terms found in a generated or pasted board."""
+    return [
+        term
+        for term in channel.effective_blocklist
+        if re.search(rf"(?<!\\w){re.escape(term)}(?!\\w)", storyboard, re.IGNORECASE)
+    ]
+
+def _research_items(story: dict) -> list[dict]:
+    """Return a small, clean, bounded evidence set for one selected story."""
+    items: list[dict] = []
+    seen_urls: set[str] = set()
+    for raw in story.get("items") or []:
+        url = str(raw.get("url") or "").strip()
+        if not url or url in seen_urls:
+            continue
+        seen_urls.add(url)
+        text = " ".join(str(raw.get("full_text") or "").split())
+        items.append(
+            {
+                "title": str(raw.get("title") or "Untitled source").strip(),
+                "url": url,
+                "source_name": str(raw.get("source_name") or "Source").strip(),
+                "published_at": raw.get("published_at"),
+                "excerpt": text[:MAX_RESEARCH_EXCERPT_CHARS],
+            }
+        )
+        if len(items) >= MAX_RESEARCH_SOURCES:
+            break
+    return items
+
+
+def _research_packet(story: dict) -> str:
+    """Serialize linked articles as evidence, never as unbounded web context."""
+    entries = _research_items(story)
+    if not entries:
+        raise RuntimeError(
+            "This story has no linked research sources. Select a sourced inbox story "
+            "or paste a reviewed storyboard before generating a finance video."
+        )
+
+    blocks: list[str] = []
+    for number, item in enumerate(entries, start=1):
+        published = item["published_at"]
+        date = published.isoformat() if hasattr(published, "isoformat") else str(published or "Unknown date")
+        excerpt = item["excerpt"] or "No article text was captured; use only the title and source attribution."
+        blocks.append(
+            f"SOURCE {number}\n"
+            f"Publisher: {item['source_name']}\n"
+            f"Published: {date}\n"
+            f"Title: {item['title']}\n"
+            f"URL: {item['url']}\n"
+            f"Article excerpt: {excerpt}"
+        )
+    return "\n\n".join(blocks)
+
+
+def _append_research_sources(storyboard: str, story: dict) -> str:
+    """Keep the exact evidence links beside the generated asset for audit/review."""
+    citations = [
+        f"- {item['source_name']}: {item['title']} — {item['url']}"
+        for item in _research_items(story)
+    ]
+    if not citations:
+        return storyboard
+    return storyboard.rstrip() + "\n\n# Research sources\n" + "\n".join(citations) + "\n"
+
+
+_CINEMATIC_CONTROL_LABELS = (
+    ("shot_scale", "Shot scale"),
+    ("camera_angle", "Camera angle"),
+    ("camera_movement", "Camera movement"),
+    ("lens", "Lens language"),
+    ("lighting", "Lighting"),
+    ("color_treatment", "Color treatment"),
+    ("pacing", "Pacing"),
+    ("motion_intent", "Frame-to-motion intent"),
+)
+
+
+def _apply_cinematic_controls(
+    storyboard: str, controls: dict[str, str] | None
+) -> str:
+    """Insert explicit operator direction before the first scene.
+
+    The renderer already treats ``# Video direction`` as its continuity bible.
+    Keeping the controls there makes the same choices reach scripting review,
+    image generation, and the saved audit artifact without provider-specific
+    prompt logic in the GUI.
+    """
+    if not controls:
+        return storyboard
+
+    directives = [
+        f"- {label}: {str(controls[key]).strip()}"
+        for key, label in _CINEMATIC_CONTROL_LABELS
+        if str(controls.get(key, "")).strip()
+    ]
+    if not directives:
+        return storyboard
+
+    block = "## Cinematography controls\n" + "\n".join(directives)
+    first_scene = re.search(r"(?m)^# Scene\s+\d+", storyboard)
+    if first_scene:
+        before = storyboard[: first_scene.start()].rstrip()
+        after = storyboard[first_scene.start() :].lstrip()
+        return f"{before}\n\n{block}\n\n{after}"
+    return storyboard.rstrip() + f"\n\n# Video direction\n\n{block}\n"
+
+
+async def _generate_script_for_story(
+    story: dict, channel: Channel, cinematic: bool = False
+) -> str:
     """
     Call the LLM to generate the storyboard markdown for one channel.
 
@@ -313,12 +513,24 @@ async def _generate_script_for_story(story: dict, channel: Channel) -> str:
     channels.BASE_COMPLIANCE_RULES and are not channel-overridable.
     """
     headline = story.get("headline", "Default Headline")
+    evidence_packet = _research_packet(story)
 
     import os
     from google import genai
     from google.genai import types
 
     blocklist_str = ", ".join(f'"{word}"' for word in channel.effective_blocklist)
+
+    cinematic_direction = """
+For this run, write an image-led cinematic 3D short in 1080x1920 portrait.
+The `# Video direction` section is a visual continuity bible: establish the original recurring character
+(appearance, clothing, age-appropriate mannerisms), world, material palette, lighting, and camera language.
+Every `Scene:` line must be a specific 3D film-frame prompt that preserves that bible. Use 4–8 scenes;
+each scene must represent a new visual beat, never a title card or generic stock chart. For stocks and
+investing, use tangible educational metaphors such as a miniature exchange floor, an unlabeled candlestick
+city, a diversified garden, a risk umbrella, or a long road through changing weather. Never show a trade
+execution, price target, instant wealth, luxury payoff, or a character choosing a specific security.
+""" if cinematic else ""
 
     system_instruction = f"""You are generating a script for a faceless YouTube explainer video.
 Your Voice & Personality: {channel.script_prompt}
@@ -328,6 +540,14 @@ COMPLIANCE RULES (CRITICAL):
 ABSOLUTELY FORBIDDEN WORDS: {blocklist_str}.
 These rules and forbidden words apply to the YAML frontmatter, including the
 title and description fields, exactly as they apply to the narration.
+
+RESEARCH RULES (CRITICAL):
+- Use only the factual claims supported by the EVIDENCE PACKET below. Do not fill gaps with general web knowledge,
+  guesses, current prices, forecasts, dates, tax thresholds, legal conclusions, or company facts not present there.
+- Explain what the sourced development means in plain educational language. Never turn a news item into a trade,
+  tax, or investment recommendation. If the evidence is thin, keep the video narrowly descriptive.
+- Keep separate sources separate: never combine two claims into a new claim. Do not name a source in narration unless
+  needed for clarity, but write a source-aware description. The system will preserve the exact links for review.
 
 FORMAT:
 You must output a valid markdown document that starts with YAML frontmatter.
@@ -344,10 +564,18 @@ A clean, minimal, yet highly descriptive cartoonized explainer video.
 
 # Scene 1
 Voiceover: "Welcome to today's topic..."
-Visual: "A bright, cute title card..."
+Scene: "A bright, clear visual metaphor for the idea..."
+{cinematic_direction}
 """
 
-    user_prompt = f"Write a video script for the following story headline:\n{headline}"
+    user_prompt = f"""Write a video script for this selected story.
+
+STORY HEADLINE:
+{headline}
+
+EVIDENCE PACKET:
+{evidence_packet}
+"""
 
     provider = os.environ.get("SCENE_MODEL_PROVIDER", "gemini").lower()
     if provider == "deepseek":
@@ -509,13 +737,9 @@ async def _record_youtube_draft(
             row = await cur.fetchone()
             return row["id"] if row else None
 
-# ElevenLabs voice ids keyed by the storyboard's `preset` field.
-#
-# These must be voices the account can actually reach. The original ids (Antoni,
-# Rachel, Josh, Elli, Gigi) are legacy library voices: on a free plan the API
-# rejects them with 402 paid_plan_required, and every frame silently fell back to
-# silence. Everything below is `premade`, which is free-tier usable.
-# Re-check with: client.voices.get_all() -> category == "premade".
+# Free Microsoft Edge neural voices keyed by the channel/storyboard preset.
+# The dashboard's Jenny/Aria control passes a deliberate run-level override so
+# an editor's selected narrator always wins over an old pasted-board preset.
 VOICE_MAP = {
     "teenage_boy": "en-US-EricNeural",         # Young male
     "teenage_girl": "en-US-AriaNeural",        # Warm expressive female
@@ -560,7 +784,10 @@ def _write_silence(output_path: Path, seconds: float = 4.0) -> None:
 
 
 async def _generate_frame_audio(
-    board: Storyboard, video_dir: Path, script_content: str
+    board: Storyboard,
+    video_dir: Path,
+    script_content: str,
+    voice_key: str | None = None,
 ) -> list[str]:
     """Render one voice clip per frame into assets/voice/NN.mp3.
 
@@ -570,14 +797,11 @@ async def _generate_frame_audio(
 
     Returns the slugs that fell back to silence.
     """
-    from elevenlabs.client import AsyncElevenLabs
-
     voice_dir = video_dir / "assets" / "voice"
     voice_dir.mkdir(parents=True, exist_ok=True)
 
-    preset = _extract_preset(script_content)
+    preset = voice_key or _extract_preset(script_content)
     voice_id = VOICE_MAP.get(preset, VOICE_MAP[DEFAULT_VOICE])
-    api_key = os.environ.get("ELEVENLABS_API_KEY")
 
     # Edge TTS is free with no API key, no rate limits, and decent quality.
     # Concurrency gate is kept light — 4 parallel renders is plenty.
@@ -676,7 +900,11 @@ FRAME_BACKEND = os.environ.get("FRAME_BACKEND", "local").lower()
 
 
 async def _build_frames(
-    board: Storyboard, video_dir: Path, backend: str | None = None
+    board: Storyboard,
+    video_dir: Path,
+    backend: str | None = None,
+    image_provider: str | None = None,
+    on_frame_complete=None,
 ) -> list[str]:
     """Dispatch frame generation to the requested backend.
 
@@ -687,6 +915,15 @@ async def _build_frames(
     chosen = (backend or FRAME_BACKEND).lower()
     if chosen == "three":
         return await build_3d_frames(board, video_dir)
+    if chosen == "cinematic":
+        if on_frame_complete is None:
+            return await build_cinematic_frames(board, video_dir, provider=image_provider)
+        return await build_cinematic_frames(
+            board,
+            video_dir,
+            provider=image_provider,
+            on_frame_complete=on_frame_complete,
+        )
     if chosen == "gemini":
         return await _generate_frame_compositions(board, video_dir)
     return await _generate_frame_compositions_local(board, video_dir)
@@ -1112,6 +1349,127 @@ def _require_metadata(frontmatter: dict[str, str]) -> tuple[str, str]:
         )
 
     return title, description
+
+
+_FRONTMATTER_BLOCK = re.compile(
+    r"^\s*---\s*\r?\n(?P<frontmatter>.*?)\r?\n---(?:\s*\r?\n|$)",
+    re.DOTALL,
+)
+
+_TIMELINE_BEAT = re.compile(
+    r"^\s*(?P<start>\d+(?:\.\d+)?)\s*(?:-|–|—|to)\s*"
+    r"(?P<end>\d+(?:\.\d+)?)\s*(?:sec(?:ond)?s?|s)\s*$",
+    re.IGNORECASE | re.MULTILINE,
+)
+_OUTLINE_FIELD = re.compile(r"^\s*(?P<label>[A-Za-z][A-Za-z0-9 _-]{0,40})\s*:\s*(?P<value>.+?)\s*$")
+_NON_SPOKEN_OUTLINE_FIELDS = {
+    "visual",
+    "scene",
+    "on-screen text",
+    "style",
+    "title",
+    "length",
+    "target audience",
+    "vibe",
+    "duration",
+    "sound",
+    "sound effects",
+    "music",
+}
+
+
+def _frontmatter_value(text: str, key: str) -> str:
+    match = re.search(rf"^\s*{re.escape(key)}\s*:\s*(.+?)\s*$", text, re.IGNORECASE | re.MULTILINE)
+    return match.group(1).strip().strip('"').strip("'") if match else ""
+
+
+def _yaml_scalar(value: str) -> str:
+    """Return a compact, safe single-line value for our flat YAML-ish header."""
+    return " ".join(value.split()).replace('"', "'")
+
+
+def _normalize_timestamped_storyboard_outline(body: str) -> str:
+    """Translate readable ``0–5 sec`` story beats into renderable scenes.
+
+    The Storyboard field is deliberately editor-friendly: children-channel
+    scripts commonly identify scenes by a time range and use character labels
+    instead of a strict Markdown ``# Scene`` heading.  Preserve every spoken
+    line, turn the beat duration into explicit timing, and leave ordinary
+    Markdown boards untouched.
+    """
+    beats = list(_TIMELINE_BEAT.finditer(body))
+    if not beats:
+        return body
+
+    normalized: list[str] = [body[: beats[0].start()].strip()]
+    for index, beat in enumerate(beats, start=1):
+        next_start = beats[index].start() if index < len(beats) else len(body)
+        block = body[beat.end() : next_start]
+        duration = max(float(beat.group("end")) - float(beat.group("start")), 0.1)
+        visual = ""
+        spoken: list[str] = []
+
+        for raw_line in block.splitlines():
+            field = _OUTLINE_FIELD.match(raw_line)
+            if not field:
+                continue
+            label = field.group("label").strip()
+            value = field.group("value").strip()
+            normalized_label = label.lower()
+            if normalized_label in {"visual", "scene"}:
+                visual = visual or value
+            elif normalized_label not in _NON_SPOKEN_OUTLINE_FIELDS:
+                spoken.append(value if normalized_label in {"narrator", "voiceover"} else f"{label} says, {value}")
+
+        lines = [f"# Scene {index}", f"Duration: {duration:g} seconds"]
+        if visual:
+            lines.append(f"Visual: {visual}")
+        if spoken:
+            lines.append(f"Voiceover: {' '.join(spoken)}")
+        normalized.append("\n".join(lines))
+
+    return "\n\n".join(part for part in normalized if part).strip()
+
+
+def _ensure_storyboard_metadata(storyboard: str, *, fallback_title: str) -> str:
+    """Add missing title/description frontmatter without touching a valid board.
+
+    Editors commonly paste a readable outline beginning with ``Title:`` rather
+    than a YAML block. The rendering pipeline needs title and description for
+    the draft's upload metadata, but rejecting otherwise complete scenes is an
+    unnecessary dead end. Existing complete frontmatter is deliberately
+    returned unchanged.
+    """
+    text = storyboard.strip()
+    match = _FRONTMATTER_BLOCK.match(text)
+    existing_frontmatter = match.group("frontmatter").strip() if match else ""
+    body = text[match.end():].strip() if match else text
+    normalized_body = _normalize_timestamped_storyboard_outline(body)
+    body_changed = normalized_body != body
+    body = normalized_body
+
+    title = _frontmatter_value(existing_frontmatter, "title") or _frontmatter_value(body, "title")
+    title = _yaml_scalar(title or fallback_title or "Manual storyboard")
+    description = _frontmatter_value(existing_frontmatter, "description") or _frontmatter_value(body, "description")
+    description = _yaml_scalar(description)
+    if not description:
+        description = f"A 3D animated short based on {title}."
+
+    if (
+        match
+        and _frontmatter_value(existing_frontmatter, "title")
+        and _frontmatter_value(existing_frontmatter, "description")
+        and not body_changed
+    ):
+        return storyboard
+
+    frontmatter_lines = existing_frontmatter.splitlines() if existing_frontmatter else []
+    if not _frontmatter_value(existing_frontmatter, "title"):
+        frontmatter_lines.append(f'title: "{title}"')
+    if not _frontmatter_value(existing_frontmatter, "description"):
+        frontmatter_lines.append(f'description: "{description}"')
+    frontmatter = "\n".join(frontmatter_lines)
+    return f"---\n{frontmatter}\n---\n\n{body}\n"
 
 
 def _write_upload_txt(

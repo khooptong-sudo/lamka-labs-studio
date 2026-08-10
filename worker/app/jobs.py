@@ -20,8 +20,9 @@ from app.db import _fetchone, _fetchval, get_pool
 
 log = structlog.get_logger()
 
-# Ordered. "world" and "shots" only occur for 3D films; a 2D Short skips them,
-# which the GUI renders as stages that never light up rather than as an error.
+# Ordered. "world" is unique to the code-authored Story Film. Both formats use
+# the "shots" stage: it verifies Three.js shots for a film and creates final
+# image-led 3D visuals for a Short.
 STAGES = ["queued", "script", "narration", "world", "shots", "render", "done"]
 
 

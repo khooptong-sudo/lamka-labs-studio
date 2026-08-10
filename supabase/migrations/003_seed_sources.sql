@@ -61,7 +61,8 @@ INSERT INTO config (key, value) VALUES
         "max_full_text_fetch_seconds": 10,
         "embedding_timeout_seconds": 5,
         "embedding_degraded_threshold": 0.20,
-        "embedding_max_retries": 3
+        "embedding_max_retries": 3,
+        "fresh_news_hours": 48
     }'::jsonb),
     ('edgar', '{
         "form_types": ["8-K", "13F-HR"],

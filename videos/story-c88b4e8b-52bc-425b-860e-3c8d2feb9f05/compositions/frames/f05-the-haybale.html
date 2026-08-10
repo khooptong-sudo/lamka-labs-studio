@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+  <body>
+    <template>
+      <style>
+        #root { position: absolute; inset: 0; width: 100%; height: 100%; overflow: hidden; background: #08090c; }
+        .stage-fill { position: absolute; inset: 0; overflow: hidden; background: #08090c; }
+        .image { display: block; width: 100%; height: 100%; object-fit: cover; object-position: center; transform-origin: 50% 50%; }
+        .vignette { position: absolute; inset: 0; pointer-events: none; background: radial-gradient(circle at 50% 42%, transparent 45%, rgba(0,0,0,.28) 100%); }
+      </style>
+      <div id="root" data-composition-id="f05-the-haybale" data-start="0" data-duration="4.638" data-width="1080" data-height="1920">
+        <div class="stage-fill">
+          <img id="f05-the-haybale-image" class="image clip" src="../../assets/cinematic/f05-the-haybale.png" alt="" data-start="0" data-duration="4.638" data-track-index="1" />
+          <div class="vignette"></div>
+        </div>
+      </div>
+      <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+      <script>
+        window.__timelines = window.__timelines || {};
+        const tl = gsap.timeline({ paused: true });
+        tl.fromTo("#f05-the-haybale-image", { scale: 1, x: 0, y: 0 }, { scale: 1.075, x: -14, y: -10, duration: 4.638, ease: "none" }, 0);
+        window.__timelines["f05-the-haybale"] = tl;
+      </script>
+    </template>
+  </body>
+</html>

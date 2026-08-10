@@ -42,6 +42,11 @@ nul
 # DeepSeek + Pexels API keys in plaintext — never track this tree.
 MoneyPrinterTurbo/
 
+# Local image-generation runtime and its 2 GB installer archive. The portable
+# tree may contain provider configuration and is not application source.
+ComfyUI_windows_portable/
+ComfyUI_windows_portable_*.7z
+
 # Unrelated pre-existing files (local briefs / prompts)
 PROMPT.txt
 Content Creation Project folder con.txt
@@ -51,6 +56,8 @@ Content Creation Project folder con.txt
 videos/local-test/
 videos/**/renders/
 videos/**/assets/voice/
+videos/**/assets/cinematic/
+videos/**/thumbnail.jpg
 *.mp4
 *.wav
 *.mp3

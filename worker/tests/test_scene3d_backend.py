@@ -172,3 +172,77 @@ async def test_world_authoring_failure_raises(tmp_path):
     ):
         with pytest.raises(SceneAuthoringError):
             await build_3d_frames(_board(), tmp_path)
+
+
+# ---------------------------------------------------------------------------
+# Image-led cinematic shorts
+# ---------------------------------------------------------------------------
+
+
+def test_cinematic_frame_is_a_seekable_hyperframes_subcomposition():
+    """Image-led scenes retain the exact composition contract of every render."""
+    from app.scene3d.backend import render_cinematic_frame
+
+    html = render_cinematic_frame("f01-hook", 4.5, "assets/cinematic/f01-hook.png")
+
+    assert "<template>" in html
+    assert 'data-composition-id="f01-hook"' in html
+    assert 'window.__timelines["f01-hook"]' in html
+    assert 'gsap.timeline({ paused: true })' in html
+    assert "assets/cinematic/f01-hook.png" in html
+
+
+def test_cinematic_prompt_has_safe_stock_and_investing_visual_language():
+    from app.scene3d.backend import cinematic_image_prompt
+
+    prompt = cinematic_image_prompt(_board(1), _board(1).frames[0])
+
+    assert "candlestick-shaped city" in prompt
+    assert "diversified garden" in prompt
+    assert "Never depict a \"winning\" trade" in prompt
+
+
+def test_comfyui_default_workflow_is_sized_for_the_local_provider(monkeypatch):
+    from app.scene3d.backend import _comfyui_workflow
+
+    monkeypatch.setenv("COMFYUI_CHECKPOINT_NAME", "sdxl-test.safetensors")
+    monkeypatch.delenv("COMFYUI_WORKFLOW_PATH", raising=False)
+    workflow = _comfyui_workflow("A miniature market garden")
+
+    assert workflow["1"]["inputs"]["ckpt_name"] == "sdxl-test.safetensors"
+    assert workflow["2"]["inputs"]["text"] == "A miniature market garden"
+    assert workflow["4"]["inputs"]["width"] == 768
+    assert workflow["4"]["inputs"]["height"] == 1152
+
+
+def test_comfyui_provider_requires_a_server_and_workflow(monkeypatch):
+    from app.scene3d.backend import require_cinematic_image_provider
+
+    monkeypatch.delenv("COMFYUI_BASE_URL", raising=False)
+    monkeypatch.delenv("COMFYUI_CHECKPOINT_NAME", raising=False)
+    monkeypatch.delenv("COMFYUI_WORKFLOW_PATH", raising=False)
+
+    with pytest.raises(RuntimeError, match="ComfyUI is not ready"):
+        require_cinematic_image_provider("comfyui")
+
+
+@pytest.mark.asyncio
+async def test_cinematic_backend_writes_one_image_and_composition_per_scene(tmp_path):
+    from app.scene3d.backend import build_cinematic_frames
+
+    async def make_image(_prompt, destination, _provider):
+        destination.write_bytes(b"png")
+
+    with (
+        patch("app.scene3d.backend.require_cinematic_image_provider", return_value="openai"),
+        patch(
+            "app.scene3d.backend._generate_cinematic_image",
+            new=AsyncMock(side_effect=make_image),
+        ) as generate,
+    ):
+        failed = await build_cinematic_frames(_board(3), tmp_path)
+
+    assert failed == []
+    assert generate.await_count == 3
+    assert (tmp_path / "assets" / "cinematic" / "f01-s1.png").exists()
+    assert (tmp_path / "compositions" / "frames" / "f03-s3.html").exists()

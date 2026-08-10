@@ -340,3 +340,149 @@ first `{` before `ConvertFrom-Json`.
 and still warns in amber. Upload has still never executed. No tests were run
 this session (nothing in `worker/` was touched), so the suite stands at the 105
 from the previous session.
+
+---
+
+## Session Handoff — 2026-08-09 (Cinematic 3D Shorts)
+
+### What changed
+
+The Films screen now makes **3D Short** the normal, image-led,
+character-capable vertical short workflow used for the miniature adventure
+reference. This is intentionally separate from **Story Film**: Story Film is
+the existing low-poly Three.js landscape path; 3D Short is 1080×1920 and uses
+polished generated keyframes with deterministic camera movement.
+
+### Operator workflow
+
+1. Start the worker with `..\.venv\Scripts\python.exe run_worker.py` and the
+   GUI from `gui/` with `npm run dev`.
+2. Open `/films`, select a source story and its intended channel, then choose
+   **3D Short**.
+3. Paste a storyboard for exact control, or leave it blank to create one from
+   the source story. The existing channel voice, narration, local render,
+   manual-upload policy, and quality guards still apply.
+4. Review the rendered draft before manual upload. Nothing auto-publishes.
+
+### Storyboard contract
+
+Use YAML frontmatter with `title`, `description`, and `preset`, followed by a
+`# Video direction` continuity bible and 4–8 scenes. Each scene needs a
+`Voiceover:` and `Scene:` line; `Visual:` is also accepted for compatibility.
+The direction must state the recurring character, setting, lighting, palette,
+and camera language so every generated image repeats the same design truth.
+
+### Required local setup
+
+Set `OPENAI_API_KEY` in the ignored `worker/.env` file. The tracked
+`worker/.env.example` is deliberately empty. The worker uses `gpt-image-2`,
+`1024x1536`, and `high` quality by default; all three are configurable through
+the `CINEMATIC_IMAGE_*` environment variables. It makes one final-quality
+portrait keyframe per storyboard scene, so confirm spend before long boards.
+
+### Validation status
+
+- Focused storyboard, route, cinematic-backend, and worker-pipeline tests: **51 passed**.
+- GUI TypeScript check: passed.
+- Full GUI ESLint still has pre-existing errors outside the Films screen
+  (`drafts`, dashboard, Settings, and ThemeToggle); none are from this change.
+- No live image call or render was made: that needs the owner-configured key
+  and a human review of the generated finance content.
+
+---
+
+## Session Handoff — 2026-08-09 (Research-first finance Shorts)
+
+### Non-negotiable workflow
+
+`official/news source → ingest → cluster → Inbox review → executor selects story → evidence-bounded script → 3D Short → human draft review → manual upload`
+
+The scheduler no longer calls the autopilot script generator. A scraped story
+never becomes a video just because it entered the database; a human must pick
+it in `/films`.
+
+### Evidence contract
+
+The selected story now loads its linked articles, including publisher, date,
+URL, and a bounded text excerpt. The script model receives that evidence
+packet, not only the headline, and must not add unsourced prices, forecasts,
+tax thresholds, legal conclusions, or company facts. Generated `STORYBOARD.md`
+files retain the exact source links under `# Research sources` for audit and
+review. Manual ideas have no evidence packet, so automatic finance scripting
+is disabled for them; paste a reviewed storyboard instead.
+
+### Source pack rollout
+
+Apply `supabase/migrations/009_research_source_pack.sql` once to every
+existing database before expecting the new official feeds. It updates the SEC
+press-release feed and adds RBI press releases, RBI notifications, SEBI RSS,
+and SEC Investor Alerts & Bulletins. This is deliberately a new additive
+migration rather than an edit to the already-applied seed migration.
+
+### Fresh-news gate
+
+Apply `supabase/migrations/010_fresh_news_inbox.sql` after migration 009. The
+Inbox now accepts only source entries with a trustworthy publication date from
+the last 48 hours, and orders stories by that source date. Historical articles
+remain stored for audit/deduplication but are not reviewable as fresh news.
+Feeds that omit an entry-level date are excluded rather than stamped with the
+time the worker happened to fetch them.
+
+### 3D scene direction
+
+Image-led 3D Shorts now have dedicated stock-market and investing visual
+language: miniature exchange floors, unlabeled candlestick cities,
+diversified gardens, risk umbrellas, and long-horizon journeys. The prompt
+prohibits trade execution, price targets, instant wealth, luxury payoff, and
+any live numbers/tickers, so scenes explain concepts without visually making a
+recommendation.
+
+### Switchable image providers
+
+`/films` now sends a per-run image provider with every **3D Short** job:
+**OpenAI Cinematic** is the existing `gpt-image-2` path; **ComfyUI Local**
+submits a standard ComfyUI API workflow to the operator's local GPU. The
+dashboard exposes only readiness, never keys or workflow content, and blocks a
+run when the selected provider has not been configured.
+
+For the local RTX 3070 (8 GB), begin with the built-in SDXL-style checkpoint
+workflow from `worker/.env.example`: 768×1152, 20 steps, then let the existing
+portrait composition scale/crop it. Set `COMFYUI_BASE_URL` and the exact
+`COMFYUI_CHECKPOINT_NAME` from ComfyUI, restart the worker, and select it in
+the dashboard. For FLUX or another advanced graph, export **Save (API Format)**
+from ComfyUI, point `COMFYUI_WORKFLOW_PATH` at it, and use the documented
+placeholders.
+
+---
+
+## Session Close — 2026-08-09 (GPU thermal interruption recovery)
+
+### Recovered artifacts
+
+- **Complete, awaiting human review/manual upload:** `videos/story-c88b4e8b-52bc-425b-860e-3c8d2feb9f05/` contains the 41 MB `renders/video.mp4`, thumbnail, seven generated cinematic keyframes, seven voice clips, and `upload.txt` for **“Peekaboo Farm! Who's Hiding?”**. It is a Kids video, so YouTube Studio still needs the **Made for kids** setting before manual publication.
+- **Interrupted; not a draft:** `videos/story-b9e889ee-c6e8-4b33-9e3e-9d636d021f04/` contains the **“Sharing Makes Playtime Fun!”** storyboard, generated `index.html`, and six voice clips. It contains **no** cinematic keyframes, frame-composition files, rendered MP4, thumbnail, or upload metadata. The system shutdown during local-GPU work must not be interpreted as a successful job.
+
+### Safe restart
+
+1. Let the RTX 3070 cool and confirm it is healthy before relaunching local generation. At recovery time it was 37°C and idle; no Python, ffmpeg, or ComfyUI process was still running.
+2. Start the studio with `START_LAMKA_LABS_STUDIO.bat`, wait for ComfyUI readiness, then submit the interrupted storyboard as a **new** 3D Short job. Do not attempt to publish or reconstruct a draft from the partial directory.
+3. Review the complete `Peekaboo Farm` MP4 and upload packet before any manual upload. The pipeline never auto-publishes.
+
+### Session integrity
+
+- `git diff --check` was clean during recovery.
+- The focused validation recorded earlier in this session remains **51 passed** plus a passing GUI TypeScript check. Do not run the DB-mutating worker test suite against a database whose stories/drafts must be preserved.
+
+### Knowledge-state sync
+
+- Durable recovery lesson filed as [[Content Engine - An Interrupted Job Is Not a Draft]] in the vault; it is linked from the vault index and log.
+- The derived RAG stores were rebuilt after the session close: the vector index is current at 134 vault pages / 332 chunks, and the Neo4j graph contains 141 pages, 1,095 entities, 950 relations, and 414 wikilinks.
+
+## Session Close — 2026-08-09 (Lamka Labs Studio identity)
+
+- Product-facing identity is now **Lamka Labs Studio**. The GUI metadata, sidebar, product/design docs, and launcher use the same name.
+- Start locally with `START_LAMKA_LABS_STUDIO.bat`; it launches Docker/database, ComfyUI when installed, the worker, and the Next.js GUI.
+- The production bench now exposes eight cinematic controls and sends them as `cinematic_controls`; the worker inserts them into the storyboard continuity bible before scene generation.
+- Validation: GUI production build passed; TypeScript and targeted lint passed; cinematic-control tests passed (`2 passed`).
+- RAG closeout completed from the canonical vault: Chroma indexed 135 wiki pages / 333 chunks; Neo4j graph rebuilt to 142 pages, 1,100 entities, 953 relations, and 416 wikilinks.
+- Manual publication remains required. No keys or proprietary CinePrompt assets were copied.

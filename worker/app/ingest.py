@@ -11,6 +11,7 @@ This module is what the scheduler calls and what `/ingest/trigger` invokes.
 from __future__ import annotations
 
 import uuid
+from datetime import datetime, timedelta, timezone
 from typing import Any
 
 import structlog
@@ -31,6 +32,19 @@ from app.sources import get_source, SourceError
 log = structlog.get_logger()
 
 
+def _is_fresh_news_item(item, *, fresh_news_hours: int) -> bool:
+    """Accept only dated, genuinely current source material.
+
+    RSS feeds without per-entry dates used to be stamped with the ingestion
+    time. That made a years-old entry look new, which is unacceptable for a
+    market-research Inbox. Keep it out until the source supplies a date.
+    """
+    if "date_missing" in item.warnings:
+        return False
+    newest_allowed_age = datetime.now(timezone.utc) - timedelta(hours=fresh_news_hours)
+    return item.published_at >= newest_allowed_age
+
+
 async def run_for_source(source_row: SourceRow) -> dict[str, Any]:
     """Run one poll cycle for a single source. Returns a small summary dict.
     Never raises — failures are logged + recorded in audit_log + reflected in
@@ -42,6 +56,7 @@ async def run_for_source(source_row: SourceRow) -> dict[str, Any]:
         "new": 0,
         "embedded": 0,
         "embed_failures": 0,
+        "stale": 0,
         "status": "ok",
     }
 
@@ -97,6 +112,10 @@ async def run_for_source(source_row: SourceRow) -> dict[str, Any]:
                 title=raw.raw_title[:80],
                 error=str(exc),
             )
+            continue
+
+        if not _is_fresh_news_item(normalized, fresh_news_hours=cfg.fresh_news_hours):
+            summary["stale"] += 1
             continue
 
         item_id = await upsert_item(
@@ -159,6 +178,7 @@ async def run_for_source(source_row: SourceRow) -> dict[str, Any]:
             "new": summary["new"],
             "embedded": summary["embedded"],
             "embed_failures": summary["embed_failures"],
+            "stale": summary["stale"],
         },
     )
     log.info("ingest_done", **summary)

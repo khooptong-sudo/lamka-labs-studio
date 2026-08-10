@@ -48,6 +48,9 @@ class IngestConfig:
     embedding_timeout_seconds: int = 5
     embedding_degraded_threshold: float = 0.20
     embedding_max_retries: int = 3
+    # A current-news Inbox is not an archive. Items without a trustworthy feed
+    # timestamp, or older than this window, never enter its review queue.
+    fresh_news_hours: int = 48
 
 
 @dataclass(frozen=True)

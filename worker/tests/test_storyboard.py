@@ -86,6 +86,9 @@ def test_parses_gemini_dialect():
     assert len(board.frames) == 2
     assert board.frames[0].voiceover == "Did you get a 10% raise? Bad news."
     assert board.frames[1].voiceover == "Real inflation is the invisible tax."
+    # Manual cinematic boards often call the same field `Visual:`; it must
+    # remain available to the image-prompt builder.
+    assert board.frames[0].scene == "A bright title card introducing the topic."
     # No `format:` key -> falls back to vertical shorts dimensions.
     assert (board.width, board.height) == (1080, 1920)
 

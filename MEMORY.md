@@ -6,7 +6,7 @@
 
 **Project:** AI pipeline for compliant US/India finance content (X + IG).
 **Owner:** UMinkoo (sole publish authority).
-**Started:** 2026-07-25. **Last update:** 2026-07-29.
+**Started:** 2026-07-25. **Last update:** 2026-08-09.
 
 ---
 
@@ -21,6 +21,13 @@ by three cheap, tireless LLMs.
 **Codename:** The Cyborg Desk.
 **Source of truth:** `fin-content-engine-FINAL-blueprint.md`.
 **Phase map:** blueprint Part I §6 (P0 through P6).
+
+### Session-close update — 2026-08-09
+
+- The current YouTube work is **YT P6 — research-first 3D Shorts**. The finance path is now human-selected from a dated, linked-source Inbox; automatic scripting receives the bounded source packet and does not run for manual ideas.
+- The 3D Short path is image-led and vertical; Story Film remains the separate low-poly Three.js landscape backend. Local ComfyUI and OpenAI image providers are selectable per run.
+- Disk recovery after a GPU thermal shutdown found one complete Kids render (`videos/story-c88b4e8b-52bc-425b-860e-3c8d2feb9f05/renders/video.mp4`, 41 MB, with `upload.txt`) and one non-publishable interrupted Kids run (`videos/story-b9e889ee-c6e8-4b33-9e3e-9d636d021f04`): storyboard, index, and six voice clips exist, but no cinematic images, frame compositions, render, thumbnail, or upload packet.
+- Do not resume the interrupted run blindly. Confirm cooling and ComfyUI readiness first, then rerun it as a new job; only a completed render plus review is a draft.
 
 ---
 

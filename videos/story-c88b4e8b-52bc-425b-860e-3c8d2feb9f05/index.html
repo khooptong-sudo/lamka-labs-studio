@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1920" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body {
+        width: 1080px;
+        height: 1920px;
+        overflow: hidden;
+        background: #000;
+      }
+      #root {
+        position: relative;
+        width: 1080px;
+        height: 1920px;
+        overflow: hidden;
+        perspective: 1400px;
+      }
+      /* Full-bleed child, never the root itself: the producer's frame
+         compositing can drop a background set on the composition root, which
+         renders black even though preview and snapshot look correct. */
+      #stage-fill {
+        position: absolute;
+        inset: 0;
+        background: #0B1220;
+      }
+      .scene {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        transform-style: preserve-3d;
+      }
+    </style>
+  </head>
+  <body>
+    <div
+      id="root"
+      data-composition-id="main"
+      data-start="0"
+      data-duration="37.986"
+      data-width="1080"
+      data-height="1920"
+    >
+      <div id="stage-fill" class="clip" data-start="0" data-duration="37.986" data-track-index="0"></div>
+      <div
+        id="el-f01-the-red-barn"
+        class="scene"
+        data-composition-id="f01-the-red-barn"
+        data-composition-src="compositions/frames/f01-the-red-barn.html"
+        data-start="0.0"
+        data-duration="5.862"
+        data-track-index="1"
+      ></div>
+      <audio
+        id="el-f01-the-red-barn-voice"
+        src="assets/voice/01.mp3"
+        data-start="0.25"
+        data-duration="5.112"
+        data-track-index="10"
+        data-volume="1"
+      ></audio>
+
+      <div
+        id="el-f02-the-first-animal"
+        class="scene"
+        data-composition-id="f02-the-first-animal"
+        data-composition-src="compositions/frames/f02-the-first-animal.html"
+        data-start="5.862"
+        data-duration="8.07"
+        data-track-index="1"
+      ></div>
+      <audio
+        id="el-f02-the-first-animal-voice"
+        src="assets/voice/02.mp3"
+        data-start="6.112"
+        data-duration="7.32"
+        data-track-index="10"
+        data-volume="1"
+      ></audio>
+
+      <div
+        id="el-f03-the-shaking-bush"
+        class="scene"
+        data-composition-id="f03-the-shaking-bush"
+        data-composition-src="compositions/frames/f03-the-shaking-bush.html"
+        data-start="13.932"
+        data-duration="3.222"
+        data-track-index="1"
+      ></div>
+      <audio
+        id="el-f03-the-shaking-bush-voice"
+        src="assets/voice/03.mp3"
+        data-start="14.182"
+        data-duration="2.472"
+        data-track-index="10"
+        data-volume="1"
+      ></audio>
+
+      <div
+        id="el-f04-the-second-animal"
+        class="scene"
+        data-composition-id="f04-the-second-animal"
+        data-composition-src="compositions/frames/f04-the-second-animal.html"
+        data-start="17.154"
+        data-duration="6.246"
+        data-track-index="1"
+      ></div>
+      <audio
+        id="el-f04-the-second-animal-voice"
+        src="assets/voice/04.mp3"
+        data-start="17.404"
+        data-duration="5.496"
+        data-track-index="10"
+        data-volume="1"
+      ></audio>
+
+      <div
+        id="el-f05-the-haybale"
+        class="scene"
+        data-composition-id="f05-the-haybale"
+        data-composition-src="compositions/frames/f05-the-haybale.html"
+        data-start="23.4"
+        data-duration="4.638"
+        data-track-index="1"
+      ></div>
+      <audio
+        id="el-f05-the-haybale-voice"
+        src="assets/voice/05.mp3"
+        data-start="23.65"
+        data-duration="3.888"
+        data-track-index="10"
+        data-volume="1"
+      ></audio>
+
+      <div
+        id="el-f06-the-third-animal"
+        class="scene"
+        data-composition-id="f06-the-third-animal"
+        data-composition-src="compositions/frames/f06-the-third-animal.html"
+        data-start="28.038"
+        data-duration="3.918"
+        data-track-index="1"
+      ></div>
+      <audio
+        id="el-f06-the-third-animal-voice"
+        src="assets/voice/06.mp3"
+        data-start="28.288"
+        data-duration="3.168"
+        data-track-index="10"
+        data-volume="1"
+      ></audio>
+
+      <div
+        id="el-f07-the-grand-finale"
+        class="scene"
+        data-composition-id="f07-the-grand-finale"
+        data-composition-src="compositions/frames/f07-the-grand-finale.html"
+        data-start="31.956"
+        data-duration="6.03"
+        data-track-index="1"
+      ></div>
+      <audio
+        id="el-f07-the-grand-finale-voice"
+        src="assets/voice/07.mp3"
+        data-start="32.206"
+        data-duration="5.28"
+        data-track-index="10"
+        data-volume="1"
+      ></audio>
+
+
+    </div>
+
+    <script>
+      window.__timelines = window.__timelines || {};
+      window.__timelines["main"] = gsap.timeline({ paused: true });
+    </script>
+  </body>
+</html>

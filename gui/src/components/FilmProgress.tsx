@@ -6,9 +6,19 @@ import { AlertTriangle, Check, Loader2 } from "lucide-react";
 // Mirrors STAGES in worker/app/jobs.py. Order is what the bar draws.
 const STAGES = ["queued", "script", "narration", "world", "shots", "render", "done"] as const;
 
-// "world" and "shots" only occur for a 3D film. A Short skips them, so they
-// render as stages that never light up rather than as an error.
+// "world" is unique to the code-authored Story Film. Both formats create
+// visuals at the "shots" stage; the user-facing label is clearer than the
+// shared backend name.
 const FILM_ONLY = new Set(["world"]);
+const STAGE_LABELS: Record<(typeof STAGES)[number], string> = {
+  queued: "queued",
+  script: "script",
+  narration: "narration",
+  world: "world",
+  shots: "visuals",
+  render: "render",
+  done: "done",
+};
 
 type Job = {
   stage: string;
@@ -97,7 +107,7 @@ export default function FilmProgress({ jobId }: { jobId: string }) {
             >
               {complete && <Check className="w-3 h-3" />}
               {active && <Loader2 className="w-3 h-3 animate-spin" />}
-              <span>{stage}</span>
+              <span>{STAGE_LABELS[stage]}</span>
               {active && job.total > 0 && (
                 <span className="font-mono normal-case">
                   {job.done}/{job.total}

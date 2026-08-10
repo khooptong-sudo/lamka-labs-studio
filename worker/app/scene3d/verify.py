@@ -76,51 +76,76 @@ async def verify_shot(
     out_dir.mkdir(parents=True, exist_ok=True)
 
     def _run():
+        import http.server
+        import socket
+        import threading
         from playwright.sync_api import sync_playwright
 
-        pw = sync_playwright().start()
+        # Find a free port and start a tiny HTTP server so relative asset
+        # paths (assets/three.min.js etc.) resolve correctly.  file:// URIs
+        # break relative paths because the frame lives in compositions/frames/.
+        sock = socket.socket()
+        sock.bind(("127.0.0.1", 0))
+        port = sock.getsockname()[1]
+        sock.close()
+
+        server = http.server.HTTPServer(
+            ("127.0.0.1", port),
+            lambda *a: http.server.SimpleHTTPRequestHandler(
+                *a, directory=str(frame_path.parents[2])
+            ),
+        )
+        thread = threading.Thread(target=server.serve_forever, daemon=True)
+        thread.start()
         try:
-            browser = pw.chromium.launch(
-                args=[
-                    "--use-gl=angle",
-                    "--enable-unsafe-swiftshader",
-                    "--hide-scrollbars",
-                ]
-            )
+            pw = sync_playwright().start()
             try:
-                page = browser.new_page(
-                    viewport={"width": 1920, "height": 1080}
+                browser = pw.chromium.launch(
+                    args=[
+                        "--use-gl=angle",
+                        "--enable-unsafe-swiftshader",
+                        "--hide-scrollbars",
+                    ]
                 )
-                errors: list[str] = []
-                page.on(
-                    "console",
-                    lambda m: errors.append(m.text)
-                    if m.type == "error"
-                    else None,
-                )
-                page.on("pageerror", lambda e: errors.append(str(e)))
-                page.goto(frame_path.resolve().as_uri())
-                page.wait_for_timeout(400)
+                try:
+                    page = browser.new_page(
+                        viewport={"width": 1920, "height": 1080}
+                    )
+                    errors: list[str] = []
+                    page.on(
+                        "console",
+                        lambda m: errors.append(m.text)
+                        if m.type == "error"
+                        else None,
+                    )
+                    page.on("pageerror", lambda e: errors.append(str(e)))
+                    # Load via HTTP so relative paths resolve correctly.
+                    page.goto(
+                        f"http://127.0.0.1:{port}/compositions/frames/{frame_path.name}"
+                    )
+                    page.wait_for_timeout(400)
 
-                if errors:
-                    return ShotVerdict(
-                        False, f"runtime error: {errors[0]}"
-                    ), [], errors
+                    if errors:
+                        return ShotVerdict(
+                            False, f"runtime error: {errors[0]}"
+                        ), [], errors
 
-                probes: list[ProbeStats] = []
-                for i, fraction in enumerate(PROBE_FRACTIONS):
-                    t = fraction * duration
-                    raw = page.evaluate(_STATS_JS, [slug, t])
-                    probes.append(ProbeStats(t=t, **raw))
-                    shot = page.screenshot()
-                    (out_dir / f"{slug}-p{i}.png").write_bytes(shot)
+                    probes: list[ProbeStats] = []
+                    for i, fraction in enumerate(PROBE_FRACTIONS):
+                        t = fraction * duration
+                        raw = page.evaluate(_STATS_JS, [slug, t])
+                        probes.append(ProbeStats(t=t, **raw))
+                        shot = page.screenshot()
+                        (out_dir / f"{slug}-p{i}.png").write_bytes(shot)
 
-                page.close()
-                return None, probes, errors
+                    page.close()
+                    return None, probes, errors
+                finally:
+                    browser.close()
             finally:
-                browser.close()
+                pw.stop()
         finally:
-            pw.stop()
+            server.shutdown()
 
     maybe_verdict, probes, errors = await asyncio.to_thread(_run)
     if maybe_verdict is not None:

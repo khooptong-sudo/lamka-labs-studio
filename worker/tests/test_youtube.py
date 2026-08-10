@@ -6,9 +6,13 @@ import pytest
 
 from app.channels import Channel
 from app.youtube import (
+    _apply_cinematic_controls,
+    _append_research_sources,
+    _ensure_storyboard_metadata,
     generate_youtube_video,
     _get_youtube_credentials,
     _parse_storyboard_frontmatter,
+    _research_packet,
 )
 
 FINANCE = Channel(
@@ -29,6 +33,37 @@ SCRIPT_4_SCENES = (
     "# Scene 3\nVoiceover: C\n\n"
     "# Scene 4\nVoiceover: D\n"
 )
+
+
+def test_cinematic_controls_become_part_of_the_continuity_bible():
+    storyboard = (
+        "---\ntitle: Test\ndescription: A test description.\n---\n\n"
+        "# Video direction\nA miniature world with one recurring guide.\n\n"
+        "# Scene 1\nVoiceover: Hello\nScene: The guide enters.\n"
+    )
+
+    controlled = _apply_cinematic_controls(
+        storyboard,
+        {
+            "shot_scale": "medium close-up",
+            "camera_angle": "low angle",
+            "camera_movement": "slow push in",
+            "lens": "50mm natural perspective",
+            "lighting": "soft window light",
+            "color_treatment": "cool shadows, warm skin tones",
+            "pacing": "measured",
+            "motion_intent": "subject-led parallax",
+        },
+    )
+
+    assert "## Cinematography controls" in controlled
+    assert "Camera movement: slow push in" in controlled
+    assert "Lens language: 50mm natural perspective" in controlled
+    assert controlled.index("## Cinematography controls") < controlled.index("# Scene 1")
+
+
+def test_absent_cinematic_controls_leave_storyboard_unchanged():
+    assert _apply_cinematic_controls(SCRIPT_4_SCENES, None) == SCRIPT_4_SCENES
 
 
 @pytest.mark.asyncio
@@ -249,12 +284,111 @@ def test_parse_storyboard_frontmatter():
         path.unlink(missing_ok=True)
 
 
+def test_human_outline_gets_upload_metadata_and_scene_heading() -> None:
+    from app.storyboard import parse_storyboard
+
+    outline = """Title: Peekaboo Farm! Who's Hiding?
+
+Target Audience: Toddlers (Ages 1-3)
+Vibe: Bright, colorful, enthusiastic, and bouncy.
+
+Scene 1: The Red Barn
+Visual: A bright red barn door is closed on screen.
+Voiceover: Let's play Peekaboo Farm! Who's hiding in the barn?
+"""
+
+    normalized = _ensure_storyboard_metadata(outline, fallback_title="Manual storyboard")
+
+    assert 'title: "Peekaboo Farm! Who\'s Hiding?"' in normalized
+    assert 'description: "A 3D animated short based on Peekaboo Farm! Who\'s Hiding?' in normalized
+    board = parse_storyboard(normalized)
+    assert len(board.frames) == 1
+    assert board.frames[0].title == "The Red Barn"
+    assert board.frames[0].voiceover == "Let's play Peekaboo Farm! Who's hiding in the barn?"
+
+
+def test_timestamped_human_outline_becomes_renderable_scenes() -> None:
+    from app.storyboard import parse_storyboard
+
+    outline = """Title: Sharing Makes Playtime Fun!
+Style: Bright, colorful toddler animation
+
+0–5 sec
+Visual: A cheerful bunny plays with two colorful toy cars while a bear watches nearby.
+Narrator: Bunny has two fun cars! Vroom, vroom!
+
+5–10 sec
+Visual: Bear points gently at one car and smiles.
+Bear: Can I play too?
+Narrator: Bear would like a turn!
+
+10–16 sec
+Visual: Bunny happily gives the blue car to Bear.
+Bunny: Here you go!
+Narrator: Bunny shares! Yay!
+"""
+
+    normalized = _ensure_storyboard_metadata(outline, fallback_title="Manual storyboard")
+    board = parse_storyboard(normalized)
+
+    assert len(board.frames) == 3
+    assert board.frames[0].declared_duration == 5
+    assert board.frames[1].declared_duration == 5
+    assert board.frames[2].declared_duration == 6
+    assert board.frames[1].voiceover == "Bear says, Can I play too? Bear would like a turn!"
+    assert board.frames[2].scene == "Bunny happily gives the blue car to Bear."
+
+
 def test_get_youtube_credentials_missing_token(tmp_path):
     from app.settings import get_settings
 
     with patch.object(get_settings(), "youtube_token_path", tmp_path / "missing.json"):
         with pytest.raises(RuntimeError):
             _get_youtube_credentials(["https://www.googleapis.com/auth/youtube.upload"])
+
+
+def test_research_packet_keeps_linked_article_evidence_and_bounds_the_excerpt():
+    story = {
+        "headline": "Regulator update",
+        "items": [
+            {
+                "title": "Official update",
+                "url": "https://regulator.example/release",
+                "source_name": "Official regulator",
+                "published_at": "2026-08-09T00:00:00Z",
+                "full_text": "evidence " * 1_000,
+            }
+        ],
+    }
+
+    packet = _research_packet(story)
+
+    assert "Official regulator" in packet
+    assert "https://regulator.example/release" in packet
+    assert len(packet) < 5_000
+
+
+def test_research_packet_refuses_headline_only_finance_scripts():
+    with pytest.raises(RuntimeError, match="no linked research sources"):
+        _research_packet({"headline": "Unsourced idea"})
+
+
+def test_generated_storyboard_keeps_an_auditable_source_appendix():
+    board = _append_research_sources(
+        SCRIPT_4_SCENES,
+        {
+            "items": [
+                {
+                    "title": "Official update",
+                    "url": "https://regulator.example/release",
+                    "source_name": "Official regulator",
+                }
+            ]
+        },
+    )
+
+    assert "# Research sources" in board
+    assert "Official regulator" in board
 
 
 # ---------------------------------------------------------------------------
@@ -273,6 +407,80 @@ async def test_build_frames_routes_to_three(tmp_path):
     ) as three:
         await youtube._build_frames(Storyboard(), tmp_path, backend="three")
     three.assert_awaited_once()
+
+
+@pytest.mark.asyncio
+async def test_build_frames_routes_to_cinematic_image_backend(tmp_path):
+    """The premium portrait route must not ever fall back to the cheap 2D path."""
+    from app.storyboard import Storyboard
+    from app import youtube
+
+    with patch(
+        "app.youtube.build_cinematic_frames", new=AsyncMock(return_value=[])
+    ) as cinematic:
+        await youtube._build_frames(
+            Storyboard(), tmp_path, backend="cinematic", image_provider="comfyui"
+        )
+    cinematic.assert_awaited_once_with(Storyboard(), tmp_path, provider="comfyui")
+
+
+@pytest.mark.asyncio
+@patch("app.channels.resolve", AsyncMock(return_value=FINANCE))
+@patch("app.youtube._fetch_story_details")
+@patch("app.youtube._record_youtube_draft")
+@patch("app.youtube._generate_script_for_story")
+@patch("app.youtube._generate_frame_audio")
+@patch("app.youtube._build_frames")
+@patch("app.youtube.subprocess.run")
+@patch("app.youtube._generate_thumbnail")
+async def test_generation_uses_pasted_storyboard_without_regenerating_script(
+    mock_thumb,
+    mock_run,
+    mock_frames,
+    mock_audio,
+    mock_script,
+    mock_record,
+    mock_fetch,
+    tmp_path,
+):
+    story_id = uuid.uuid4()
+    mock_fetch.return_value = {"headline": "Existing source story"}
+    mock_record.return_value = uuid.uuid4()
+    mock_run.return_value = MagicMock(stdout="Mocked hyperframes output")
+    mock_audio.return_value = []
+    mock_frames.return_value = []
+
+    with patch("app.youtube.VIDEOS_DIR", tmp_path):
+        draft_id = await generate_youtube_video(
+            story_id=story_id,
+            channel_id="financial-channel",
+            storyboard_override=SCRIPT_4_SCENES,
+        )
+
+    assert draft_id is not None
+    mock_script.assert_not_called()
+    assert (tmp_path / f"story-{story_id}" / "STORYBOARD.md").read_text(encoding="utf-8") == SCRIPT_4_SCENES
+
+
+@pytest.mark.asyncio
+@patch("app.channels.resolve", AsyncMock(return_value=FINANCE))
+@patch("app.youtube._fetch_story_details")
+@patch("app.youtube._generate_frame_audio")
+async def test_pasted_storyboard_cannot_bypass_channel_blocklist(
+    mock_audio, mock_fetch, tmp_path
+):
+    mock_fetch.return_value = {"headline": "Existing source story"}
+    unsafe = SCRIPT_4_SCENES.replace("Voiceover: A", "Voiceover: Buy this stock now")
+
+    with patch("app.youtube.VIDEOS_DIR", tmp_path):
+        draft_id = await generate_youtube_video(
+            story_id=uuid.uuid4(),
+            channel_id="financial-channel",
+            storyboard_override=unsafe,
+        )
+
+    assert draft_id is None
+    mock_audio.assert_not_called()
 
 
 @pytest.mark.asyncio

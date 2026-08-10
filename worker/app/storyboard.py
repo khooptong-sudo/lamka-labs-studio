@@ -160,8 +160,9 @@ class Storyboard:
 # Accepts both dialects present in the repo:
 #   "## Frame 1 — Hook"  (hand-authored boards under videos/)
 #   "# Scene 1"          (Gemini autopilot output)
+#   "Scene 1: Hook"      (human-pasted outline)
 _FRAME_HEADING = re.compile(
-    r"^#{1,3}\s*(?:Frame|Scene)\s*(\d+)\s*(?:[—\-:]\s*(.+?))?\s*$",
+    r"^\s*#{0,3}\s*(?:Frame|Scene)\s*(\d+)\s*(?:[—\-:]\s*(.+?))?\s*$",
     re.IGNORECASE,
 )
 
@@ -175,6 +176,7 @@ def _field_pattern(name: str) -> re.Pattern[str]:
 
 _VOICEOVER = _field_pattern("voiceover")
 _SCENE = _field_pattern("scene")
+_VISUAL = _field_pattern("visual")
 _DURATION = _field_pattern("duration")
 _SHOT = re.compile(r"^\s*[-*]\s*(\d+(?:\.\d+)?)s:\s*(.+?)\s*$")
 
@@ -250,7 +252,7 @@ def parse_storyboard(text: str) -> Storyboard:
         if not current.voiceover and (m := _VOICEOVER.match(line)):
             current.voiceover = m.group(1).strip()
             continue
-        if not current.scene and (m := _SCENE.match(line)):
+        if not current.scene and (m := (_SCENE.match(line) or _VISUAL.match(line))):
             current.scene = m.group(1).strip()
             continue
         if current.declared_duration is None and (m := _DURATION.match(line)):
