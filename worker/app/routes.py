@@ -470,4 +470,26 @@ async def cineprompt_history() -> list[dict]:
     ]
 
 
+@router.get("/cineprompt/vocab")
+async def cineprompt_vocab(mode: str = "single", level: str = "complex") -> dict:
+    """Section -> field -> {values, free_text}, filtered to what's in scope
+    for (mode, level) — the same filter Fill's system prompt catalogue uses,
+    so the manual picker and the AI-fill shortcut always agree on what's
+    pickable. A section with nothing in scope is omitted, not emitted empty.
+    """
+    from app.cineprompt import assemble, prompts, vocab
+
+    in_scope = set(prompts.fields_in_scope(mode, level))
+    result: dict[str, dict] = {}
+    for section, section_fields in assemble.SECTIONS.items():
+        fields_here = [f for f in section_fields if f in in_scope]
+        if not fields_here:
+            continue
+        result[section] = {
+            field: {"values": vocab.values_for(field), "free_text": vocab.is_free_text(field)}
+            for field in fields_here
+        }
+    return result
+
+
 __all__ = ["router"]

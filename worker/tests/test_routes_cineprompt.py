@@ -175,3 +175,41 @@ def test_history_returns_saved_generations():
     assert resp.status_code == 200
     assert resp.json()[0]["description"] == "a scene"
     assert isinstance(resp.json()[0]["id"], str)
+
+
+def test_vocab_returns_all_eight_sections_at_defaults():
+    resp = client.get("/cineprompt/vocab")
+    assert resp.status_code == 200
+    body = resp.json()
+    assert set(body.keys()) == {
+        "STYLE", "SUBJECT", "ACTIONS", "ENVIRONMENT",
+        "CINEMATOGRAPHY", "PALETTE", "DIALOGUE", "SOUND",
+    }
+
+
+def test_vocab_enum_field_lists_real_values():
+    resp = client.get("/cineprompt/vocab")
+    body = resp.json()
+    genre = body["STYLE"]["genre"]
+    assert genre["free_text"] is False
+    assert "action" in genre["values"]
+    assert len(genre["values"]) > 1
+
+
+def test_vocab_free_text_field_is_marked():
+    resp = client.get("/cineprompt/vocab")
+    body = resp.json()
+    dialogue = body["DIALOGUE"]["dialogue"]
+    assert dialogue["free_text"] is True
+    assert dialogue["values"] == []
+
+
+def test_vocab_respects_mode_and_level_query_params():
+    resp = client.get("/cineprompt/vocab?mode=single&level=simple")
+    body = resp.json()
+    # "dialogue" is not in prompts.SIMPLE_FIELDS, so at level=simple it must
+    # be absent from the response (either DIALOGUE is omitted entirely, or
+    # present without a "dialogue" key) — this proves the query params
+    # actually reach fields_in_scope rather than always returning defaults.
+    if "DIALOGUE" in body:
+        assert "dialogue" not in body["DIALOGUE"]
