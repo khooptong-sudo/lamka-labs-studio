@@ -288,6 +288,12 @@ async def youtube_job_shots(job_id: str) -> list[dict]:
     return json.loads(path.read_text(encoding="utf-8"))
 
 
+@router.get("/youtube/image-providers")
+async def youtube_image_providers() -> dict:
+    """Fetch available image providers for cinematic mode."""
+    from app.scene3d.backend import cinematic_image_provider_statuses
+
+    return {"providers": cinematic_image_provider_statuses()}
 
 
 @router.get("/stories")
