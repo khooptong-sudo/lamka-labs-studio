@@ -398,16 +398,19 @@ class CinepromptBuildRequest(BaseModel):
 
 @router.post("/cineprompt/build")
 async def cineprompt_build(req: CinepromptBuildRequest) -> dict:
-    """Field-state -> assembled cinematography prompt text.
+    """Field-state -> assembled cinematography prompt text(s).
 
-    `build_prompt` returns one string per resolved shot (multi/grid modes
-    fan out); `single` mode — the only one Cinema v1 exposes — always
-    resolves to exactly one, so [0] is safe.
+    `build_prompt` returns one string per resolved shot: exactly one for
+    `single`, exactly two for `frame_motion` (still-frame, then motion).
+    Returning the full list means neither mode silently drops a prompt.
     """
     from app.cineprompt import build_prompt
 
-    prompts = build_prompt({"mode": req.mode, "model": req.model, "fields": req.fields})
-    return {"prompt": prompts[0]}
+    try:
+        prompts = build_prompt({"mode": req.mode, "model": req.model, "fields": req.fields})
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    return {"prompts": prompts}
 
 
 class CinepromptSaveRequest(BaseModel):
@@ -450,9 +453,9 @@ async def cineprompt_save(req: CinepromptSaveRequest) -> dict:
         fields=req.fields,
         prompt=req.prompt,
         video_url=req.video_url,
-        local_path=str(dest_path.relative_to(_VIDEOS_DIR.parent)),
+        local_path=str(dest_path.relative_to(_VIDEOS_DIR).as_posix()),
     )
-    return {"id": str(gen_id), "local_path": str(dest_path.relative_to(_VIDEOS_DIR.parent))}
+    return {"id": str(gen_id), "local_path": str(dest_path.relative_to(_VIDEOS_DIR).as_posix())}
 
 
 @router.get("/cineprompt/history")

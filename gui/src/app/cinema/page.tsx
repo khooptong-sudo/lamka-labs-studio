@@ -5,7 +5,7 @@ import { Loader2, Sparkles, Wand2 } from "lucide-react";
 
 type FieldState = Record<string, string>;
 
-const MODES = ["single", "fm_image"] as const;
+const MODES = ["single", "frame_motion"] as const;
 const LEVELS = ["simple", "complex"] as const;
 const MODELS = ["universal", "veo", "sora", "kling", "seedance", "grok", "ltx", "pixverse", "luma", "wan"] as const;
 
@@ -77,6 +77,7 @@ export default function CinemaPage() {
   }
 
   async function handleGenerate() {
+    setVideoUrl(null);
     setGenerating(true);
     setError(null);
     try {
@@ -136,6 +137,7 @@ export default function CinemaPage() {
   }
 
   async function handleFill() {
+    setVideoUrl(null);
     setFilling(true);
     setError(null);
     try {
@@ -159,6 +161,7 @@ export default function CinemaPage() {
   }
 
   async function handleBuild() {
+    setVideoUrl(null);
     setBuilding(true);
     setError(null);
     try {
@@ -172,7 +175,7 @@ export default function CinemaPage() {
         setError(body.detail ?? "Build failed.");
         return;
       }
-      setPrompt(body.prompt);
+      setPrompt((body.prompts as string[]).join("\n\n"));
     } catch {
       setError("Could not reach the worker.");
     } finally {
@@ -181,6 +184,7 @@ export default function CinemaPage() {
   }
 
   function updateField(key: string, value: string) {
+    setVideoUrl(null);
     setFields((prev) => ({ ...prev, [key]: value }));
   }
 
@@ -235,9 +239,12 @@ export default function CinemaPage() {
               ))}
             </div>
             <div className="flex items-center gap-3">
-              <select value={model} onChange={(e) => setModel(e.target.value as typeof model)} className="min-h-9 rounded-lg border border-border bg-[var(--surface-recessed)] px-2 text-sm">
-                {MODELS.map((m) => <option key={m} value={m}>{m}</option>)}
-              </select>
+              <label className="text-xs text-[var(--muted)]">
+                Prompt format
+                <select value={model} onChange={(e) => setModel(e.target.value as typeof model)} className="mt-1 block min-h-9 rounded-lg border border-border bg-[var(--surface-recessed)] px-2 text-sm">
+                  {MODELS.map((m) => <option key={m} value={m}>{m}</option>)}
+                </select>
+              </label>
               <button
                 onClick={handleBuild}
                 disabled={building}
@@ -260,6 +267,9 @@ export default function CinemaPage() {
         {prompt && (
           <section className="rounded-xl border border-border bg-[var(--surface-deck)] p-4 space-y-3">
             <h2 className="text-sm font-semibold">Generate</h2>
+            <p className="text-xs text-[var(--muted)]">
+              Generated with Kling 2.0 via fal.run — the prompt format above does not change the generator.
+            </p>
             <label className="block text-xs text-[var(--muted)]">
               fal.run API key (stored only in this browser)
               <input
@@ -298,8 +308,9 @@ export default function CinemaPage() {
             <h2 className="text-sm font-semibold">History</h2>
             <ul className="space-y-1">
               {history.map((row) => (
-                <li key={row.id} className="text-sm text-[var(--muted)]">
-                  {row.description} — <span className="font-mono text-xs">{row.local_path}</span>
+                <li key={row.id} className="space-y-1 text-sm text-[var(--muted)]">
+                  <p>{row.description}</p>
+                  <video src={`/api/videos/${row.local_path}`} controls className="w-full rounded-lg" />
                 </li>
               ))}
             </ul>

@@ -60,11 +60,54 @@ def test_build_returns_assembled_prompt():
             json={"mode": "single", "model": "veo", "fields": {"shot_type": "wide shot"}},
         )
     assert resp.status_code == 200
-    assert resp.json() == {"prompt": "Wide shot. A woman in a cramped office."}
+    assert resp.json() == {"prompts": ["Wide shot. A woman in a cramped office."]}
+
+
+def test_build_frame_motion_returns_two_prompts():
+    with patch(
+        "app.cineprompt.build_prompt",
+        return_value=["Still-frame prompt.", "Motion prompt."],
+    ):
+        resp = client.post(
+            "/cineprompt/build",
+            json={"mode": "frame_motion", "model": "veo", "fields": {"shot_type": "wide shot"}},
+        )
+    assert resp.status_code == 200
+    assert resp.json() == {"prompts": ["Still-frame prompt.", "Motion prompt."]}
 
 
 def test_build_requires_fields():
     resp = client.post("/cineprompt/build", json={"mode": "single", "model": "veo"})
+    assert resp.status_code == 422
+
+
+def test_build_real_engine_single_mode_returns_200_with_prompt():
+    """Unmocked: exercises the real resolve_state/build_prompt through the route."""
+    resp = client.post(
+        "/cineprompt/build",
+        json={
+            "mode": "single",
+            "model": "universal",
+            "fields": {"genre": "action", "camera_body": "shot on ARRI Alexa 65"},
+        },
+    )
+    assert resp.status_code == 200
+    body = resp.json()
+    assert isinstance(body["prompts"], list)
+    assert len(body["prompts"]) == 1
+    assert body["prompts"][0].strip() != ""
+
+
+def test_build_real_engine_invalid_mode_returns_422_not_500():
+    """Unmocked: proves resolve_state's ValueError is wrapped, not left to crash as a 500."""
+    resp = client.post(
+        "/cineprompt/build",
+        json={
+            "mode": "not_a_real_mode",
+            "model": "universal",
+            "fields": {"genre": "action"},
+        },
+    )
     assert resp.status_code == 422
 
 
@@ -92,6 +135,7 @@ def test_save_downloads_video_and_returns_the_db_id(tmp_path, monkeypatch):
     assert resp.status_code == 200
     body = resp.json()
     assert body["id"] == str(db_id)
+    assert body["local_path"] == f"cineprompt/{file_id}.mp4"
     saved_path = tmp_path / "cineprompt" / f"{file_id}.mp4"
     assert saved_path.read_bytes() == b"fake video bytes"
 
