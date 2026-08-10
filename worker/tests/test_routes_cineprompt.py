@@ -117,3 +117,16 @@ def test_save_returns_502_on_download_failure_and_writes_no_row(tmp_path, monkey
     assert resp.status_code == 502
     mock_save.assert_not_awaited()
     assert not (tmp_path / "cineprompt").exists() or not any((tmp_path / "cineprompt").iterdir())
+
+
+def test_history_returns_saved_generations():
+    fake_row = {
+        "id": uuid_module.uuid4(), "description": "a scene", "mode": "single",
+        "model": "veo", "fields": {"genre": "action"}, "prompt": "A scene.",
+        "video_url": "https://fal.media/x.mp4", "local_path": "videos/cineprompt/x.mp4",
+        "created_at": "2026-08-10T00:00:00Z",
+    }
+    with patch("app.db.get_cineprompt_history", AsyncMock(return_value=[fake_row])):
+        resp = client.get("/cineprompt/history")
+    assert resp.status_code == 200
+    assert resp.json()[0]["description"] == "a scene"

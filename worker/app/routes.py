@@ -455,4 +455,16 @@ async def cineprompt_save(req: CinepromptSaveRequest) -> dict:
     return {"id": str(gen_id), "local_path": str(dest_path.relative_to(_VIDEOS_DIR.parent))}
 
 
+@router.get("/cineprompt/history")
+async def cineprompt_history() -> list[dict]:
+    """Most recent saved Cinema generations, newest first. No pagination in v1."""
+    from app.db import get_cineprompt_history
+
+    rows = await get_cineprompt_history()
+    return [
+        {**row, "id": str(row["id"]) if isinstance(row["id"], uuid.UUID) else row["id"]}
+        for row in rows
+    ]
+
+
 __all__ = ["router"]
