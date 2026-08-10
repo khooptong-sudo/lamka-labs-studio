@@ -12,6 +12,7 @@ Key operations:
 
 from __future__ import annotations
 
+import json
 import uuid
 from dataclasses import dataclass
 from datetime import datetime
@@ -597,6 +598,45 @@ async def get_drafts() -> list[dict[str, Any]]:
             """
         )
     return drafts
+
+
+async def save_cineprompt_generation(
+    description: str, mode: str, model: str, fields: dict,
+    prompt: str, video_url: str, local_path: str,
+) -> uuid.UUID:
+    """Persist one CinePrompt + fal.run generation. Called only after the
+    video has already been downloaded to `local_path` — this never runs
+    for a failed download."""
+    pool = await get_pool()
+    async with pool.connection() as conn:
+        row = await _fetchone(
+            conn,
+            """
+            INSERT INTO cineprompt_generations
+                (description, mode, model, fields, prompt, video_url, local_path)
+            VALUES (%s, %s, %s, %s, %s, %s, %s)
+            RETURNING id
+            """,
+            description, mode, model, json.dumps(fields), prompt, video_url, local_path,
+        )
+        return row["id"]
+
+
+async def get_cineprompt_history(limit: int = 50) -> list[dict[str, Any]]:
+    """Most recent saved generations, newest first. No pagination in v1."""
+    pool = await get_pool()
+    async with pool.connection() as conn:
+        return await _fetchall(
+            conn,
+            """
+            SELECT id, description, mode, model, fields, prompt,
+                   video_url, local_path, created_at
+            FROM cineprompt_generations
+            ORDER BY created_at DESC
+            LIMIT %s
+            """,
+            limit,
+        )
 
 
 async def get_draft(draft_id: uuid.UUID) -> dict[str, Any] | None:

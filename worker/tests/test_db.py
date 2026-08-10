@@ -156,3 +156,66 @@ class TestVectorSearch:
             embedding=[0.0] * 383 + [1.0], threshold=0.99, within_hours=48, limit=5
         )
         assert neighbors == []
+
+
+class TestCinepromptGenerations:
+    @pytest.mark.asyncio
+    async def test_save_returns_a_new_id(self, db):
+        from app.db import save_cineprompt_generation
+
+        gen_id = await save_cineprompt_generation(
+            description="a woman in a cramped office at dawn",
+            mode="single",
+            model="veo",
+            fields={"genre": "thriller", "shot_type": "wide shot"},
+            prompt="Wide shot. A woman in a cramped office. Dawn.",
+            video_url="https://fal.media/files/abc/output.mp4",
+            local_path="videos/cineprompt/abc.mp4",
+        )
+        assert isinstance(gen_id, uuid.UUID)
+
+    @pytest.mark.asyncio
+    async def test_history_returns_newest_first(self, db):
+        from app.db import get_cineprompt_history, save_cineprompt_generation
+
+        first = await save_cineprompt_generation(
+            description="first", mode="single", model="veo", fields={},
+            prompt="first prompt", video_url="https://fal.media/1.mp4",
+            local_path="videos/cineprompt/1.mp4",
+        )
+        second = await save_cineprompt_generation(
+            description="second", mode="single", model="veo", fields={},
+            prompt="second prompt", video_url="https://fal.media/2.mp4",
+            local_path="videos/cineprompt/2.mp4",
+        )
+
+        history = await get_cineprompt_history()
+        ids = [row["id"] for row in history]
+        assert ids.index(second) < ids.index(first)
+
+    @pytest.mark.asyncio
+    async def test_history_respects_limit(self, db):
+        from app.db import get_cineprompt_history, save_cineprompt_generation
+
+        for i in range(3):
+            await save_cineprompt_generation(
+                description=f"gen {i}", mode="single", model="veo", fields={},
+                prompt=f"prompt {i}", video_url=f"https://fal.media/{i}.mp4",
+                local_path=f"videos/cineprompt/{i}.mp4",
+            )
+
+        history = await get_cineprompt_history(limit=2)
+        assert len(history) == 2
+
+    @pytest.mark.asyncio
+    async def test_saved_fields_round_trip_as_dict(self, db):
+        from app.db import get_cineprompt_history, save_cineprompt_generation
+
+        await save_cineprompt_generation(
+            description="x", mode="single", model="veo",
+            fields={"genre": "thriller", "dof": "deep focus"},
+            prompt="p", video_url="https://fal.media/x.mp4",
+            local_path="videos/cineprompt/x.mp4",
+        )
+        history = await get_cineprompt_history()
+        assert history[0]["fields"] == {"genre": "thriller", "dof": "deep focus"}
