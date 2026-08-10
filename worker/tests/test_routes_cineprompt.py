@@ -49,3 +49,18 @@ def test_fill_passes_locked_fields_through():
     mock_fill.assert_awaited_once_with(
         "a scene", mode="single", level="complex", locked={"camera_body": "shot on RED V-Raptor"},
     )
+
+
+def test_build_returns_assembled_prompt():
+    with patch("app.cineprompt.build_prompt", return_value=["Wide shot. A woman in a cramped office."]):
+        resp = client.post(
+            "/cineprompt/build",
+            json={"mode": "single", "model": "veo", "fields": {"shot_type": "wide shot"}},
+        )
+    assert resp.status_code == 200
+    assert resp.json() == {"prompt": "Wide shot. A woman in a cramped office."}
+
+
+def test_build_requires_fields():
+    resp = client.post("/cineprompt/build", json={"mode": "single", "model": "veo"})
+    assert resp.status_code == 422

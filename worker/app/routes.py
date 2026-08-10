@@ -389,4 +389,24 @@ async def cineprompt_fill(req: CinepromptFillRequest) -> dict:
     return {"fields": fields}
 
 
+class CinepromptBuildRequest(BaseModel):
+    mode: str = "single"
+    model: str = "universal"
+    fields: dict
+
+
+@router.post("/cineprompt/build")
+async def cineprompt_build(req: CinepromptBuildRequest) -> dict:
+    """Field-state -> assembled cinematography prompt text.
+
+    `build_prompt` returns one string per resolved shot (multi/grid modes
+    fan out); `single` mode — the only one Cinema v1 exposes — always
+    resolves to exactly one, so [0] is safe.
+    """
+    from app.cineprompt import build_prompt
+
+    prompts = build_prompt({"mode": req.mode, "model": req.model, "fields": req.fields})
+    return {"prompt": prompts[0]}
+
+
 __all__ = ["router"]
