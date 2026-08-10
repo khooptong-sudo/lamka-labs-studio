@@ -9,9 +9,14 @@ def test_film_selects_the_three_backend():
     assert backend_for_mode("film") == "three"
 
 
-def test_short_falls_through_to_the_configured_default():
-    """None means 'whatever FRAME_BACKEND says', which is what a Short wants."""
-    assert backend_for_mode("short") is None
+def test_cinematic_selects_the_image_led_backend():
+    """Cinematic shorts must not silently fall through to a 2D card renderer."""
+    assert backend_for_mode("cinematic") == "cinematic"
+
+
+def test_short_selects_the_image_led_cinematic_backend():
+    """A Short is the premium portrait format, never a 2D fallback."""
+    assert backend_for_mode("short") == "cinematic"
 
 
 def test_absent_mode_falls_through_too():
