@@ -166,7 +166,7 @@ def is_free_text(field: str) -> bool:
 - [ ] **Step 5: Run test to verify it passes**
 
 Run: `cd worker; ..\.venv\Scripts\python.exe -m pytest tests/test_cineprompt_vocab.py -q`
-Expected: PASS, 4 tests
+Expected: PASS, 5 tests
 
 - [ ] **Step 6: Commit**
 
@@ -778,7 +778,7 @@ git commit -m "feat(cineprompt): assembly core verified against the JS oracle"
 
 ```python
 # worker/tests/test_cineprompt_profiles.py
-from app.cineprompt import profiles
+from app.cineprompt import assemble, profiles
 
 
 def test_veo_leads_with_cinematography():
@@ -816,11 +816,19 @@ def test_dialogue_section_renders():
 
 
 def test_cap_drops_trailing_segments_not_mid_string():
-    fields = {"shot_type": "wide shot", "setting": "a cramped office",
-              "camera_body": "shot on ARRI Alexa 65", "music_genre": "orchestral"}
+    fields = {f"beat_{i}": ("word " * 180).strip() for i in (1, 2, 3)}
+    raw = assemble.build_text(fields, profiles.order_for("pixverse"))
+    assert len(raw) > 2048, "fixture must actually overflow, or the drop loop never runs"
+
     out = profiles.render(fields, "pixverse")
+    assert len(out) < len(raw)
     assert len(out) <= 2048
     assert out.endswith((".", "!", '"'))
+    # Retained sentences must be whole. The drop loop keeps complete sentences;
+    # the mid-string fallback would truncate this one. Without this assertion the
+    # test passes even with the drop loop deleted, because the fallback also
+    # shortens the text and also ends it with a period.
+    assert out.split(". ")[0] == raw.split(". ")[0]
 
 
 def test_cap_never_returns_partial_sentence():
@@ -828,6 +836,17 @@ def test_cap_never_returns_partial_sentence():
     out = profiles.render(fields, "pixverse")
     assert len(out) <= 2048
     assert out.endswith(".")
+
+
+def test_cap_handles_single_sentence_exceeding_limit():
+    # No sentence boundary anywhere, and the only space follows a short label.
+    # Backing up to the last space would collapse this to "Dialogue.", so the
+    # word-boundary rule needs a floor.
+    out = profiles.render({"dialogue": "x" * 5000}, "pixverse")
+    assert out
+    assert len(out) <= 2048
+    assert out.endswith(".")
+    assert len(out) >= 1024, f"expected most of the budget retained, got {len(out)}"
 ```
 
 - [ ] **Step 2: Run test to verify it fails**
@@ -892,10 +911,29 @@ def _cap(text: str, limit: int) -> str:
     """
     if len(text) <= limit:
         return text
+
+    def _rendered(parts: list[str]) -> str:
+        out = ". ".join(parts)
+        if out and not out.endswith((".", "!", '"')):
+            out += "."
+        return out
+
     parts = text.split(". ")
-    while parts and len(". ".join(parts)) > limit:
+    while len(parts) > 1 and len(_rendered(parts)) > limit:
         parts.pop()
-    return ". ".join(parts) if parts else ""
+
+    out = _rendered(parts)
+    if len(out) <= limit:
+        return out
+
+    # One sentence longer than the whole budget: there is no sentence boundary
+    # left to cut at. Truncate at the last word boundary that leaves room for the
+    # period — an empty prompt is a worse failure than a shortened one.
+    head = parts[0][: limit - 1]
+    cut = head.rfind(" ")
+    if cut > 0 and cut >= len(head) * 0.8:
+        head = head[:cut]
+    return head.rstrip(" ,;:") + "."
 
 
 def render(fields: dict, model: str = "universal", kind: str = "video") -> str:
@@ -906,7 +944,7 @@ def render(fields: dict, model: str = "universal", kind: str = "video") -> str:
 - [ ] **Step 4: Run test to verify it passes**
 
 Run: `cd worker; ..\.venv\Scripts\python.exe -m pytest tests/test_cineprompt_profiles.py -q`
-Expected: PASS, 9 tests
+Expected: PASS, 11 tests
 
 - [ ] **Step 5: Commit**
 
@@ -1567,7 +1605,7 @@ Expected: PASS, 19 tests. The fill tests still patch `_generate`, so nothing rea
 - [ ] **Step 5: Run the whole engine suite**
 
 Run: `cd worker; ..\.venv\Scripts\python.exe -m pytest tests -q -k cineprompt`
-Expected: PASS, 292 tests
+Expected: PASS, 295 tests
 
 - [ ] **Step 6: Commit**
 
@@ -1589,7 +1627,7 @@ cd "F:\Content Creation Project\worker"
 ..\.venv\Scripts\python.exe -m pytest tests -q -k cineprompt
 ```
 
-292 passing, no network access, no node, no Ollama.
+295 passing, no network access, no node, no Ollama.
 
 Manual smoke, engine only. Write `worker/scripts/smoke_cineprompt.py`:
 
