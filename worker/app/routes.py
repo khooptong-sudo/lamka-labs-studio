@@ -429,10 +429,10 @@ async def cineprompt_save(req: CinepromptSaveRequest) -> dict:
     """
     from app.db import save_cineprompt_generation
 
-    gen_id = uuid.uuid4()
+    file_id = uuid.uuid4()
     dest_dir = _VIDEOS_DIR / "cineprompt"
     dest_dir.mkdir(parents=True, exist_ok=True)
-    dest_path = dest_dir / f"{gen_id}.mp4"
+    dest_path = dest_dir / f"{file_id}.mp4"
 
     try:
         async with httpx.AsyncClient(timeout=120) as client:
@@ -443,7 +443,7 @@ async def cineprompt_save(req: CinepromptSaveRequest) -> dict:
         dest_path.unlink(missing_ok=True)
         raise HTTPException(status_code=502, detail=f"could not download video: {exc}") from exc
 
-    await save_cineprompt_generation(
+    gen_id = await save_cineprompt_generation(
         description=req.description,
         mode=req.mode,
         model=req.model,

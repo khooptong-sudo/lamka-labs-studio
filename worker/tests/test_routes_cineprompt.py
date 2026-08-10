@@ -68,17 +68,18 @@ def test_build_requires_fields():
     assert resp.status_code == 422
 
 
-def test_save_downloads_video_and_returns_id(tmp_path, monkeypatch):
+def test_save_downloads_video_and_returns_the_db_id(tmp_path, monkeypatch):
     monkeypatch.setattr("app.routes._VIDEOS_DIR", tmp_path)
-    fake_id = uuid_module.uuid4()
-    monkeypatch.setattr("app.routes.uuid.uuid4", lambda: fake_id)
+    file_id = uuid_module.uuid4()
+    db_id = uuid_module.uuid4()
+    monkeypatch.setattr("app.routes.uuid.uuid4", lambda: file_id)
 
     async def fake_get(self, url, **kwargs):
         return httpx.Response(200, content=b"fake video bytes", request=httpx.Request("GET", url))
 
     with (
         patch("httpx.AsyncClient.get", fake_get),
-        patch("app.db.save_cineprompt_generation", AsyncMock(return_value=fake_id)),
+        patch("app.db.save_cineprompt_generation", AsyncMock(return_value=db_id)),
     ):
         resp = client.post(
             "/cineprompt/save",
@@ -90,8 +91,8 @@ def test_save_downloads_video_and_returns_id(tmp_path, monkeypatch):
         )
     assert resp.status_code == 200
     body = resp.json()
-    assert body["id"] == str(fake_id)
-    saved_path = tmp_path / "cineprompt" / f"{fake_id}.mp4"
+    assert body["id"] == str(db_id)
+    saved_path = tmp_path / "cineprompt" / f"{file_id}.mp4"
     assert saved_path.read_bytes() == b"fake video bytes"
 
 
