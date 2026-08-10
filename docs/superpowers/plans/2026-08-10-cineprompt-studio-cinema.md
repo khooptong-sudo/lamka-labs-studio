@@ -437,16 +437,27 @@ import uuid as uuid_module
 import httpx
 
 
-def test_save_downloads_video_and_returns_id(tmp_path, monkeypatch):
+def test_save_downloads_video_and_returns_the_db_id(tmp_path, monkeypatch):
+    """The response id must be the DB row's id, not the filename UUID.
+
+    They are deliberately different values here — a real regression (routing
+    the response through the filename UUID instead of the DB's returned id)
+    would fail the `body["id"] == str(db_id)` assertion while still passing
+    the file-write assertion, so this only catches the bug if the two are
+    kept distinct.
+    """
     monkeypatch.setattr("app.routes._VIDEOS_DIR", tmp_path)
-    fake_id = uuid_module.uuid4()
+    file_id = uuid_module.uuid4()
+    db_id = uuid_module.uuid4()
+    assert file_id != db_id
 
     async def fake_get(self, url, **kwargs):
         return httpx.Response(200, content=b"fake video bytes", request=httpx.Request("GET", url))
 
     with (
         patch("httpx.AsyncClient.get", fake_get),
-        patch("app.db.save_cineprompt_generation", AsyncMock(return_value=fake_id)),
+        patch("app.db.save_cineprompt_generation", AsyncMock(return_value=db_id)),
+        patch("uuid.uuid4", return_value=file_id),
     ):
         resp = client.post(
             "/cineprompt/save",
@@ -458,8 +469,8 @@ def test_save_downloads_video_and_returns_id(tmp_path, monkeypatch):
         )
     assert resp.status_code == 200
     body = resp.json()
-    assert body["id"] == str(fake_id)
-    saved_path = tmp_path / "cineprompt" / f"{fake_id}.mp4"
+    assert body["id"] == str(db_id)
+    saved_path = tmp_path / "cineprompt" / f"{file_id}.mp4"
     assert saved_path.read_bytes() == b"fake video bytes"
 
 
@@ -512,13 +523,21 @@ async def cineprompt_save(req: CinepromptSaveRequest) -> dict:
     Write-then-insert, in that order: a DB row must never point at a file
     that doesn't exist. Any download failure cleans up the partial file
     and leaves no row at all, rather than a half-saved generation.
+
+    The filename uses a locally-generated UUID chosen before the insert
+    (the file must exist before the row can reference it). That UUID is
+    NOT the row's primary key — `cineprompt_generations.id` defaults to
+    `gen_random_uuid()`, generated independently inside Postgres. The
+    response's `id` must be the value `save_cineprompt_generation`
+    returns, not the filename UUID, or a later `GET /cineprompt/history`
+    lookup by this id would never match the row this call just created.
     """
     from app.db import save_cineprompt_generation
 
-    gen_id = uuid.uuid4()
+    file_id = uuid.uuid4()
     dest_dir = _VIDEOS_DIR / "cineprompt"
     dest_dir.mkdir(parents=True, exist_ok=True)
-    dest_path = dest_dir / f"{gen_id}.mp4"
+    dest_path = dest_dir / f"{file_id}.mp4"
 
     try:
         async with httpx.AsyncClient(timeout=120) as client:
@@ -529,7 +548,7 @@ async def cineprompt_save(req: CinepromptSaveRequest) -> dict:
         dest_path.unlink(missing_ok=True)
         raise HTTPException(status_code=502, detail=f"could not download video: {exc}") from exc
 
-    await save_cineprompt_generation(
+    gen_id = await save_cineprompt_generation(
         description=req.description,
         mode=req.mode,
         model=req.model,
