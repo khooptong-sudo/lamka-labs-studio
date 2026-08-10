@@ -32,12 +32,24 @@ export default function CinemaPage() {
   const [history, setHistory] = useState<
     { id: string; description: string; local_path: string; created_at: string }[]
   >([]);
+  const [vocabData, setVocabData] = useState<
+    Record<string, Record<string, { values: string[]; free_text: boolean }>>
+  >({});
 
   useEffect(() => {
     const stored = window.localStorage.getItem("falrun_api_key");
     if (stored) setFalKey(stored);
     fetchHistory();
   }, []);
+
+  useEffect(() => {
+    fetch(`/api/cineprompt/vocab?mode=${mode}&level=${level}`)
+      .then((res) => (res.ok ? res.json() : {}))
+      .then(setVocabData)
+      .catch(() => {
+        // The picker is additive — Fill/Build/Generate stay usable if this fails.
+      });
+  }, [mode, level]);
 
   function saveFalKey(value: string) {
     setFalKey(value);
@@ -192,6 +204,43 @@ export default function CinemaPage() {
     setFields((prev) => ({ ...prev, [key]: value }));
   }
 
+  function toggleChip(field: string, value: string) {
+    setVideoUrl(null);
+    setFields((prev) => {
+      const current = prev[field];
+      const currentArray = Array.isArray(current) ? current : current ? [current] : [];
+      const next = currentArray.includes(value)
+        ? currentArray.filter((v) => v !== value)
+        : [...currentArray, value];
+      const updated = { ...prev };
+      if (next.length === 0) {
+        delete updated[field];
+      } else {
+        updated[field] = next;
+      }
+      return updated;
+    });
+  }
+
+  function isChipActive(field: string, value: string): boolean {
+    const current = fields[field];
+    if (Array.isArray(current)) return current.includes(value);
+    return current === value;
+  }
+
+  function updateFreeTextField(field: string, value: string) {
+    setVideoUrl(null);
+    setFields((prev) => {
+      const updated = { ...prev };
+      if (value.trim().length === 0) {
+        delete updated[field];
+      } else {
+        updated[field] = value;
+      }
+      return updated;
+    });
+  }
+
   return (
     <div className="mx-auto max-w-4xl space-y-4 p-6">
         <header>
@@ -226,6 +275,51 @@ export default function CinemaPage() {
           </div>
           {error && <p className="text-xs text-[var(--destructive)]">{error}</p>}
         </section>
+
+        {Object.keys(vocabData).length > 0 && (
+          <section className="rounded-xl border border-border bg-[var(--surface-deck)] p-4 space-y-4">
+            <h2 className="text-sm font-semibold">Browse fields</h2>
+            {Object.entries(vocabData).map(([section, sectionFields]) => (
+              <details key={section} open className="space-y-2">
+                <summary className="cursor-pointer text-xs font-semibold uppercase text-[var(--muted)]">
+                  {section}
+                </summary>
+                <div className="space-y-3 pt-2">
+                  {Object.entries(sectionFields).map(([field, { values, free_text }]) => (
+                    <div key={field}>
+                      <p className="text-xs text-[var(--muted)]">{field}</p>
+                      {free_text ? (
+                        <textarea
+                          value={typeof fields[field] === "string" ? (fields[field] as string) : ""}
+                          onChange={(e) => updateFreeTextField(field, e.target.value)}
+                          className="mt-1 min-h-16 w-full rounded-lg border border-border bg-[var(--surface-recessed)] p-2 text-sm text-foreground"
+                        />
+                      ) : (
+                        <div className="mt-1 flex flex-wrap gap-1.5">
+                          {values.map((value) => (
+                            <button
+                              key={value}
+                              type="button"
+                              aria-pressed={isChipActive(field, value)}
+                              onClick={() => toggleChip(field, value)}
+                              className={`rounded-full border px-2.5 py-1 text-xs ${
+                                isChipActive(field, value)
+                                  ? "border-primary bg-primary/10 text-foreground"
+                                  : "border-border text-[var(--muted)]"
+                              }`}
+                            >
+                              {value}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </details>
+            ))}
+          </section>
+        )}
 
         {Object.keys(fields).length > 0 && (
           <section className="rounded-xl border border-border bg-[var(--surface-deck)] p-4 space-y-3">
