@@ -74,6 +74,20 @@ class YouTubeGenerateRequest(BaseModel):
     story_id: str
     channel_id: str = Field(min_length=1)
     upload_preference: str = "manual"
+    voice_key: str | None = Field(default=None, max_length=40)
+
+
+class CinematicControls(BaseModel):
+    """Operator-owned visual direction added to the storyboard continuity bible."""
+
+    shot_scale: str = Field(max_length=80)
+    camera_angle: str = Field(max_length=80)
+    camera_movement: str = Field(max_length=80)
+    lens: str = Field(max_length=80)
+    lighting: str = Field(max_length=80)
+    color_treatment: str = Field(max_length=80)
+    pacing: str = Field(max_length=80)
+    motion_intent: str = Field(max_length=80)
 
 
 class YouTubeJobRequest(BaseModel):
@@ -81,10 +95,19 @@ class YouTubeJobRequest(BaseModel):
     channel_id: str = Field(min_length=1)
     upload_preference: str = "manual"
     mode: str | None = None
+    storyboard: str | None = Field(default=None, max_length=50000)
+    image_provider: str | None = Field(default=None, max_length=20)
+    voice_key: str | None = Field(default=None, max_length=40)
+    cinematic_controls: CinematicControls | None = None
 
 
-# "short" keeps whatever FRAME_BACKEND is configured; "film" forces the 3D path.
-MODE_BACKENDS: dict[str, str | None] = {"short": None, "film": "three"}
+# Shorts are the portrait image-led 3D format. Story Films keep the separate
+# low-poly Three.js landscape route; `cinematic` remains a compatible API alias.
+MODE_BACKENDS: dict[str, str | None] = {
+    "short": "cinematic",
+    "film": "three",
+    "cinematic": "cinematic",
+}
 
 
 def backend_for_mode(mode: str | None) -> str | None:
@@ -117,7 +140,9 @@ async def youtube_generate(req: YouTubeGenerateRequest) -> dict:
         draft_id = await generate_youtube_video(
             story_id=sid,
             channel_id=req.channel_id,
-            upload_preference=req.upload_preference
+            upload_preference=req.upload_preference,
+            backend="cinematic",
+            voice_key=req.voice_key,
         )
         if draft_id is None:
             raise HTTPException(status_code=404, detail="story not found")
@@ -159,9 +184,22 @@ async def youtube_job_start(req: YouTubeJobRequest) -> dict:
         except ValueError as exc:
             raise HTTPException(status_code=400, detail=str(exc))
 
+        if backend == "cinematic":
+            from app.scene3d.backend import require_cinematic_image_provider
+
+            try:
+                require_cinematic_image_provider(req.image_provider)
+            except (RuntimeError, ValueError) as exc:
+                raise HTTPException(status_code=400, detail=str(exc)) from exc
+
         # Resolved synchronously, same as /youtube/generate: a bad channel_id
         # must fail the request, never a background task that already returned 202.
         await channels.resolve(req.channel_id)
+        if req.voice_key:
+            from app.youtube import VOICE_MAP
+
+            if req.voice_key not in VOICE_MAP:
+                raise HTTPException(status_code=400, detail=f"unknown voice key {req.voice_key!r}")
 
         job_id = await create_job(kind=req.mode or "short", story_id=sid)
     except HTTPException:
@@ -177,6 +215,12 @@ async def youtube_job_start(req: YouTubeJobRequest) -> dict:
                 upload_preference=req.upload_preference,
                 backend=backend,
                 job_id=job_id,
+                storyboard_override=req.storyboard,
+                image_provider=req.image_provider,
+                voice_key=req.voice_key,
+                cinematic_controls=(
+                    req.cinematic_controls.model_dump() if req.cinematic_controls else None
+                ),
             )
             if draft_id is None:
                 # A guard refused the video. That is a completed decision, not a
@@ -193,6 +237,14 @@ async def youtube_job_start(req: YouTubeJobRequest) -> dict:
     task.add_done_callback(_RUNNING_JOBS.discard)
 
     return {"job_id": str(job_id)}
+
+
+@router.get("/youtube/image-providers")
+async def youtube_image_providers() -> dict:
+    """Safe provider readiness for the 3D Short dashboard selector."""
+    from app.scene3d.backend import cinematic_image_provider_statuses
+
+    return {"providers": cinematic_image_provider_statuses()}
 
 
 @router.get("/youtube/jobs/{job_id}")
@@ -240,9 +292,12 @@ async def youtube_job_shots(job_id: str) -> list[dict]:
 
 @router.get("/stories")
 async def get_stories() -> list[dict]:
-    """Fetch pending stories for the Inbox."""
+    """Fetch current, source-dated stories for the Inbox."""
+    from app.config import get_ingest_config
     from app.db import get_pending_stories
-    return await get_pending_stories()
+
+    cfg = await get_ingest_config()
+    return await get_pending_stories(fresh_hours=cfg.fresh_news_hours)
 
 
 class ManualStoryRequest(BaseModel):
@@ -305,6 +360,27 @@ async def set_config_endpoint(key: str, request: Request) -> dict:
         raise HTTPException(status_code=400, detail="Invalid JSON body")
     await set_config(key, val)
     return {"status": "ok"}
+
+
+class CinepromptFillRequest(BaseModel):
+    description: str = Field(min_length=1, max_length=5000)
+    mode: str = "single"
+    level: str = "complex"
+    locked: dict | None = None
+
+
+@router.post("/cineprompt/fill")
+async def cineprompt_fill(req: CinepromptFillRequest) -> dict:
+    """Scene description -> snapped field-state, via the CinePrompt engine."""
+    from app.cineprompt import FillError, fill_from_scene
+
+    try:
+        fields = await fill_from_scene(
+            req.description, mode=req.mode, level=req.level, locked=req.locked,
+        )
+    except FillError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    return {"fields": fields}
 
 
 __all__ = ["router"]
