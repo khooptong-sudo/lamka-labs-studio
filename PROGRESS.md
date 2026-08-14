@@ -1,8 +1,9 @@
-# Fin-Content Engine — Progress Tracker
+# Lamka Labs Studio — Progress Tracker
 
 **Project:** AI pipeline for compliant US/India finance content (X + IG).
 **Source of truth:** `fin-content-engine-FINAL-blueprint.md`.
 **Canonical phase map:** blueprint Part I §6.
+**GitHub repo:** `khooptong-sudo/lamka-labs-studio` (transferred/renamed from `khooptong-creator/fin-content-engine` on 2026-08-14).
 
 ---
 
@@ -31,7 +32,7 @@
 | # | Step | Status |
 |---|---|---|
 | 0.1 | SSH as `root@160.250.204.73` | ✅ |
-| 0.2 | GitHub repo (`khooptong-creator/fin-content-engine`) | ✅ |
+| 0.2 | GitHub repo (`khooptong-sudo/lamka-labs-studio`) | ✅ |
 | 0.3 | ~~Supabase edge fn~~ → local embedder (Option C) | ✅ |
 | 1 | apt install (postgres, python, git, curl) | ✅ |
 | 2 | `fce` user + `/opt/fce` + repo cloned | ✅ |

@@ -1,12 +1,14 @@
-# Fin-Content Engine — Memory Note
+# Lamka Labs Studio — Memory Note
 
-> Obsidian-style durable note. Drop into your vault under `Projects/Fin-Content Engine/`.
+> Obsidian-style durable note. Drop into your vault under `Projects/Lamka Labs Studio/`.
 > Capture what was built, what's settled, what's open — so the next session (or
 > you in 3 months) doesn't re-litigate decisions or re-discover bugs.
 
 **Project:** AI pipeline for compliant US/India finance content (X + IG).
 **Owner:** UMinkoo (sole publish authority).
-**Started:** 2026-07-25. **Last update:** 2026-08-10.
+**Started:** 2026-07-25. **Last update:** 2026-08-14.
+**GitHub repo:** `khooptong-sudo/lamka-labs-studio` (transferred/renamed from `khooptong-creator/fin-content-engine`).
+**Local folder:** `F:\lamka-labs-studio` (renamed from `F:\Content Creation Project` on 2026-08-14).
 
 ---
 
