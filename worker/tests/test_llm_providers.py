@@ -51,6 +51,21 @@ def test_auth_and_shape_errors_are_not_retryable(message):
     assert not is_retryable(RuntimeError(message))
 
 
+def test_httpx_read_timeout_is_retryable():
+    """str(httpx.ReadTimeout()) is commonly empty, so a substring match on
+    str(exc) alone finds no marker and misclassifies the most common
+    transient failure as terminal (review finding, Fix 3)."""
+    import httpx
+
+    assert is_retryable(httpx.ReadTimeout(""))
+
+
+def test_httpx_connect_timeout_is_retryable():
+    import httpx
+
+    assert is_retryable(httpx.ConnectTimeout(""))
+
+
 class MockGeminiError(Exception):
     """Mock google-genai SDK exception with .code attribute."""
 

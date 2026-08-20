@@ -38,7 +38,11 @@ def is_retryable(exc: Exception) -> bool:
     """Whether the same call is worth trying again against the same provider."""
     if isinstance(exc, ProviderError):
         return exc.retryable
-    text = str(exc).lower()
+    # str(exc) alone is commonly empty for httpx timeout exceptions (e.g.
+    # httpx.ReadTimeout()), which would otherwise match no marker and be
+    # misclassified terminal. Including the exception type name catches those:
+    # "ReadTimeout"/"ConnectTimeout" both contain "timeout".
+    text = f"{type(exc).__name__}: {exc}".lower()
     return any(marker in text for marker in RETRYABLE_MARKERS)
 
 

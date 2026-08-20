@@ -95,8 +95,8 @@ script generation to every LLM call in the repo.
 ### Routing config, two-tier
 
 Per decision #21: provider credentials in env, task-to-provider mapping in the
-`config` table under key `llm_routing`. Re-routing a task to a different
-provider is a database edit, not a deploy.
+`config` table under key `llm`, in a `routing` field. Re-routing a task to a
+different provider is a database edit, not a deploy.
 
 Seeded value:
 

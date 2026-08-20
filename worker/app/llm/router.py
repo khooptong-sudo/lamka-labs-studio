@@ -37,9 +37,17 @@ async def _resolve(task: str) -> list[str]:
     route = cfg.routing.get(task)
     if route is None:
         return []
+    if not isinstance(route, dict):
+        raise RouterError(f"route for task {task!r} is not a mapping: {route!r}")
     have = providers.available()
-    chain = [route.get("primary"), route.get("fallback")]
-    return [name for name in chain if name and name in have]
+    named = [route.get("primary"), route.get("fallback")]
+    chain = [name for name in named if name and name in have]
+    skipped = [name for name in named if name and name not in have]
+    if skipped:
+        log.info("llm_routing_decision", task=task, chain=chain, skipped=skipped)
+    else:
+        log.debug("llm_routing_decision", task=task, chain=chain)
+    return chain
 
 
 async def complete_json(

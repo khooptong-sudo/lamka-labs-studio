@@ -41,6 +41,17 @@ def test_spec_rejects_an_empty_angle():
     assert violations == ["field 'angle' has invalid value '   '"]
 
 
+def test_spec_accepts_an_angle_at_the_max_length():
+    angle = "a" * score.MAX_ANGLE_LENGTH
+    assert contract.validate({**GOOD, "angle": angle}, score.SCORE_SPEC) == []
+
+
+def test_spec_rejects_an_angle_over_the_max_length():
+    angle = "a" * (score.MAX_ANGLE_LENGTH + 1)
+    violations = contract.validate({**GOOD, "angle": angle}, score.SCORE_SPEC)
+    assert violations == [f"field 'angle' has invalid value {angle!r}"]
+
+
 def test_spec_accepts_a_good_payload():
     assert contract.validate(GOOD, score.SCORE_SPEC) == []
 
@@ -102,6 +113,17 @@ def _patch_config(monkeypatch):
     )
 
 
+async def test_write_score_rejects_a_hand_built_invalid_payload():
+    """write_score must re-validate rather than trust its input (Fix 6):
+    stories.vertical/content_archetype carry no DB CHECK constraint, so a
+    caller that skips contract.parse (a future P2b caller, or a bug) must
+    still be stopped before the UPDATE. No DB pool is touched because the
+    ValueError raises before get_pool() is ever called."""
+    bad = {**GOOD, "content_archetype": "top_5_funds"}
+    with pytest.raises(ValueError, match="top_5_funds"):
+        await score.write_score(uuid.uuid4(), bad)
+
+
 async def test_score_new_job_never_writes_a_fabricated_score(monkeypatch):
     """The module's second invariant, made mechanical: when the router
     exhausts its attempts, write_score must never be called for that story,
@@ -113,7 +135,7 @@ async def test_score_new_job_never_writes_a_fabricated_score(monkeypatch):
 
     monkeypatch.setattr(score, "fetch_unscored", AsyncMock(return_value=[story]))
     monkeypatch.setattr(
-        score, "complete_json", AsyncMock(side_effect=RouterError("exhausted"))
+        "app.llm.router.complete_json", AsyncMock(side_effect=RouterError("exhausted"))
     )
     write_score = AsyncMock()
     monkeypatch.setattr(score, "write_score", write_score)
@@ -138,7 +160,7 @@ async def test_score_new_job_writes_a_successful_score(monkeypatch):
     story = {"id": story_id, "headline": "A scorable story", "items": []}
 
     monkeypatch.setattr(score, "fetch_unscored", AsyncMock(return_value=[story]))
-    monkeypatch.setattr(score, "complete_json", AsyncMock(return_value=GOOD))
+    monkeypatch.setattr("app.llm.router.complete_json", AsyncMock(return_value=GOOD))
     write_score = AsyncMock(return_value=True)
     monkeypatch.setattr(score, "write_score", write_score)
     audit_log = AsyncMock()
@@ -163,8 +185,7 @@ async def test_score_new_job_continues_past_a_failure_to_the_next_story(monkeypa
 
     monkeypatch.setattr(score, "fetch_unscored", AsyncMock(return_value=stories))
     monkeypatch.setattr(
-        score,
-        "complete_json",
+        "app.llm.router.complete_json",
         AsyncMock(side_effect=[RouterError("exhausted"), GOOD]),
     )
     write_score = AsyncMock(return_value=True)

@@ -99,12 +99,12 @@ async def _load(key: str) -> dict[str, Any]:
 
 async def get_clustering_config() -> ClusteringConfig:
     raw = await _load("clustering")
-    return ClusteringConfig(**{k: v for k, v in raw.items() if k in ClusteringConfig.__annotations__ or hasattr(ClusteringConfig, k)})
+    return ClusteringConfig(**{k: v for k, v in raw.items() if k in ClusteringConfig.__dataclass_fields__})
 
 
 async def get_ingest_config() -> IngestConfig:
     raw = await _load("ingest")
-    return IngestConfig(**{k: v for k, v in raw.items() if k in IngestConfig.__annotations__ or hasattr(IngestConfig, k)})
+    return IngestConfig(**{k: v for k, v in raw.items() if k in IngestConfig.__dataclass_fields__})
 
 
 async def get_edgar_config() -> EdgarConfig:
@@ -115,7 +115,7 @@ async def get_edgar_config() -> EdgarConfig:
         raw["form_types"] = tuple(raw["form_types"])
     if "company_watch" in raw and isinstance(raw["company_watch"], list):
         raw["company_watch"] = tuple(raw["company_watch"])
-    return EdgarConfig(**{k: v for k, v in raw.items() if hasattr(EdgarConfig, k)})
+    return EdgarConfig(**{k: v for k, v in raw.items() if k in EdgarConfig.__dataclass_fields__})
 
 
 async def get_llm_config() -> LLMConfig:
@@ -123,7 +123,9 @@ async def get_llm_config() -> LLMConfig:
     # hasattr() is wrong here: dataclasses deletes the class attribute for any
     # field declared with field(default_factory=...), so hasattr(LLMConfig,
     # "routing") is False and a DB-provided routing map would be silently
-    # dropped. __dataclass_fields__ is the reliable membership check.
+    # dropped. __dataclass_fields__ is the reliable membership check, applied
+    # to every accessor above too (Fix 8) so the same trap can't recur for a
+    # future default_factory field on any of the other config sections.
     return LLMConfig(**{k: v for k, v in raw.items() if k in LLMConfig.__dataclass_fields__})
 
 

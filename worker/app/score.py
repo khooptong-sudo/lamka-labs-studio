@@ -27,7 +27,7 @@ import structlog
 from app.audit import audit_log
 from app.config import get_ingest_config, get_llm_config
 from app.db import FRESH_WINDOW_PREDICATE, _fetchall, get_pool
-from app.llm import complete_json
+from app.llm import contract, router
 from app.llm.contract import FieldSpec
 from app.llm.router import RouterError
 from app.taxonomy import ARCHETYPES, VERTICALS, is_archetype, is_vertical
@@ -46,8 +46,13 @@ def _is_score(value: Any) -> bool:
     return 0 <= value <= 100
 
 
+# Bounds the angle so a runaway model reply can't land a multi-thousand
+# character string in the `text` column and then in the Inbox UI.
+MAX_ANGLE_LENGTH = 300
+
+
 def _is_angle(value: Any) -> bool:
-    return isinstance(value, str) and bool(value.strip())
+    return isinstance(value, str) and bool(value.strip()) and len(value) <= MAX_ANGLE_LENGTH
 
 
 SCORE_SPEC = FieldSpec(validators={
@@ -153,7 +158,16 @@ async def write_score(story_id: uuid.UUID, result: dict) -> bool:
     `AND score IS NULL` makes this idempotent: a concurrent or repeated run
     cannot overwrite a score that already landed. `status` is deliberately
     absent from the SET clause.
+
+    Re-validates against SCORE_SPEC even though today's only caller already
+    validated via `contract.parse`: `stories.vertical` and `content_archetype`
+    carry no DB CHECK constraint, so the database is not a second line of
+    defence, and this becomes a shared write path once P2b adds a caller.
     """
+    violations = contract.validate(result, SCORE_SPEC)
+    if violations:
+        raise ValueError(f"invalid score payload: {'; '.join(violations)}")
+
     pool = await get_pool()
     async with pool.connection() as conn:
         cursor = await conn.execute(
@@ -186,7 +200,7 @@ async def score_new_job() -> None:
     failed = 0
     for story in stories:
         try:
-            result = await complete_json(
+            result = await router.complete_json(
                 "story_score",
                 system=SYSTEM_PROMPT,
                 user=build_user_prompt(story["headline"], story["items"]),

@@ -147,6 +147,22 @@ async def test_skips_a_routed_provider_whose_key_is_absent(monkeypatch):
     assert len(fallback.calls) == 1
 
 
+async def test_resolve_raises_router_error_on_a_non_dict_route(monkeypatch):
+    """A hand-edited config row like {"story_score": "gemini"} must not raise
+    AttributeError out of _resolve: score_new_job only catches RouterError, so
+    an uncaught AttributeError would kill the whole scoring tick with no audit
+    event (review Fix 5)."""
+    async def _cfg():
+        from app.config import LLMConfig
+
+        return LLMConfig(routing={"demo": "gemini"})
+
+    monkeypatch.setattr(router, "get_llm_config", _cfg)
+    monkeypatch.setattr(providers, "available", lambda: ("gemini", "deepseek"))
+    with pytest.raises(router.RouterError, match="demo"):
+        await router.complete_json("demo", system="s", user="u", spec=SPEC)
+
+
 async def test_never_returns_a_default(routed, monkeypatch):
     """Decision #41 generalized: there is no fabricated-result path."""
     monkeypatch.setitem(
