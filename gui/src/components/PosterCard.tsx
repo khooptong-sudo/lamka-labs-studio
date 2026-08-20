@@ -94,9 +94,14 @@ export default function PosterCard({
       </div>
 
       {/* Footer */}
-      <footer className="relative z-10 mt-8 pt-6 border-t border-dashed flex items-center gap-3 text-sm opacity-80">
-        <ShieldAlert className="w-5 h-5 flex-shrink-0" />
-        <p>{poster.footer}</p>
+      <footer className="relative z-10 mt-8 pt-6 border-t border-dashed">
+        <div className="flex items-center gap-3 text-sm opacity-80 mb-3">
+          <ShieldAlert className="w-5 h-5 flex-shrink-0" />
+          <p>{poster.footer}</p>
+        </div>
+        <p className={`text-xs font-bold uppercase tracking-[0.2em] ${isDark ? "text-blue-300" : "text-blue-600"}`}>
+          equities.lamkalabs.com · Lamka Labs
+        </p>
       </footer>
     </div>
   );
