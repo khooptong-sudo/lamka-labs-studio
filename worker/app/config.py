@@ -39,9 +39,12 @@ class ClusteringConfig:
 
 @dataclass(frozen=True)
 class IngestConfig:
-    rss_poll_minutes: int = 30
+    # Poll intervals tuned for near-breaking news. RSS/NSE run every 10 minutes;
+    # Edgar is hourly because SEC filings are not real-time. These defaults can
+    # be overridden per-deployment via the `ingest` row in the config table.
+    rss_poll_minutes: int = 10
     edgar_poll_minutes: int = 60
-    nse_poll_minutes: int = 30
+    nse_poll_minutes: int = 10
     market_hours_only: bool = False
     max_items_per_cycle: int = 50
     max_full_text_fetch_seconds: int = 10

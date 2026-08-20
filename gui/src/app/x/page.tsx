@@ -4,6 +4,15 @@ import { useEffect, useState } from "react";
 import { Copy, Check, RefreshCw, MessageSquare, Send } from "lucide-react";
 import { fetchXStories, rewriteStoryToPost, suggestReply, type Story } from "@/lib/api";
 
+const TONE_PRESETS = [
+  { label: "Concise", value: "concise" },
+  { label: "Analyst-educator", value: "analyst-educator: clear, curious, never promotional" },
+  { label: "Humorous", value: "humorous: witty, light, never mean" },
+  { label: "Sarcastic", value: "sarcastic: dry, sharp, but fair" },
+  { label: "Bullish", value: "bullish: optimistic, momentum-focused, no price targets" },
+  { label: "Bearish", value: "bearish: skeptical, risk-focused, no panic" },
+];
+
 export default function XPage() {
   const [stories, setStories] = useState<Story[]>([]);
   const [selected, setSelected] = useState<Story | null>(null);
@@ -108,7 +117,7 @@ export default function XPage() {
         <div className="px-5 py-4 border-b border-border bg-foreground/[0.02] flex justify-between items-center">
           <div>
             <h2 className="text-lg font-bold tracking-wide">Rewrite for X</h2>
-            <p className="text-xs text-foreground/50 mt-1">Kimi drafts the post; you copy-paste it.</p>
+            <p className="text-xs text-foreground/50 mt-1">AI drafts the post; you copy-paste it.</p>
           </div>
           {selected && (
             <button
@@ -155,13 +164,31 @@ export default function XPage() {
 
               <div>
                 <label className="block text-xs font-bold uppercase tracking-wider text-foreground/50 mb-2">
-                  Tone (optional)
+                  Tone
                 </label>
+                <div className="flex flex-wrap gap-2 mb-3">
+                  {TONE_PRESETS.map((preset) => {
+                    const active = tone === preset.value;
+                    return (
+                      <button
+                        key={preset.value}
+                        onClick={() => setTone(active ? "" : preset.value)}
+                        className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
+                          active
+                            ? "bg-primary text-primary-foreground"
+                            : "bg-foreground/[0.05] text-foreground/70 hover:bg-foreground/[0.10]"
+                        }`}
+                      >
+                        {preset.label}
+                      </button>
+                    );
+                  })}
+                </div>
                 <input
                   type="text"
                   value={tone}
                   onChange={(e) => setTone(e.target.value)}
-                  placeholder="e.g. concise, analyst-educator"
+                  placeholder="Or type a custom tone..."
                   className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
                 />
               </div>
@@ -197,7 +224,7 @@ export default function XPage() {
       <section className="w-1/3 min-w-[280px] max-w-md flex flex-col glass-panel rounded-2xl overflow-hidden">
         <div className="px-5 py-4 border-b border-border bg-foreground/[0.02]">
           <h2 className="text-lg font-bold tracking-wide">Reply helper</h2>
-          <p className="text-xs text-foreground/50 mt-1">Paste a comment; Kimi suggests a reply.</p>
+          <p className="text-xs text-foreground/50 mt-1">Paste a comment; AI suggests a reply.</p>
         </div>
         <div className="flex-1 overflow-y-auto p-5 space-y-5">
           <div>

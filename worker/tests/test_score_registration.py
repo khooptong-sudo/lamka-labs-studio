@@ -15,11 +15,11 @@ async def test_score_new_is_registered(db):
     assert "score_new" in specs
 
 
-async def test_score_new_runs_every_fifteen_minutes(db):
+async def test_score_new_runs_every_ten_minutes(db):
     from app.scheduler import build_job_specs
 
     specs = {spec.id: spec for spec in await build_job_specs()}
-    assert specs["score_new"].minutes == 15
+    assert specs["score_new"].minutes == 10
 
 
 async def test_score_new_is_a_coroutine_function(db):
