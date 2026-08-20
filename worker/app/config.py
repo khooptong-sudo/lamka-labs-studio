@@ -9,7 +9,7 @@ a changed config value, restart the worker (or call `clear_config_cache()`).
 from __future__ import annotations
 
 import json
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any
 
 from app.db import get_pool
@@ -59,6 +59,24 @@ class EdgarConfig:
     company_watch: tuple[str, ...] = ()
 
 
+@dataclass(frozen=True)
+class LLMConfig:
+    """Task-to-provider routing (decisions #4, #21, #55, #56).
+
+    Credentials live in env; this map lives in the `config` table under key
+    'llm', so re-routing a task is a database edit rather than a deploy. The
+    defaults below apply when no row exists, which is why P2a needs no
+    migration: seeding the row is an ops action, not a schema change.
+    """
+
+    routing: dict[str, dict[str, str]] = field(
+        default_factory=lambda: {
+            "story_score": {"primary": "gemini", "fallback": "deepseek"},
+        }
+    )
+    score_batch_max: int = 25
+
+
 # ---------------------------------------------------------------------------
 # Loader. Caches per key; call clear_config_cache() to invalidate.
 # ---------------------------------------------------------------------------
@@ -98,6 +116,11 @@ async def get_edgar_config() -> EdgarConfig:
     if "company_watch" in raw and isinstance(raw["company_watch"], list):
         raw["company_watch"] = tuple(raw["company_watch"])
     return EdgarConfig(**{k: v for k, v in raw.items() if hasattr(EdgarConfig, k)})
+
+
+async def get_llm_config() -> LLMConfig:
+    raw = await _load("llm")
+    return LLMConfig(**{k: v for k, v in raw.items() if hasattr(LLMConfig, k)})
 
 
 def clear_config_cache() -> None:
