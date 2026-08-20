@@ -62,6 +62,7 @@ async def build_job_specs() -> list[JobSpec]:
     from app.config import get_ingest_config
     from app.ingest import run_all_sources
     from app.db import ping as db_ping
+    from app.score import score_new_job
 
     cfg = await get_ingest_config()
 
@@ -83,12 +84,16 @@ async def build_job_specs() -> list[JobSpec]:
 
     async def embed_retry_job() -> None:
         await embed_retry_sweep()
+
+    async def score_job() -> None:
+        await score_new_job()
         
     return [
         JobSpec(id="poll_rss", minutes=cfg.rss_poll_minutes, fn=poll_rss),
         JobSpec(id="poll_edgar", minutes=cfg.edgar_poll_minutes, fn=poll_edgar),
         JobSpec(id="poll_nse", minutes=cfg.nse_poll_minutes, fn=poll_nse),
         JobSpec(id="cluster_new", minutes=15, fn=cluster_job),
+        JobSpec(id="score_new", minutes=15, fn=score_job),
         JobSpec(id="embed_retry", minutes=30, fn=embed_retry_job),
         # db_health exempt from advisory lock — the probe must work when the DB
         # is degraded, exactly the condition a lock-acquire failure would mimic.
