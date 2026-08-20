@@ -33,6 +33,10 @@ type Story = {
   headline: string;
   created_at: string;
   items: SourceItem[];
+  score?: number | null;
+  angle?: string | null;
+  vertical?: string | null;
+  content_archetype?: string | null;
 };
 
 type ImageProvider = {
@@ -252,7 +256,11 @@ export default function FilmsPage() {
               >
                 <option value="">Select a story</option>
                 {stories.map((story) => (
-                  <option key={story.id} value={story.id}>{story.headline}</option>
+                  <option key={story.id} value={story.id}>
+                    {story.score != null ? `[${Math.round(story.score)}] ` : ""}
+                    {story.headline}
+                    {story.content_archetype ? ` · ${story.content_archetype}` : ""}
+                  </option>
                 ))}
               </select>
               <p className="text-xs leading-5 text-[var(--muted)]">
