@@ -13,7 +13,7 @@
 |---|---|---|
 | **P0 — Accounts & keys** | 🟡 Partial | GitHub ✅, Supabase ❌ (dropped in P1), Anthropic ⬜ (P2), Railway ❌ (dropped — VPS), X/Meta ⬜ (P4) |
 | **P1 — Spine + Reader** | ✅ **DEPLOYED** | Worker live on VPS, live ingest verified (50 items), public HTTPS pending final curl. See `docs/P1-HANDOFF.md`. |
-| **P2a — Score & Inbox** | 🟡 In flight on branch `p2a-score-and-inbox` | LLM router (`worker/app/llm/`), closed `ARCHETYPES`/`VERTICALS` taxonomy, `score_new` job, ranked Inbox. Tasks 1-4 of 9 complete and reviewed; Task 5 implemented + reviewed with an open fix round; Tasks 6-9 not started. Suite 655 passed / 0 errors. Spec: `docs/superpowers/specs/2026-08-20-p2a-score-and-inbox-design.md`, plan: `docs/superpowers/plans/2026-08-20-p2a-score-and-inbox.md`. **No migration needed** — the columns were laid down in P1. |
+| **P2a — Score & Inbox** | ✅ **Shipped** (branch `p2a-score-and-inbox`) | LLM router (`worker/app/llm/`: task-keyed routing, retry, fallback, repair-once), closed `ARCHETYPES`/`VERTICALS` taxonomy, `score_new` job every 15 min under advisory lock, scoring columns exposed on the Inbox with opt-in `order=score`. All 9 tasks complete and reviewed. Spec: `docs/superpowers/specs/2026-08-20-p2a-score-and-inbox-design.md`, plan: `docs/superpowers/plans/2026-08-20-p2a-score-and-inbox.md`. **No migration needed** — the columns were laid down in P1. **Debt:** `youtube.py` still calls Gemini/DeepSeek directly instead of through `llm/router.py`; retire at the end of P2b. |
 | **P2b — Draft & Gate** | ⬜ Not started | Voice Pack, archetype-aware drafting, L1 regex gate, L2 cross-model judge. Needs a `voice_profile` migration: that table has `version`/`system_prompt`/`banned_phrases`/`example_posts` but **no name or key column**, so it models one voice. Two X profiles are wanted (Min Khooptong first-person, and a Lamka Labs masthead), selected per archetype. |
 | **P2.5 — Newsletter + Funnel** | ⬜ Not started | |
 | **P3 — Cockpit (GUI)** | 🟡 Built, unverified | Next.js in `gui/`. Pages: dashboard, `drafts`, `films`, `settings`, `docs`. Calls worker on `127.0.0.1:8000` (`/stories`, `/youtube/generate`, `/youtube/publish`, `/youtube/jobs`, `/config/voice_profiles`). Not yet run end-to-end against a live worker. |
@@ -123,6 +123,16 @@
 | 51 | Vocabulary picker reuses `fields_in_scope(mode, level)`, the exact function Fill's system prompt already uses | cineprompt | one scoping rule, not two copies that can drift apart |
 | 52 | `base.json` (vendor data) deduped defensively inside `values_for`, never hand-edited | cineprompt | the file's own docstring forbids hand edits; an internal duplicate is a vendor data-quality issue, not something to patch at the source |
 | 53 | Final whole-branch review must execute code, not just read it | cineprompt | task-scoped review traced `build_prompt`'s "accepts a list" claim as written in the plan and passed it; only running it against every pickable field surfaced that ~23 merge-rule fields actually crash or silently corrupt output on a list input |
+| 54 | P2 split into P2a (Score & Inbox) and P2b (Draft & Gate) | p2a | Decision #1 one level down: each half independently verifiable, and the router is proven against real stories before the gate is built on it |
+| 55 | Router keys on task name, not model name | p2a | Callers stay ignorant of providers; re-routing is a config edit |
+| 56 | Task-to-provider map in `config`, credentials in env | p2a | Decision #21's two-tier split applied to model routing |
+| 57 | `ARCHETYPES` and `VERTICALS` are code constants, not config | p2a | Same reasoning as #43: in config they are one GUI edit from removal, with no git trace |
+| 58 | Scoring does not mutate `stories.status` | p2a | `status` keeps one meaning; flipping it would silently empty the Inbox and break YouTube ideation |
+| 59 | The practical-know-how vertical is named `practical_skills`, not `tips` | p2a | The vertical label reaches the drafting prompt in P2b, so the taxonomy word is a compliance surface |
+| 60 | `investing_concept` separate from `personal_finance_concept` | p2a | Distinct editorial lanes; merging them loses a slice the owner asked for |
+| 61 | Inbox ordering is a parameter, default unchanged | p2a | Changing the shared default would silently reorder the working video queue |
+| 62 | Router raises on exhaustion; no fabricated score | p2a | #41 generalized from script generation to all LLM calls |
+| 63 | Frontend hosting shelved; the GUI stays local-only until the pipeline is operational | product | A cockpit for absent functionality is the shop window before the shop. Also blocked in practice: any hosted frontend needs the worker publicly reachable, and `fce.lamkalabs.com` currently returns HTTP 525 |
 
 ---
 
