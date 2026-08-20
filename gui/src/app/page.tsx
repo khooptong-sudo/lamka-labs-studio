@@ -1,17 +1,18 @@
 import { Calendar, TrendingUp, Users, Video, FileText, Inbox } from "lucide-react";
 import AddIdeaForm from "@/components/AddIdeaForm";
 import GenerateDraftButton from "@/components/GenerateDraftButton";
+import { WORKER_URL } from "@/lib/api";
 
 export default async function Home() {
   let stories = [];
   let analytics = {};
-  
+
   try {
-    const res = await fetch("http://127.0.0.1:8000/stories", { cache: "no-store" });
+    const res = await fetch(`${WORKER_URL}/stories`, { cache: "no-store" });
     if (res.ok) {
       stories = await res.json();
     }
-    const analyticsRes = await fetch("http://127.0.0.1:8000/youtube/analytics", { cache: "no-store" });
+    const analyticsRes = await fetch(`${WORKER_URL}/youtube/analytics`, { cache: "no-store" });
     if (analyticsRes.ok) {
       analytics = await analyticsRes.json();
     }

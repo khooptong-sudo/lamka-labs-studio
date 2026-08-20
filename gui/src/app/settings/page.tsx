@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Sliders, Mic, ShieldAlert, Loader2, Save, X } from "lucide-react";
+import { WORKER_URL } from "@/lib/api";
 
 type ChannelConfig = {
   display_name: string;
@@ -35,7 +36,7 @@ export default function SettingsPage() {
   const [newWord, setNewWord] = useState("");
 
   useEffect(() => {
-    fetch("http://localhost:8000/config/channels")
+    fetch(`${WORKER_URL}/config/channels`)
       .then((res) => {
         if (!res.ok) throw new Error("Not found");
         return res.json();
@@ -94,7 +95,7 @@ export default function SettingsPage() {
     };
 
     try {
-      await fetch("http://localhost:8000/config/channels", {
+      await fetch(`${WORKER_URL}/config/channels`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),

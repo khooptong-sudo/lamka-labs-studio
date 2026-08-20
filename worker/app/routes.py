@@ -102,6 +102,17 @@ class XPublishRequest(BaseModel):
     text: str = Field(min_length=1, max_length=280)
 
 
+class XRewriteRequest(BaseModel):
+    story_id: str
+    tone: str | None = Field(default=None, max_length=200)
+
+
+class XReplyRequest(BaseModel):
+    comment: str = Field(min_length=1, max_length=1000)
+    post_context: str | None = Field(default=None, max_length=1000)
+    tone: str | None = Field(default=None, max_length=200)
+
+
 class YouTubeGenerateRequest(BaseModel):
     story_id: str
     channel_id: str = Field(min_length=1)
@@ -529,5 +540,58 @@ async def cineprompt_vocab(mode: str = "single", level: str = "complex") -> dict
         }
     return result
 
+
+@router.get("/x/stories")
+async def x_stories() -> list[dict]:
+    """Recent inbox stories for the manual X assistant."""
+    from app.config import get_ingest_config
+    from app.db import get_pending_stories
+
+    cfg = await get_ingest_config()
+    stories = await get_pending_stories(fresh_hours=cfg.fresh_news_hours, order="recent")
+    for story in stories:
+        story["id"] = str(story["id"])
+        for item in story.get("items", []):
+            item["id"] = str(item["id"])
+    return stories
+
+
+@router.post("/x/rewrite")
+async def x_rewrite(req: XRewriteRequest) -> dict:
+    """Rewrite a story into a manual X post using Kimi."""
+    from app.x.rewrite import RewriteError, rewrite_story_to_post
+
+    try:
+        sid = uuid.UUID(req.story_id)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail="invalid story_id (must be a uuid)") from exc
+
+    try:
+        post = await rewrite_story_to_post(story_id=sid, tone=req.tone)
+    except RewriteError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    except Exception as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
+
+    return {"post": post}
+
+
+@router.post("/x/reply")
+async def x_reply(req: XReplyRequest) -> dict:
+    """Suggest a reply to a comment using Kimi."""
+    from app.x.rewrite import RewriteError, suggest_reply
+
+    try:
+        reply = await suggest_reply(
+            comment_text=req.comment,
+            post_context=req.post_context,
+            tone=req.tone,
+        )
+    except RewriteError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    except Exception as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
+
+    return {"reply": reply}
 
 __all__ = ["router"]

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { WORKER_URL } from "@/lib/api";
 
 type Shot = {
   slug: string;
@@ -16,8 +17,7 @@ export default function ShotInspector({ jobId }: { jobId: string }) {
   const [open, setOpen] = useState<string | null>(null);
 
   useEffect(() => {
-    const base = process.env.NEXT_PUBLIC_WORKER_URL || "http://127.0.0.1:8000";
-    fetch(`${base}/youtube/jobs/${jobId}/shots`)
+    fetch(`${WORKER_URL}/youtube/jobs/${jobId}/shots`)
       .then((r) => r.json())
       .then(setShots)
       .catch(() => setShots([]));
@@ -55,7 +55,7 @@ export default function ShotInspector({ jobId }: { jobId: string }) {
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
                     key={png}
-                    src={`${process.env.NEXT_PUBLIC_WORKER_URL || "http://127.0.0.1:8000"}/videos/${png}`}
+                    src={`${WORKER_URL}/videos/${png}`}
                     alt={png}
                     className="h-32 rounded"
                   />
