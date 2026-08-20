@@ -159,3 +159,102 @@ async def test_never_returns_a_default(routed, monkeypatch):
     )
     with pytest.raises(router.RouterError):
         await router.complete_json("demo", system="s", user="u", spec=SPEC)
+
+
+async def test_raises_when_the_last_provider_fails_terminally(routed, monkeypatch):
+    """Round 1 minor 1: the exhaustion test previously only covered a retryable
+    final failure ('503 down'), so a terminal failure on the last provider in
+    the chain was never exercised."""
+    primary = _provider_returning(RuntimeError("503 down"))
+    fallback = _provider_returning(RuntimeError("401 Unauthorized"))
+    monkeypatch.setitem(
+        providers.PROVIDERS, "gemini",
+        providers.Provider("gemini", "GEMINI_API_KEY", primary),
+    )
+    monkeypatch.setitem(
+        providers.PROVIDERS, "deepseek",
+        providers.Provider("deepseek", "DEEPSEEK_API_KEY", fallback),
+    )
+    with pytest.raises(router.RouterError, match="exhausted"):
+        await router.complete_json("demo", system="s", user="u", spec=SPEC)
+    assert len(fallback.calls) == 1
+
+
+async def test_exhausts_the_full_retry_budget_before_succeeding(routed, monkeypatch):
+    """Round 1 important 2: no test previously drove more than two calls
+    against one provider, so the retry budget was only verified by reading
+    the code."""
+    call = _provider_returning(
+        RuntimeError("429 rate limited"),
+        RuntimeError("429 rate limited"),
+        RuntimeError("429 rate limited"),
+        '{"verdict": "yes"}',
+    )
+    monkeypatch.setitem(
+        providers.PROVIDERS, "gemini",
+        providers.Provider("gemini", "GEMINI_API_KEY", call),
+    )
+    result = await router.complete_json(
+        "demo", system="s", user="u", spec=SPEC, max_attempts=4
+    )
+    assert result == {"verdict": "yes"}
+    assert len(call.calls) == 4
+
+
+async def test_respects_a_lower_max_attempts_before_falling_through(routed, monkeypatch):
+    primary = _provider_returning(RuntimeError("429 rate limited"))
+    fallback = _provider_returning('{"verdict": "no"}')
+    monkeypatch.setitem(
+        providers.PROVIDERS, "gemini",
+        providers.Provider("gemini", "GEMINI_API_KEY", primary),
+    )
+    monkeypatch.setitem(
+        providers.PROVIDERS, "deepseek",
+        providers.Provider("deepseek", "DEEPSEEK_API_KEY", fallback),
+    )
+    result = await router.complete_json(
+        "demo", system="s", user="u", spec=SPEC, max_attempts=2
+    )
+    assert result == {"verdict": "no"}
+    assert len(primary.calls) == 2
+    assert len(fallback.calls) == 1
+
+
+async def test_get_llm_config_carries_routing_through(monkeypatch):
+    """Round 1 critical: get_llm_config() used hasattr(LLMConfig, k) to filter
+    DB kwargs, but dataclasses deletes the class attribute for any field
+    declared with field(default_factory=...) — so a DB-provided 'routing' was
+    silently dropped. This exercises the real loader, not a hand-built
+    LLMConfig, which is why the bug shipped with 9/9 green."""
+    import app.config as config
+
+    config.clear_config_cache()
+
+    async def _load(key):
+        assert key == "llm"
+        return {"routing": ROUTE, "score_batch_max": 40}
+
+    monkeypatch.setattr(config, "_load", _load)
+    try:
+        cfg = await config.get_llm_config()
+        assert cfg.routing == ROUTE
+        assert cfg.score_batch_max == 40
+    finally:
+        config.clear_config_cache()
+
+
+async def test_get_llm_config_defaults_when_no_row(monkeypatch):
+    import app.config as config
+
+    config.clear_config_cache()
+
+    async def _load(key):
+        return {}
+
+    monkeypatch.setattr(config, "_load", _load)
+    try:
+        cfg = await config.get_llm_config()
+        assert cfg.routing == {"story_score": {"primary": "gemini", "fallback": "deepseek"}}
+        assert cfg.score_batch_max == 25
+    finally:
+        config.clear_config_cache()

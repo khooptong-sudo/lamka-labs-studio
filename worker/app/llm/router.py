@@ -82,7 +82,8 @@ async def complete_json(
                     "llm_provider_retry",
                     task=task, provider=provider_name, attempt=attempt, error=str(exc),
                 )
-                await asyncio.sleep(_backoff(attempt))
+                if attempt < max_attempts:
+                    await asyncio.sleep(_backoff(attempt))
                 continue
 
             try:

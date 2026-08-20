@@ -120,7 +120,11 @@ async def get_edgar_config() -> EdgarConfig:
 
 async def get_llm_config() -> LLMConfig:
     raw = await _load("llm")
-    return LLMConfig(**{k: v for k, v in raw.items() if hasattr(LLMConfig, k)})
+    # hasattr() is wrong here: dataclasses deletes the class attribute for any
+    # field declared with field(default_factory=...), so hasattr(LLMConfig,
+    # "routing") is False and a DB-provided routing map would be silently
+    # dropped. __dataclass_fields__ is the reliable membership check.
+    return LLMConfig(**{k: v for k, v in raw.items() if k in LLMConfig.__dataclass_fields__})
 
 
 def clear_config_cache() -> None:
