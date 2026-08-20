@@ -82,7 +82,7 @@ def test_x_rewrite_maps_rewrite_error_to_400():
     story_id = str(uuid.uuid4())
     with patch(
         "app.x.rewrite.rewrite_story_to_post",
-        AsyncMock(side_effect=Exception("Kimi returned 300 characters; max is 280")),
+        AsyncMock(side_effect=Exception("provider returned 300 characters; max is 280")),
     ):
         resp = client.post("/x/rewrite", json={"story_id": story_id})
 
@@ -137,12 +137,12 @@ async def test_rewrite_story_to_post_compliance_blocks_advice(monkeypatch):
     async def fake_fetch(_story_id):
         return {"headline": "Stock tips", "items": []}
 
-    async def fake_kimi(_system, _user):
+    async def fake_llm(_system, _user):
         return "You should buy this stock now."
 
     monkeypatch.setattr(rewrite, "_fetch_story_with_items", fake_fetch)
-    monkeypatch.setattr(rewrite, "_kimi_call", fake_kimi)
-    monkeypatch.setenv("KIMI_API_KEY", "test-key")
+    monkeypatch.setattr(rewrite, "_llm_call", fake_llm)
+    monkeypatch.setenv("DEEPSEEK_API_KEY", "test-key")
 
     with pytest.raises(rewrite.RewriteError, match="blocked term"):
         await rewrite.rewrite_story_to_post(uuid.uuid4())
@@ -155,12 +155,12 @@ async def test_rewrite_story_to_post_truncates_quotes(monkeypatch):
     async def fake_fetch(_story_id):
         return {"headline": "Fed pause", "items": []}
 
-    async def fake_kimi(_system, _user):
+    async def fake_llm(_system, _user):
         return '"Markets digest the Fed pause."'
 
     monkeypatch.setattr(rewrite, "_fetch_story_with_items", fake_fetch)
-    monkeypatch.setattr(rewrite, "_kimi_call", fake_kimi)
-    monkeypatch.setenv("KIMI_API_KEY", "test-key")
+    monkeypatch.setattr(rewrite, "_llm_call", fake_llm)
+    monkeypatch.setenv("DEEPSEEK_API_KEY", "test-key")
 
     result = await rewrite.rewrite_story_to_post(uuid.uuid4())
     assert result == "Markets digest the Fed pause."
@@ -170,11 +170,11 @@ async def test_rewrite_story_to_post_truncates_quotes(monkeypatch):
 async def test_suggest_reply_enforces_max_length(monkeypatch):
     from app.x import rewrite
 
-    async def fake_kimi(_system, _user):
+    async def fake_llm(_system, _user):
         return "x" * 281
 
-    monkeypatch.setattr(rewrite, "_kimi_call", fake_kimi)
-    monkeypatch.setenv("KIMI_API_KEY", "test-key")
+    monkeypatch.setattr(rewrite, "_llm_call", fake_llm)
+    monkeypatch.setenv("DEEPSEEK_API_KEY", "test-key")
 
     with pytest.raises(rewrite.RewriteError, match="max is 280"):
         await rewrite.suggest_reply("What do you think?")

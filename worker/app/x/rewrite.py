@@ -83,11 +83,12 @@ def _check_compliance(text: str) -> None:
         )
 
 
-async def _kimi_call(system: str, user: str) -> str:
-    """Call the configured Kimi provider asynchronously."""
-    provider = providers.PROVIDERS.get("kimi")
+async def _llm_call(system: str, user: str) -> str:
+    """Call the configured text provider asynchronously."""
+    provider_name = os.environ.get("X_REWRITE_PROVIDER", "deepseek").strip().lower()
+    provider = providers.PROVIDERS.get(provider_name)
     if provider is None:
-        raise RewriteError("kimi provider is not configured")
+        raise RewriteError(f"provider {provider_name!r} is not configured")
     api_key = os.environ.get(provider.env_key, "").strip()
     if not api_key:
         raise RewriteError(f"{provider.env_key} is not set")
@@ -113,12 +114,12 @@ Linked sources:
 
 Write the X post."""
 
-    text = await _kimi_call(REWRITE_SYSTEM_PROMPT, user_prompt)
+    text = await _llm_call(REWRITE_SYSTEM_PROMPT, user_prompt)
     text = text.strip().strip('"').strip("'")
 
     if len(text) > MAX_POST_LENGTH:
         raise RewriteError(
-            f"Kimi returned {len(text)} characters; max is {MAX_POST_LENGTH}"
+            f"provider returned {len(text)} characters; max is {MAX_POST_LENGTH}"
         )
 
     _check_compliance(text)
@@ -142,12 +143,12 @@ async def suggest_reply(
 
 Write a reply."""
 
-    text = await _kimi_call(REPLY_SYSTEM_PROMPT, user_prompt)
+    text = await _llm_call(REPLY_SYSTEM_PROMPT, user_prompt)
     text = text.strip().strip('"').strip("'")
 
     if len(text) > MAX_POST_LENGTH:
         raise RewriteError(
-            f"Kimi returned {len(text)} characters; max is {MAX_POST_LENGTH}"
+            f"provider returned {len(text)} characters; max is {MAX_POST_LENGTH}"
         )
 
     _check_compliance(text)
