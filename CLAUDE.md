@@ -83,3 +83,11 @@ cd worker; ..\.venv\Scripts\python.exe -m pytest tests -q
 cd worker; ..\.venv\Scripts\python.exe render_local.py --storyboard ..\videos\<board>
 ```
 DB tests error without local Postgres — expected.
+
+## Health Stack
+
+- typecheck: `cd gui && npx tsc --noEmit`
+- lint: `cd gui && npx eslint .`
+- test: `cd worker && ..\.venv\Scripts\python.exe -m pytest tests -q`
+- deadcode: skipped (no knip configured)
+- shell: skipped (no project shell scripts)
