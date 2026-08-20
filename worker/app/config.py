@@ -71,7 +71,7 @@ class LLMConfig:
 
     routing: dict[str, dict[str, str]] = field(
         default_factory=lambda: {
-            "story_score": {"primary": "gemini", "fallback": "deepseek"},
+            "story_score": {"primary": "kimi", "fallback": "openai"},
         }
     )
     score_batch_max: int = 25

@@ -3,15 +3,14 @@ import pytest
 from app.llm.providers import PROVIDERS, ProviderError, available, is_retryable, _gemini_retryable
 
 
-def test_the_three_real_providers_are_registered():
-    # No Anthropic and no Moonshot: this deployment has no key for either, so
-    # the blueprint's §8 table names models that cannot be called here.
-    assert set(PROVIDERS) == {"gemini", "deepseek", "openai"}
+def test_the_four_real_providers_are_registered():
+    assert set(PROVIDERS) == {"gemini", "deepseek", "kimi", "openai"}
 
 
 def test_every_provider_declares_its_env_key():
     assert PROVIDERS["gemini"].env_key == "GEMINI_API_KEY"
     assert PROVIDERS["deepseek"].env_key == "DEEPSEEK_API_KEY"
+    assert PROVIDERS["kimi"].env_key == "KIMI_API_KEY"
     assert PROVIDERS["openai"].env_key == "OPENAI_API_KEY"
 
 

@@ -1,9 +1,9 @@
 """One call signature over the text providers this deployment actually has.
 
-Gemini, DeepSeek, OpenAI. There is no Anthropic key and no Moonshot key here,
-so the blueprint's §8 routing table (Haiku primary, Kimi for variant B) names
-models that cannot be called. Adding a provider is: write an adapter, add one
-PROVIDERS entry, done — callers route by task name and never see this module.
+Gemini, DeepSeek, Kimi (Moonshot), and OpenAI. There is no Anthropic key here,
+so the blueprint's §8 routing table Haiku entry names a model that cannot be
+called. Adding a provider is: write an adapter, add one PROVIDERS entry, done —
+callers route by task name and never see this module.
 """
 
 from __future__ import annotations
@@ -21,6 +21,7 @@ RETRYABLE_MARKERS = (
 
 GEMINI_MODEL = "gemini-flash-latest"
 DEEPSEEK_MODEL = "deepseek-chat"
+KIMI_MODEL = "moonshot-v1-8k"
 OPENAI_MODEL = "gpt-4o-mini"
 
 REQUEST_TIMEOUT_SECONDS = 90
@@ -134,6 +135,16 @@ async def _call_deepseek(system: str, user: str) -> str:
     )
 
 
+async def _call_kimi(system: str, user: str) -> str:
+    return await _call_openai_compatible(
+        base_url=os.environ.get("KIMI_BASE_URL", "https://api.moonshot.cn/v1"),
+        api_key=os.environ["KIMI_API_KEY"],
+        model=os.environ.get("KIMI_MODEL", KIMI_MODEL),
+        system=system,
+        user=user,
+    )
+
+
 async def _call_openai(system: str, user: str) -> str:
     return await _call_openai_compatible(
         base_url="https://api.openai.com/v1",
@@ -147,6 +158,7 @@ async def _call_openai(system: str, user: str) -> str:
 PROVIDERS: dict[str, Provider] = {
     "gemini": Provider("gemini", "GEMINI_API_KEY", _call_gemini),
     "deepseek": Provider("deepseek", "DEEPSEEK_API_KEY", _call_deepseek),
+    "kimi": Provider("kimi", "KIMI_API_KEY", _call_kimi),
     "openai": Provider("openai", "OPENAI_API_KEY", _call_openai),
 }
 

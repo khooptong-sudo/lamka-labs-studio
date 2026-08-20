@@ -42,11 +42,11 @@ _load_dotenv()
 
 
 def _scene_model() -> str:
-    return os.environ.get("SCENE_MODEL", "gemini-2.0-flash")
+    return os.environ.get("SCENE_MODEL", "moonshot-v1-8k")
 
 
 def _scene_provider() -> str:
-    return os.environ.get("SCENE_MODEL_PROVIDER", "gemini").lower()
+    return os.environ.get("SCENE_MODEL_PROVIDER", "kimi").lower()
 
 
 def _deepseek_api_key() -> str:
@@ -55,6 +55,18 @@ def _deepseek_api_key() -> str:
 
 def _deepseek_base_url() -> str:
     return os.environ.get("DEEPSEEK_BASE_URL", "https://api.deepseek.com/v1")
+
+
+def _kimi_api_key() -> str:
+    return os.environ.get("KIMI_API_KEY", "")
+
+
+def _kimi_base_url() -> str:
+    return os.environ.get("KIMI_BASE_URL", "https://api.moonshot.cn/v1")
+
+
+def _kimi_model() -> str:
+    return os.environ.get("KIMI_MODEL", "moonshot-v1-8k")
 
 # Matches a fenced JS block — ```javascript, ```js, or bare ```
 _FENCE = re.compile(r"```(?:javascript|js)?\s*\n(.*?)```", re.DOTALL)
@@ -230,8 +242,11 @@ def _is_retryable_status(status: int) -> bool:
 
 async def _call_model(system: str, user: str) -> str:
     """Single cloud call. Retries transient failures, then raises."""
-    if _scene_provider() == "deepseek":
+    provider = _scene_provider()
+    if provider == "deepseek":
         return await _call_deepseek(system, user)
+    if provider == "kimi":
+        return await _call_kimi(system, user)
     return await _call_gemini(system, user)
 
 
@@ -297,6 +312,55 @@ async def _call_deepseek(system: str, user: str) -> str:
         async with httpx.AsyncClient(timeout=90) as client:
             response = await client.post(
                 f"{_deepseek_base_url()}/chat/completions",
+                headers={
+                    "Authorization": f"Bearer {api_key}",
+                    "Content-Type": "application/json",
+                },
+                json={
+                    "model": model,
+                    "messages": [
+                        {"role": "system", "content": system},
+                        {"role": "user", "content": user},
+                    ],
+                    "temperature": 0.7,
+                },
+            )
+            response.raise_for_status()
+            data = response.json()
+            return data["choices"][0]["message"]["content"] or ""
+
+    return await _once()
+
+
+async def _call_kimi(system: str, user: str) -> str:
+    import asyncio
+
+    import httpx
+    from tenacity import retry, retry_if_exception, stop_after_attempt, wait_exponential
+
+    api_key = _kimi_api_key()
+    if not api_key:
+        raise RuntimeError(
+            "KIMI_API_KEY is required when SCENE_MODEL_PROVIDER=kimi"
+        )
+
+    model = _kimi_model()
+
+    def _should_retry(exc: BaseException) -> bool:
+        if isinstance(exc, httpx.HTTPStatusError):
+            return _is_retryable_status(exc.response.status_code)
+        return isinstance(exc, (httpx.ConnectError, httpx.RemoteProtocolError))
+
+    @retry(
+        retry=retry_if_exception(_should_retry),
+        wait=wait_exponential(multiplier=2, min=2, max=30),
+        stop=stop_after_attempt(4),
+        reraise=True,
+    )
+    async def _once() -> str:
+        async with httpx.AsyncClient(timeout=90) as client:
+            response = await client.post(
+                f"{_kimi_base_url()}/chat/completions",
                 headers={
                     "Authorization": f"Bearer {api_key}",
                     "Content-Type": "application/json",

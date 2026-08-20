@@ -270,7 +270,7 @@ async def test_get_llm_config_defaults_when_no_row(monkeypatch):
     monkeypatch.setattr(config, "_load", _load)
     try:
         cfg = await config.get_llm_config()
-        assert cfg.routing == {"story_score": {"primary": "gemini", "fallback": "deepseek"}}
+        assert cfg.routing == {"story_score": {"primary": "kimi", "fallback": "openai"}}
         assert cfg.score_batch_max == 25
     finally:
         config.clear_config_cache()
