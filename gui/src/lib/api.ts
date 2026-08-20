@@ -60,3 +60,49 @@ export async function suggestReply(
   const data = await res.json();
   return data.reply;
 }
+
+export type PosterSection = {
+  heading: string;
+  bullets: string[];
+};
+
+export type Poster = {
+  title: string;
+  subtitle: string;
+  sections: PosterSection[];
+  footer: string;
+  style: string;
+};
+
+export async function generatePosterFromStory(
+  storyId: string,
+  style?: string | null,
+): Promise<Poster> {
+  const res = await fetch(`${WORKER_URL}/x/poster/story`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ story_id: storyId, style: style || null }),
+  });
+  if (!res.ok) {
+    const payload = await res.json().catch(() => ({}));
+    throw new Error(payload.detail || `Poster failed: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function generatePosterFromText(
+  topic: string,
+  bullets: string[],
+  style?: string | null,
+): Promise<Poster> {
+  const res = await fetch(`${WORKER_URL}/x/poster/text`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ topic, bullets, style: style || null }),
+  });
+  if (!res.ok) {
+    const payload = await res.json().catch(() => ({}));
+    throw new Error(payload.detail || `Poster failed: ${res.status}`);
+  }
+  return res.json();
+}

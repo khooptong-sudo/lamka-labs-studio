@@ -113,6 +113,17 @@ class XReplyRequest(BaseModel):
     tone: str | None = Field(default=None, max_length=200)
 
 
+class PosterFromStoryRequest(BaseModel):
+    story_id: str
+    style: str | None = Field(default=None, max_length=40)
+
+
+class PosterFromTextRequest(BaseModel):
+    topic: str = Field(min_length=1, max_length=200)
+    bullets: list[str] = Field(default_factory=list)
+    style: str | None = Field(default=None, max_length=40)
+
+
 class YouTubeGenerateRequest(BaseModel):
     story_id: str
     channel_id: str = Field(min_length=1)
@@ -593,5 +604,41 @@ async def x_reply(req: XReplyRequest) -> dict:
         raise HTTPException(status_code=502, detail=str(exc)) from exc
 
     return {"reply": reply}
+
+
+@router.post("/x/poster/story")
+async def x_poster_from_story(req: PosterFromStoryRequest) -> dict:
+    """Generate an educational poster structure from a story."""
+    from app.x.poster import PosterError, generate_poster_from_story
+
+    try:
+        sid = uuid.UUID(req.story_id)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail="invalid story_id (must be a uuid)") from exc
+
+    try:
+        return await generate_poster_from_story(story_id=sid, style=req.style)
+    except PosterError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    except Exception as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
+
+
+@router.post("/x/poster/text")
+async def x_poster_from_text(req: PosterFromTextRequest) -> dict:
+    """Generate an educational poster structure from a topic + bullet points."""
+    from app.x.poster import PosterError, generate_poster_from_text
+
+    try:
+        return await generate_poster_from_text(
+            topic=req.topic,
+            bullets=req.bullets,
+            style=req.style,
+        )
+    except PosterError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    except Exception as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
+
 
 __all__ = ["router"]
