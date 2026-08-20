@@ -116,6 +116,30 @@ by three cheap, tireless LLMs.
   empty provider chain and every story fails safely with an audit event — scoring nothing,
   silently, forever. Also still outstanding: `fce.lamkalabs.com` returns HTTP 525.
 
+### Session-close update — 2026-08-20 (late): the three-week silent outage
+
+- **Found by inspecting the VPS, not by any test: every advisory-locked job had been
+  silently doing nothing since ~2026-07-29.** `register_jobs` asserted the async
+  invariant on `spec.fn`, then wrapped it in a plain lambda. A lambda is not a coroutine
+  function, so `AsyncIOExecutor` never awaited it. The only trace was one RuntimeWarning
+  in the journal. `/health` reported healthy throughout because `db_health` is the single
+  lock-exempt job. **This is deploy bug D5 recurring inside the wrapper D5's own fix
+  introduced.** Fixed in `59c533e`: named `async def` wrapper plus an assertion on the
+  callable APScheduler actually holds. 686 tests had passed against this bug because they
+  all asserted on `spec.fn`, which is not what gets registered.
+- **VPS now runs `main`.** Ingest verified live again: 50 fetched, 50 embedded, 0 failures,
+  with the REAL embedder. Clustering confirmed working on real vectors (`checked=50
+  merged=4 new_stories=46`) — the first genuine clustering evidence P2a has.
+- **`score_new` on the VPS is blocked on Gemini free-tier quota (`429
+  RESOURCE_EXHAUSTED`), not on anything broken.** The key is valid. Quota was exhausted by
+  local testing the same day; it resets on Google's daily cycle. The retry path behaved
+  correctly (429 → retryable → backoff → safe failure, zero fabricated scores).
+- **Add `DEEPSEEK_API_KEY` to `/opt/fce/.env`.** The routing log now says exactly what is
+  wrong — `llm_routing_decision chain=['gemini'] skipped=['deepseek']` — and with a second
+  provider present the 429 would have fallen through and scored.
+- Note: a Gemini key of the form `AQ.A…` (53 chars) is valid. It is NOT the older `AIza…`
+  39-char format, and assuming otherwise wasted a diagnostic step.
+
 ---
 
 ## Non-negotiables (governs every phase)
