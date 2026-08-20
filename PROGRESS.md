@@ -13,7 +13,8 @@
 |---|---|---|
 | **P0 — Accounts & keys** | 🟡 Partial | GitHub ✅, Supabase ❌ (dropped in P1), Anthropic ⬜ (P2), Railway ❌ (dropped — VPS), X/Meta ⬜ (P4) |
 | **P1 — Spine + Reader** | ✅ **DEPLOYED** | Worker live on VPS, live ingest verified (50 items), public HTTPS pending final curl. See `docs/P1-HANDOFF.md`. |
-| **P2 — Brain + Gate** | ⬜ Not started | handoff prompt in blueprint §10 |
+| **P2a — Score & Inbox** | 🟡 In flight on branch `p2a-score-and-inbox` | LLM router (`worker/app/llm/`), closed `ARCHETYPES`/`VERTICALS` taxonomy, `score_new` job, ranked Inbox. Tasks 1-4 of 9 complete and reviewed; Task 5 implemented + reviewed with an open fix round; Tasks 6-9 not started. Suite 655 passed / 0 errors. Spec: `docs/superpowers/specs/2026-08-20-p2a-score-and-inbox-design.md`, plan: `docs/superpowers/plans/2026-08-20-p2a-score-and-inbox.md`. **No migration needed** — the columns were laid down in P1. |
+| **P2b — Draft & Gate** | ⬜ Not started | Voice Pack, archetype-aware drafting, L1 regex gate, L2 cross-model judge. Needs a `voice_profile` migration: that table has `version`/`system_prompt`/`banned_phrases`/`example_posts` but **no name or key column**, so it models one voice. Two X profiles are wanted (Min Khooptong first-person, and a Lamka Labs masthead), selected per archetype. |
 | **P2.5 — Newsletter + Funnel** | ⬜ Not started | |
 | **P3 — Cockpit (GUI)** | 🟡 Built, unverified | Next.js in `gui/`. Pages: dashboard, `drafts`, `films`, `settings`, `docs`. Calls worker on `127.0.0.1:8000` (`/stories`, `/youtube/generate`, `/youtube/publish`, `/youtube/jobs`, `/config/voice_profiles`). Not yet run end-to-end against a live worker. |
 | **P4 — Publishers** | ⬜ Not started | |

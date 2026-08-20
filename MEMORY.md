@@ -38,6 +38,48 @@ by three cheap, tireless LLMs.
 - **Deferred, not forgotten:** the Cinema page's visual/aesthetic design (colors, spacing, motion) is unstyled beyond reusing existing Tailwind tokens. Blocked on the `frontend-design` skill, re-enabled in `.claude/settings.local.json` this session but requiring a Claude Code session restart to actually activate.
 - Live-browser confirmation of the picker's rendered behavior was never fully completed — a Claude-in-Chrome tool outage blocked it mid-session. What WAS verified: two independent code-trace reviews, an API-level `curl` check, and the full 318-test engine suite. Worth 30 seconds in a browser before trusting this further, per the `START_LAMKA_LABS_STUDIO.bat` instructions in `docs/youtube/YT-HANDOFF.md`.
 
+### Session-close update — 2026-08-20
+
+- **Direction set for the X/Twitter product.** The owner's loop (scrape news → skim for
+  interest → agents expand → publish → agent-drafted replies he approves) maps onto the
+  blueprint stage for stage: P1 ingest (deployed) → P2 score+draft+gate → P4 publisher →
+  P5 replies. Only stage one exists. `drafts`, `mentions`, `replies` are schema with
+  nothing writing to them.
+- **Content posture decided:** educator/analyst, may name and analyse specific companies,
+  **never** recommendations. "Investment tips" was raised and walked back to this. The
+  practical-know-how vertical is deliberately named `practical_skills`, not `tips`,
+  because in P2b the vertical label is injected into the drafting prompt and would prime
+  advisory register.
+- **Voice decided:** two X profiles — Min Khooptong in first person, plus a Lamka Labs
+  masthead — selected per archetype. Note the owner's real name is **Min Khooptong**;
+  "UMinkoo" recorded elsewhere in this file is a nickname.
+- **Draft trigger decided:** score everything automatically, draft only what the owner
+  picks from the Inbox. Matches what YT P6 settled on and keeps spend proportional to
+  what actually publishes.
+- **§4 Voice Pack is contaminated.** It lists five *ElevenLabs narrator* personas (Teen
+  Boy, Baby's Voice, "3 to 5 minutes") fused with genuinely X-specific rules. The half
+  that matters for X — what the handle sounds like — was never specified. P2b must not
+  "seed from §4" without untangling this.
+- **P2 was split** into P2a (Score & Inbox) and P2b (Draft & Gate) so each half is
+  independently verifiable, per decision #1. P2a is in flight on branch
+  `p2a-score-and-inbox`; see `PROGRESS.md` and the SDD ledger noted below.
+- **The blueprint's §8 routing table names models this deployment cannot call.** There is
+  no Anthropic key and no Moonshot key. Real providers are Gemini, DeepSeek, OpenAI —
+  three, which is one more than L2's cross-model rule needs.
+- **The "11 pre-existing DB test errors" were never a defect.** They were only ever an
+  absent local database. `docker compose up -d db`, create the `fce` role that
+  `001_init.sql`'s D4 GRANT block expects (it exists on the VPS, not locally), apply the
+  11 migrations, and the suite goes to **655 passed / 0 errors**. Supabase is not needed
+  and must not be reintroduced — decisions #32/#33 dropped it deliberately.
+- **`fce.lamkalabs.com` returns HTTP 525** (Cloudflare reached the origin on 443 but the
+  TLS handshake failed). P1's "final curl pending" is actually a broken public endpoint.
+  Needs an SSH session; nothing in P2a depends on it.
+- **Deferred, tracked:** occasional beginner-facing infographics for the X account. The
+  mechanism is already designed (§8: HTML template → Playwright screenshot, specced for
+  IG carousels at P4) and the repo has HTML-to-image machinery already. The trap to
+  design around: L1/L2 gate draft *text*, so image copy bypasses the compliance wall
+  unless it is extracted and gated before render.
+
 ---
 
 ## Non-negotiables (governs every phase)
