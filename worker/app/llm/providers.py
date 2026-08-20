@@ -12,10 +12,6 @@ import os
 from dataclasses import dataclass
 from typing import Awaitable, Callable
 
-import structlog
-
-log = structlog.get_logger()
-
 # Substring markers, matched case-insensitively against the exception text.
 # Mirrors the classification `youtube.py` already applies to script generation.
 RETRYABLE_MARKERS = (
@@ -69,7 +65,24 @@ async def _call_gemini(system: str, user: str) -> str:
         )
         return response.text or ""
 
-    return await asyncio.to_thread(_sync)
+    try:
+        return await asyncio.to_thread(_sync)
+    except Exception as exc:
+        # Extract HTTP status from google-genai SDK exceptions.
+        # Different error classes expose it under different attributes.
+        status_code = None
+        if hasattr(exc, "code"):
+            status_code = exc.code
+        elif hasattr(exc, "response") and hasattr(exc.response, "status_code"):
+            status_code = exc.response.status_code
+
+        # Classify by status code if available; otherwise fall back to substring matching.
+        if status_code is not None:
+            retryable = status_code == 429 or status_code >= 500
+            raise ProviderError(str(exc), retryable=retryable) from exc
+        else:
+            # No status code available; let is_retryable() make the judgement.
+            raise
 
 
 async def _call_openai_compatible(
