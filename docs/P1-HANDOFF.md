@@ -117,6 +117,16 @@ and the fix that landed.
 5. **Co-locate behind the desk's existing Caddy** rather than running a second Caddy. Can't run two Caddys on 443.
 6. **Worker binds `0.0.0.0:8002`** (not `127.0.0.1`) so the desk-caddy Docker container can reach it via the bridge gateway `172.18.0.1`. ufw (only 22/80/443 open) blocks external access; only Caddy can get in. Safe.
 
+## Post-P1 additions tracked here (2026-08-20)
+
+The spine stayed the same; the following features were added after P1 was declared complete.
+
+- **Manual X/Twitter cockpit (`/x` in the GUI).** The owner selects a story, picks a tone, and gets a DeepSeek-drafted X post to copy-paste manually. A reply helper drafts responses to pasted comments. Direct X API publishing returns `402 Payment Required` (credits depleted), so the human remains the publisher.
+- **Educational poster generator.** 1080×1350 infographic posters from a story or from a manual topic+bullets, rendered as HTML/CSS and exported to PNG, always watermarked `equities.lamkalabs.com · Lamka Labs`.
+- **Provider switch.** Rewrite and poster generation default to DeepSeek (`X_REWRITE_PROVIDER` env var); Kimi/Moonshot key is rejected by the provider.
+- **Faster ingest cadence.** RSS/NSE polls default to 10 minutes (was 30); cluster/score job runs every 10 minutes (was 15). Edgar stays hourly.
+- **VPS launcher.** `START_Lamka_Labs_Studio_VPS.bat` starts the GUI against `http://160.250.204.73:8002` and opens `/x`.
+
 ---
 
 # ORIGINAL HANDOFF (codebase facts, kept for reference)

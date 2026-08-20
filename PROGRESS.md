@@ -16,8 +16,8 @@
 | **P2a — Score & Inbox** | ✅ **Merged to `main`** (`1cd78ae`) | LLM router (`worker/app/llm/`: task-keyed routing, retry, fallback, repair-once), closed `ARCHETYPES`/`VERTICALS` taxonomy, `score_new` every 15 min under advisory lock, scoring columns on the Inbox with opt-in `order=score`. 682 tests green. **Live run 2026-08-20:** 36 items ingested → 36 stories → 25 scored by Gemini, score spread 25-82 (mean 59.7, 14 distinct), zero out-of-set enums, zero audit failures; ranked Inbox verified through the GUI proxy. Spec/plan in `docs/superpowers/`. **Not yet deployed to the VPS.** **Debt:** `youtube.py` still calls providers directly instead of via `llm/router.py`; retire at the end of P2b. |
 | **P2b — Draft & Gate** | ⬜ Not started | Voice Pack, archetype-aware drafting, L1 regex gate, L2 cross-model judge. Needs a `voice_profile` migration: that table has `version`/`system_prompt`/`banned_phrases`/`example_posts` but **no name or key column**, so it models one voice. Two X profiles are wanted (Min Khooptong first-person, and a Lamka Labs masthead), selected per archetype. |
 | **P2.5 — Newsletter + Funnel** | ⬜ Not started | |
-| **P3 — Cockpit (GUI)** | 🟡 Built, unverified | Next.js in `gui/`. Pages: dashboard, `drafts`, `films`, `settings`, `docs`. Calls worker on `127.0.0.1:8000` (`/stories`, `/youtube/generate`, `/youtube/publish`, `/youtube/jobs`, `/config/voice_profiles`). Not yet run end-to-end against a live worker. |
-| **P4 — Publishers** | ⬜ Not started | |
+| **P3 — Cockpit (GUI)** | 🟡 In progress | Next.js in `gui/`. Existing pages: dashboard, `drafts`, `films`, `settings`, `docs`. New `/x` page (sidebar "X Post") is a three-column manual-X cockpit: story Inbox, rewrite/poster panel with tone presets, reply helper. Calls worker via `NEXT_PUBLIC_WORKER_URL`. PosterCard renders 1080×1350 HTML/CSS and exports PNG via `html-to-image`. GUI `next build` clean. |
+| **P4 — Publishers** | 🟡 Manual path active, auto blocked | X direct publish returns `402 Payment Required` (credits depleted). Manual copy-paste from `/x` is the active publisher until revenue justifies the $100/mo X write tier. |
 | **P5 — Reply engine** | ⬜ Not started | |
 | **P6 — Analytics & hardening** | ⬜ Not started | |
 | **YT P1/P2 — Scripting & Audio** | ✅ Completed | LLM Markdown scripts (Gemini) + ElevenLabs TTS integrated in Worker. |
@@ -133,6 +133,8 @@
 | 61 | Inbox ordering is a parameter, default unchanged | p2a | Changing the shared default would silently reorder the working video queue |
 | 62 | Router raises on exhaustion; no fabricated score | p2a | #41 generalized from script generation to all LLM calls |
 | 63 | Frontend hosting shelved; the GUI stays local-only until the pipeline is operational | product | A cockpit for absent functionality is the shop window before the shop. Also blocked in practice: any hosted frontend needs the worker publicly reachable, and `fce.lamkalabs.com` currently returns HTTP 525 |
+| 64 | X publishing stays manual until revenue justifies the API cost | p4 | Direct X API publish returns 402 (credits depleted); the $100/mo write tier is off the table pre-revenue. The GUI drafts; the owner copy-pastes. The human gate is preserved and spend stays near-zero |
+| 65 | DeepSeek is the default provider for X rewrite and poster generation | p4 | Moonshot/Kimi key is rejected by the provider; DeepSeek works and is cheap. `X_REWRITE_PROVIDER` keeps it configurable so the default can change when Kimi is restored |
 
 ---
 

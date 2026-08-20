@@ -6,7 +6,7 @@
 
 **Project:** AI pipeline for compliant US/India finance content (X + IG).
 **Owner:** UMinkoo (sole publish authority).
-**Started:** 2026-07-25. **Last update:** 2026-08-14.
+**Started:** 2026-07-25. **Last update:** 2026-08-20.
 **GitHub repo:** `khooptong-sudo/lamka-labs-studio` (transferred/renamed from `khooptong-creator/fin-content-engine`).
 **Local folder:** `F:\lamka-labs-studio` (renamed from `F:\Content Creation Project` on 2026-08-14).
 
@@ -139,6 +139,19 @@ by three cheap, tireless LLMs.
   provider present the 429 would have fallen through and scored.
 - Note: a Gemini key of the form `AQ.A…` (53 chars) is valid. It is NOT the older `AIza…`
   39-char format, and assuming otherwise wasted a diagnostic step.
+
+### Session-close update — 2026-08-20 (night): manual X cockpit shipped
+
+- **X/Twitter is now a manual-assist workflow.** The GUI has an `/x` page (sidebar "X Post") with a three-column layout: Inbox → rewrite/poster → reply helper. The owner picks a story, chooses a tone (concise, analyst-educator, humorous, sarcastic, bullish, bearish) or types a custom one, clicks **Rewrite**, then copy-pastes the draft into X. Comments can be pasted into the reply helper for a suggested reply. Nothing auto-publishes.
+- **Why manual:** direct X API publish returns `402 Payment Required` (credits depleted). The X write tier is $100/month, so the loop is human-gated until the account generates revenue.
+- **Provider switch:** rewrite and poster generation now use **DeepSeek** by default, controlled by `X_REWRITE_PROVIDER` (default `deepseek`). Moonshot/Kimi key continues to be rejected by Moonshot's API, so DeepSeek is the working path. `DEEPSEEK_API_KEY` is set in `/opt/fce/.env` on the VPS.
+- **Poster generator:** generates 1080×1350 educational infographic posters from a story or from a manual topic + bullet points. Render is HTML/CSS via `PosterCard`, exported to PNG with `html-to-image`. Every image is watermarked `equities.lamkalabs.com · Lamka Labs`. The footer also carries an educational disclaimer.
+- **Faster freshness:** default RSS/NSE poll intervals dropped from 30 min to 10 min; cluster/score job dropped from 15 min to 10 min. Edgar stays hourly.
+- **Backend routes added:** `GET /x/stories`, `POST /x/rewrite`, `POST /x/reply`, `POST /x/poster/story`, `POST /x/poster/text`.
+- **Tests:** worker suite at **724 passed / 6 warnings**; GUI `next build` clean.
+- **Deployed to VPS:** `git pull` in `/opt/fce/current`, `systemctl restart fce-worker`, `/health` green. End-to-end checks for `/x/rewrite` and `/x/poster/text` returned valid DeepSeek output.
+- **VPS launcher:** `START_Lamka_Labs_Studio_VPS.bat` starts the GUI pointed at `http://160.250.204.73:8002` and opens `http://localhost:3000/x`.
+- **Vault/RAG updated:** three new atomic pages ingested; graph rebuilt with `--no-llm` because Anthropic credits are depleted.
 
 ---
 
