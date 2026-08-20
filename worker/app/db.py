@@ -550,6 +550,23 @@ async def stats() -> dict[str, Any]:
 # API Data Fetchers (Inbox & Drafts)
 # ---------------------------------------------------------------------------
 
+# The current-news window, shared by the Inbox query and the scoring job's
+# candidate query. One definition: if these two ever disagree, stories become
+# visible in the Inbox that the scorer never considers, or vice versa.
+# Takes one bound parameter: the window in hours.
+FRESH_WINDOW_PREDICATE = """
+                    NOT EXISTS (SELECT 1 FROM story_items si WHERE si.story_id = s.id)
+                    OR EXISTS (
+                        SELECT 1
+                          FROM story_items si
+                          JOIN items i ON i.id = si.item_id
+                         WHERE si.story_id = s.id
+                           AND i.published_at >= now() - make_interval(hours := %s)
+                           AND NOT (i.warnings @> '["date_missing"]'::jsonb)
+                    )
+"""
+
+
 async def get_pending_stories(*, fresh_hours: int = 48) -> list[dict[str, Any]]:
     """Fetch only current, source-dated Inbox stories plus manual ideas.
 
@@ -563,21 +580,11 @@ async def get_pending_stories(*, fresh_hours: int = 48) -> list[dict[str, Any]]:
         # Fetch inbox stories
         stories = await _fetchall(
             conn,
-            """
+            f"""
             SELECT s.id, s.headline, s.status, s.channel_id, s.created_at
               FROM stories s
              WHERE s.status = 'inbox'
-               AND (
-                    NOT EXISTS (SELECT 1 FROM story_items si WHERE si.story_id = s.id)
-                    OR EXISTS (
-                        SELECT 1
-                          FROM story_items si
-                          JOIN items i ON i.id = si.item_id
-                         WHERE si.story_id = s.id
-                           AND i.published_at >= now() - make_interval(hours := %s)
-                           AND NOT (i.warnings @> '["date_missing"]'::jsonb)
-                    )
-               )
+               AND ({FRESH_WINDOW_PREDICATE})
              ORDER BY s.created_at DESC
             """,
             fresh_hours,
