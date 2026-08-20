@@ -568,25 +568,42 @@ FRESH_WINDOW_PREDICATE = """
 """
 
 
-async def get_pending_stories(*, fresh_hours: int = 48) -> list[dict[str, Any]]:
+_STORY_ORDERINGS = {
+    # Default. The films page depends on this exact behaviour.
+    "recent": "ORDER BY s.created_at DESC",
+    # Opt-in ranked view for the X Inbox. NULLS LAST keeps not-yet-scored
+    # stories from floating above scored ones.
+    "score": "ORDER BY s.score DESC NULLS LAST, s.created_at DESC",
+}
+
+
+async def get_pending_stories(
+    *, fresh_hours: int = 48, order: str = "recent"
+) -> list[dict[str, Any]]:
     """Fetch only current, source-dated Inbox stories plus manual ideas.
 
     Historical data stays in the database for audit and deduplication, but a
     source story is reviewable only when at least one linked item was published
     inside the current-news window. This prevents a newly-imported old RSS
     entry from masquerading as breaking news.
+
+    `order` selects the sort. It defaults to 'recent' so existing consumers
+    are unaffected; P2a's ranked Inbox opts into 'score'.
     """
+    if order not in _STORY_ORDERINGS:
+        raise ValueError(f"unknown order {order!r}; expected one of {sorted(_STORY_ORDERINGS)}")
     pool = await get_pool()
     async with pool.connection() as conn:
         # Fetch inbox stories
         stories = await _fetchall(
             conn,
             f"""
-            SELECT s.id, s.headline, s.status, s.channel_id, s.created_at
+            SELECT s.id, s.headline, s.status, s.channel_id, s.created_at,
+                   s.score, s.angle, s.vertical, s.content_archetype
               FROM stories s
              WHERE s.status = 'inbox'
                AND ({FRESH_WINDOW_PREDICATE})
-             ORDER BY s.created_at DESC
+             {_STORY_ORDERINGS[order]}
             """,
             fresh_hours,
         )
@@ -608,16 +625,19 @@ async def get_pending_stories(*, fresh_hours: int = 48) -> list[dict[str, Any]]:
                 story["id"], fresh_hours
             )
             story["items"] = items
-    # The source date—not the time a worker happened to import it—decides
-    # what appears first. Manual ideas retain their creation-time ordering.
-    stories.sort(
-        key=lambda story: (
-            story["items"][0]["published_at"]
-            if story["items"]
-            else story["created_at"]
-        ),
-        reverse=True,
-    )
+    if order == "recent":
+        # The source date—not the time a worker happened to import it—decides
+        # what appears first. Manual ideas retain their creation-time ordering.
+        # This re-sort only applies to the default view; 'score' ordering
+        # relies on the SQL ORDER BY above and must not be overridden here.
+        stories.sort(
+            key=lambda story: (
+                story["items"][0]["published_at"]
+                if story["items"]
+                else story["created_at"]
+            ),
+            reverse=True,
+        )
     return stories
 
 

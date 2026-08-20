@@ -298,13 +298,20 @@ async def youtube_image_providers() -> dict:
 
 
 @router.get("/stories")
-async def get_stories() -> list[dict]:
-    """Fetch current, source-dated stories for the Inbox."""
+async def get_stories(order: str = "recent") -> list[dict]:
+    """Fetch current, source-dated stories for the Inbox.
+
+    `order=score` returns the P2a ranked view; the default is unchanged so the
+    films page keeps its existing queue order.
+    """
     from app.config import get_ingest_config
     from app.db import get_pending_stories
 
     cfg = await get_ingest_config()
-    return await get_pending_stories(fresh_hours=cfg.fresh_news_hours)
+    try:
+        return await get_pending_stories(fresh_hours=cfg.fresh_news_hours, order=order)
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
 
 
 class ManualStoryRequest(BaseModel):
