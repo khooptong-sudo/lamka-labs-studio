@@ -49,6 +49,24 @@ class Provider:
     call: Callable[[str, str], Awaitable[str]]
 
 
+def _gemini_retryable(exc: Exception) -> bool | None:
+    """Classify a google-genai SDK exception by its HTTP status.
+
+    Returns True/False from the status code (429 and 5xx → retryable; everything
+    else → terminal), or None when no status is present (caller falls through to
+    substring matching).
+    """
+    status_code = None
+    if hasattr(exc, "code"):
+        status_code = exc.code
+    elif hasattr(exc, "response") and hasattr(exc.response, "status_code"):
+        status_code = exc.response.status_code
+
+    if status_code is not None:
+        return status_code == 429 or status_code >= 500
+    return None
+
+
 async def _call_gemini(system: str, user: str) -> str:
     import asyncio
 
@@ -68,18 +86,9 @@ async def _call_gemini(system: str, user: str) -> str:
     try:
         return await asyncio.to_thread(_sync)
     except Exception as exc:
-        # Extract HTTP status from google-genai SDK exceptions.
-        # Different error classes expose it under different attributes.
-        status_code = None
-        if hasattr(exc, "code"):
-            status_code = exc.code
-        elif hasattr(exc, "response") and hasattr(exc.response, "status_code"):
-            status_code = exc.response.status_code
-
-        # Classify by status code if available; otherwise fall back to substring matching.
-        if status_code is not None:
-            retryable = status_code == 429 or status_code >= 500
-            raise ProviderError(str(exc), retryable=retryable) from exc
+        retryable_status = _gemini_retryable(exc)
+        if retryable_status is not None:
+            raise ProviderError(str(exc), retryable=retryable_status) from exc
         else:
             # No status code available; let is_retryable() make the judgement.
             raise

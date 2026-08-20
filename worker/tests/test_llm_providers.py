@@ -1,6 +1,6 @@
 import pytest
 
-from app.llm.providers import PROVIDERS, ProviderError, available, is_retryable
+from app.llm.providers import PROVIDERS, ProviderError, available, is_retryable, _gemini_retryable
 
 
 def test_the_three_real_providers_are_registered():
@@ -51,22 +51,58 @@ def test_auth_and_shape_errors_are_not_retryable(message):
     assert not is_retryable(RuntimeError(message))
 
 
-def test_gemini_terminal_error_with_retryable_substring_is_classified_terminal():
-    """A terminal Gemini error (401) containing a retryable-looking substring
-    ('503' in a request ID) must not be retried. The gemini._call_gemini wrapper
-    extracts the .code and wraps it as ProviderError(retryable=False)."""
-    # Simulate a google-genai API exception with .code = 401.
-    class MockGeminiError(Exception):
-        def __init__(self, message: str, code: int):
-            super().__init__(message)
-            self.code = code
+class MockGeminiError(Exception):
+    """Mock google-genai SDK exception with .code attribute."""
 
-    # This message contains '503' (a retryable marker) but the .code is 401 (terminal).
+    def __init__(self, message: str, code: int):
+        super().__init__(message)
+        self.code = code
+
+
+class MockGeminiErrorWithResponse(Exception):
+    """Mock google-genai SDK exception with .response.status_code attribute."""
+
+    def __init__(self, message: str, status_code: int):
+        super().__init__(message)
+        self.response = type("Response", (), {"status_code": status_code})()
+
+
+def test_gemini_retryable_terminal_error_with_retryable_substring():
+    """A terminal Gemini error (401) with a retryable-looking substring in the
+    message (e.g., '503' in a request ID) must be classified terminal, not
+    retried based on substring matching."""
     exc = MockGeminiError("request id: 503abc, api returned 401 Unauthorized", code=401)
-    # Wrap it the way _call_gemini does.
-    status_code = exc.code
-    retryable = status_code == 429 or status_code >= 500
-    provider_exc = ProviderError(str(exc), retryable=retryable)
+    assert _gemini_retryable(exc) is False
 
-    # is_retryable should trust the .retryable flag and not fall back to substring matching.
-    assert not is_retryable(provider_exc)
+
+def test_gemini_retryable_with_code_429():
+    """HTTP 429 (Too Many Requests) must be classified retryable."""
+    exc = MockGeminiError("rate limit exceeded", code=429)
+    assert _gemini_retryable(exc) is True
+
+
+def test_gemini_retryable_with_code_500():
+    """HTTP 500 (server error) must be classified retryable."""
+    exc = MockGeminiError("internal server error", code=500)
+    assert _gemini_retryable(exc) is True
+
+
+def test_gemini_retryable_with_code_403():
+    """HTTP 403 (Forbidden) must be classified terminal."""
+    exc = MockGeminiError("permission denied", code=403)
+    assert _gemini_retryable(exc) is False
+
+
+def test_gemini_retryable_with_response_status_code():
+    """Extract status from .response.status_code when .code is not present."""
+    exc = MockGeminiErrorWithResponse("forbidden", status_code=403)
+    assert _gemini_retryable(exc) is False
+
+    exc = MockGeminiErrorWithResponse("service unavailable", status_code=503)
+    assert _gemini_retryable(exc) is True
+
+
+def test_gemini_retryable_with_no_status():
+    """Return None when no status code is present, allowing fallback to substring matching."""
+    exc = RuntimeError("some generic error")
+    assert _gemini_retryable(exc) is None
