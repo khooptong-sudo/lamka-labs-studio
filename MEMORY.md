@@ -80,6 +80,42 @@ by three cheap, tireless LLMs.
   design around: L1/L2 gate draft *text*, so image copy bypasses the compliance wall
   unless it is extracted and gated before render.
 
+### Session-close update — 2026-08-20 (evening): P2a merged and proven live
+
+- **P2a is merged to `main` (`1cd78ae`) and pushed.** 16 commits, 682 tests green. Nine
+  tasks, each implemented and reviewed independently, plus a whole-branch review and a
+  final fix wave. Not yet deployed to the VPS.
+- **First live scoring run succeeded.** 36 items ingested from ET Markets → 36 stories →
+  25 scored by Gemini. Score spread 25-82 (mean 59.7, 14 distinct values), **zero
+  out-of-set enum values, zero audit failures**. The low scores were correctly reasoned:
+  a daily price-move wrap scored 25 with the angle "offers no compliant, educational
+  hook"; a Bitcoin price-forecast piece scored 30 as "mostly a price-forecast comment
+  with an implied action". The scorer is rejecting exactly the stories that could only be
+  written as recommendations.
+- **Known quality gap: 65% of archetypes came back `explainer`.** The closed set is being
+  honoured but not used variedly. §5 exists for editorial variety as much as compliance,
+  so this wants a prompt iteration — cheap to test now the path is live.
+- **Clustering is still unproven.** There is no local embedder and
+  `settings.embedding_edge_function_url` still defaults to the Supabase edge function
+  that decision #33 dropped, so the live run used `FCE_EMBED_MOCK=true`. Hash embeddings
+  meant `merged=0` and one story per item. On the VPS the real embedder is configured
+  (P1 deploy step 6, `127.0.0.1:8001`), so this is a LOCAL gap, not a production defect.
+- **Trap worth fixing: `worker/tests/test_cold_start.py:80` runs
+  `UPDATE sources SET active = false` and nothing restores it.** Any full test-suite run
+  silently disables ingest on the local database. It bit twice in one session. The repo's
+  own workflow points development and testing at the same `fce` database, so this will
+  keep biting. Either restore sources in the fixture teardown, or point the suite at a
+  separate database.
+- **Two defects this branch caught originated in the plan, not the implementation:** a
+  config loader that silently discarded DB-provided routing (`hasattr` fails for a
+  `field(default_factory=...)` field), and a post-query Python `stories.sort()` that had
+  always overridden the SQL `ORDER BY` — which would have made `order=score` ship doing
+  nothing. Both were found by review, not by the author.
+- **Blocking the VPS deploy, needs an SSH session:** does the VPS `.env` carry an LLM API
+  key? P1 was ingest-only and made no LLM calls. Without one, `score_new` resolves to an
+  empty provider chain and every story fails safely with an audit event — scoring nothing,
+  silently, forever. Also still outstanding: `fce.lamkalabs.com` returns HTTP 525.
+
 ---
 
 ## Non-negotiables (governs every phase)
