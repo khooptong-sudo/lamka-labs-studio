@@ -71,6 +71,37 @@ async def ingest_trigger(source_id: str) -> dict:
     return summary
 
 
+@router.post("/x/publish")
+async def x_publish(req: XPublishRequest) -> dict:
+    """Publish a text post to X for a given story."""
+    import traceback
+
+    from app.x.publish import StoryNotFoundError, XComplianceError, publish_post
+
+    try:
+        sid = uuid.UUID(req.story_id)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="invalid story_id (must be a uuid)")
+
+    try:
+        return await publish_post(story_id=sid, text=req.text)
+    except HTTPException:
+        raise
+    except XComplianceError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    except StoryNotFoundError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    except Exception as exc:
+        print(f"Error in x_publish: {exc}")
+        traceback.print_exc()
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
+
+
+class XPublishRequest(BaseModel):
+    story_id: str
+    text: str = Field(min_length=1, max_length=280)
+
+
 class YouTubeGenerateRequest(BaseModel):
     story_id: str
     channel_id: str = Field(min_length=1)

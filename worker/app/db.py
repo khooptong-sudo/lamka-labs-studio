@@ -742,6 +742,29 @@ async def update_draft_published(
         )
 
 
+async def create_draft(
+    story_id: uuid.UUID,
+    *,
+    platform: str,
+    format: str,
+    body: dict[str, Any],
+    status: str = "pending",
+) -> uuid.UUID:
+    """Insert a new draft row and return its id."""
+    pool = await get_pool()
+    async with pool.connection() as conn:
+        row = await _fetchone(
+            conn,
+            """
+            INSERT INTO drafts (story_id, platform, format, body, status)
+            VALUES (%s, %s, %s, %s::jsonb, %s)
+            RETURNING id
+            """,
+            story_id, platform, format, _dumps(body), status,
+        )
+        return row["id"]
+
+
 # ---------------------------------------------------------------------------
 # Config
 # ---------------------------------------------------------------------------

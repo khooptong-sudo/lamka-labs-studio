@@ -48,6 +48,13 @@ class Settings(BaseSettings):
     youtube_token_path: Path = Path("token.json")
     youtube_channel_id: str = ""
 
+    # --- X/Twitter API v2 ---
+    x_bearer_token: SecretStr = SecretStr("")
+    x_api_key: SecretStr = SecretStr("")
+    x_api_secret: SecretStr = SecretStr("")
+    x_access_token: SecretStr = SecretStr("")
+    x_access_token_secret: SecretStr = SecretStr("")
+
     # --- Test/dev only ---
     # When true, `app.embed` returns a deterministic hash-derived vector instead
     # of calling the edge function. Used by conftest and `make test`.
