@@ -151,8 +151,18 @@ def register_jobs(scheduler: AsyncIOScheduler, specs: list[JobSpec]) -> None:
             )
 
         # Wrap in advisory lock unless exempt.
+        #
+        # This wrapper MUST be a real `async def`. A lambda is not a coroutine
+        # function, so AsyncIOExecutor never awaits what it returns: the job
+        # silently does nothing and the only trace is a RuntimeWarning
+        # ("coroutine 'with_advisory_lock' was never awaited") buried in the
+        # journal. This is deploy bug D5 recurring one layer up — the invariant
+        # above guards `spec.fn`, which is NOT the callable the scheduler ends
+        # up holding. It ran undetected in production for roughly three weeks,
+        # disabling every locked job while /health still reported healthy.
         if spec.lock:
-            wrapped: AsyncJob = lambda s=spec: with_advisory_lock(s.id, s.fn)
+            async def wrapped(s: JobSpec = spec) -> None:
+                await with_advisory_lock(s.id, s.fn)
         else:
             wrapped = spec.fn
 
@@ -166,6 +176,18 @@ def register_jobs(scheduler: AsyncIOScheduler, specs: list[JobSpec]) -> None:
             max_instances=1,
             misfire_grace_time=60,
         )
+
+        # Guard the callable APScheduler ACTUALLY holds, not just spec.fn.
+        # The check above cannot see the wrapper, and the wrapper is precisely
+        # what broke. Asserting here makes the silent-no-op failure impossible.
+        registered = scheduler.get_job(spec.id).func
+        if not inspect.iscoroutinefunction(registered):
+            raise RuntimeError(
+                f"registry invariant violated: job '{spec.id}' registered a "
+                f"non-coroutine callable ({getattr(registered, '__name__', registered)!r}). "
+                f"AsyncIOExecutor would never await it and the job would silently "
+                f"do nothing — see decision #22 and deploy bug D5."
+            )
 
 
 def make_scheduler(*, max_workers: int = 4) -> AsyncIOScheduler:
