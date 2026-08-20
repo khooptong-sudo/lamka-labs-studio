@@ -553,7 +553,8 @@ async def stats() -> dict[str, Any]:
 # The current-news window, shared by the Inbox query and the scoring job's
 # candidate query. One definition: if these two ever disagree, stories become
 # visible in the Inbox that the scorer never considers, or vice versa.
-# Takes one bound parameter: the window in hours.
+# Takes one bound parameter: the window in hours. Assumes the outer query
+# aliases the stories table as `s`.
 FRESH_WINDOW_PREDICATE = """
                     NOT EXISTS (SELECT 1 FROM story_items si WHERE si.story_id = s.id)
                     OR EXISTS (

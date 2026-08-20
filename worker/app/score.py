@@ -107,6 +107,10 @@ async def fetch_unscored(limit: int, fresh_hours: int) -> list[dict]:
     story with no linked items). Divergence between "what the Inbox shows"
     and "what gets scored" would leave manual ideas permanently unscored and
     sinking to the bottom of a score-ordered queue.
+
+    The per-story items query also mirrors `get_pending_stories`' item
+    filter (same fresh-window and `date_missing` conditions): the model must
+    never reason over source evidence the Inbox hides from the owner.
     """
     pool = await get_pool()
     async with pool.connection() as conn:
@@ -133,9 +137,12 @@ async def fetch_unscored(limit: int, fresh_hours: int) -> list[dict]:
                   JOIN story_items si ON i.id = si.item_id
                   JOIN sources src ON i.source_id = src.id
                  WHERE si.story_id = %s
+                   AND i.published_at >= now() - make_interval(hours := %s)
+                   AND NOT (i.warnings @> '["date_missing"]'::jsonb)
                  ORDER BY i.published_at DESC
                 """,
                 story["id"],
+                fresh_hours,
             )
     return stories
 
