@@ -26,7 +26,9 @@ async def autopilot_job() -> None:
     # At most N per run so we don't spam.
     max_drafts = int(os.environ.get("AUTOPILOT_MAX_DRAFTS_PER_RUN", "3"))
 
-    # Already sorted by created_at DESC.
+    # No `order` given, so this uses the default ('recent') ordering, which
+    # sorts by source-item published_at (falling back to created_at for
+    # stories with no linked items) — not raw created_at DESC.
     stories = await db.get_pending_stories()
     if not stories:
         log.info("autopilot_no_pending_stories")
