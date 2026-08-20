@@ -30,10 +30,16 @@ def _mock_audit(monkeypatch):
     monkeypatch.setattr(publish.audit, "audit_log", AsyncMock())
 
 
+@pytest.fixture(autouse=True)
+def _set_x_env(monkeypatch):
+    monkeypatch.setenv("FCE_X_API_KEY", "api-key")
+    monkeypatch.setenv("FCE_X_API_SECRET", "api-secret")
+    monkeypatch.setenv("FCE_X_ACCESS_TOKEN", "access-token")
+    monkeypatch.setenv("FCE_X_ACCESS_TOKEN_SECRET", "access-token-secret")
+
+
 @pytest.mark.asyncio
 async def test_publish_post_creates_published_draft(story, monkeypatch):
-    monkeypatch.setenv("FCE_X_ACCESS_TOKEN", "test-token")
-
     async def fake_publish(text):
         return {"tweet_id": "abc123", "url": "https://x.com/i/web/status/abc123", "text": text}
 

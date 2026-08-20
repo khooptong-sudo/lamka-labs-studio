@@ -48,8 +48,7 @@ class Settings(BaseSettings):
     youtube_token_path: Path = Path("token.json")
     youtube_channel_id: str = ""
 
-    # --- X/Twitter API v2 ---
-    x_bearer_token: SecretStr = SecretStr("")
+    # --- X/Twitter API v2 (OAuth 1.0a user context) ---
     x_api_key: SecretStr = SecretStr("")
     x_api_secret: SecretStr = SecretStr("")
     x_access_token: SecretStr = SecretStr("")

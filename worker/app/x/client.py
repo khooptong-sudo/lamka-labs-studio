@@ -1,13 +1,18 @@
-"""X/Twitter API v2 write client (httpx-only, no tweepy dependency)."""
+"""X/Twitter API v2 write client using OAuth 1.0a user context.
+
+OAuth 1.0a Access Tokens do not expire, which removes the refresh-token
+maintenance that OAuth 2.0 user context would require for a server-side bot.
+"""
 
 from __future__ import annotations
 
+import asyncio
 import os
 from pathlib import Path
 from typing import Any
 
-import httpx
 import structlog
+from requests_oauthlib import OAuth1Session
 
 log = structlog.get_logger()
 
@@ -27,18 +32,21 @@ class XPublishError(RuntimeError):
         self.status_code = status_code
 
 
-def _access_token() -> str:
-    token = os.environ.get("FCE_X_ACCESS_TOKEN", "").strip()
-    if not token:
-        raise XPublishError("FCE_X_ACCESS_TOKEN is not set", retryable=False)
-    return token
+def _require_env(key: str) -> str:
+    value = os.environ.get(key, "").strip()
+    if not value:
+        raise XPublishError(f"{key} is not set", retryable=False)
+    return value
 
 
-def _headers() -> dict[str, str]:
-    return {
-        "Authorization": f"Bearer {_access_token()}",
-        "Content-Type": "application/json",
-    }
+def _oauth1_session() -> OAuth1Session:
+    """Build a requests-oauthlib session with the four OAuth 1.0a credentials."""
+    return OAuth1Session(
+        client_key=_require_env("FCE_X_API_KEY"),
+        client_secret=_require_env("FCE_X_API_SECRET"),
+        resource_owner_key=_require_env("FCE_X_ACCESS_TOKEN"),
+        resource_owner_secret=_require_env("FCE_X_ACCESS_TOKEN_SECRET"),
+    )
 
 
 def validate_text(text: str) -> None:
@@ -52,17 +60,12 @@ def validate_text(text: str) -> None:
         )
 
 
-def _parse_response(response: httpx.Response) -> dict[str, Any]:
-    try:
-        body = response.json()
-    except Exception:
-        body = {"raw": response.text[:500]}
-
-    if response.status_code >= 400:
+def _parse_response(status_code: int, body: dict[str, Any]) -> dict[str, Any]:
+    if status_code >= 400:
         raise XPublishError(
-            f"X API returned {response.status_code}: {body}",
-            retryable=response.status_code in RETRYABLE_STATUSES,
-            status_code=response.status_code,
+            f"X API returned {status_code}: {body}",
+            retryable=status_code in RETRYABLE_STATUSES,
+            status_code=status_code,
         )
 
     data = body.get("data") or {}
@@ -71,7 +74,7 @@ def _parse_response(response: httpx.Response) -> dict[str, Any]:
         raise XPublishError(
             f"X API response missing tweet id: {body}",
             retryable=False,
-            status_code=response.status_code,
+            status_code=status_code,
         )
 
     return {
@@ -81,6 +84,21 @@ def _parse_response(response: httpx.Response) -> dict[str, Any]:
     }
 
 
+def _publish_text_sync(text: str) -> dict[str, Any]:
+    """Synchronous tweet publish; wrapped in asyncio.to_thread by the caller."""
+    session = _oauth1_session()
+    response = session.post(
+        f"{API_BASE}/tweets",
+        json={"text": text},
+        timeout=REQUEST_TIMEOUT_SECONDS,
+    )
+    try:
+        body = response.json()
+    except Exception:
+        body = {"raw": response.text[:500]}
+    return _parse_response(response.status_code, body)
+
+
 async def publish_text(text: str) -> dict[str, Any]:
     """Publish a plain-text tweet.
 
@@ -88,23 +106,13 @@ async def publish_text(text: str) -> dict[str, Any]:
     Raises XPublishError on validation or API failure.
     """
     validate_text(text)
-
-    async with httpx.AsyncClient(timeout=REQUEST_TIMEOUT_SECONDS) as client:
-        response = await client.post(
-            f"{API_BASE}/tweets",
-            headers=_headers(),
-            json={"text": text},
-        )
-
-    return _parse_response(response)
+    return await asyncio.to_thread(_publish_text_sync, text)
 
 
 async def publish_with_media(text: str, media_paths: list[Path]) -> dict[str, Any]:
     """Publish a tweet with up to 4 images.
 
-    Media upload (v1.1 chunked upload) requires OAuth 1.0a credentials, which
-    are not included in the initial scope. This stub raises a clear error so
-    callers know media posts are not yet supported.
+    Media upload (v1.1 chunked upload) is not implemented in this version.
     """
     raise XPublishError(
         "media posts are not implemented in this version; provide text only",
