@@ -86,8 +86,10 @@ DB tests error without local Postgres — expected.
 
 ## Health Stack
 
-- typecheck: `cd gui && npx tsc --noEmit`
-- lint: `cd gui && npx eslint .`
-- test: `cd worker && ..\.venv\Scripts\python.exe -m pytest tests -q`
+PowerShell 5.1 — `&&` is a parse error there, so these chain with `;`.
+
+- typecheck: `cd gui; npx tsc --noEmit`
+- lint: `cd gui; npx eslint .`
+- test: `cd worker; ..\.venv\Scripts\python.exe -m pytest tests -q`
 - deadcode: skipped (no knip configured)
 - shell: skipped (no project shell scripts)
