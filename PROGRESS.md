@@ -135,6 +135,10 @@
 | 63 | Frontend hosting shelved; the GUI stays local-only until the pipeline is operational | product | A cockpit for absent functionality is the shop window before the shop. Also blocked in practice: any hosted frontend needs the worker publicly reachable, and `fce.lamkalabs.com` currently returns HTTP 525 |
 | 64 | X publishing stays manual until revenue justifies the API cost | p4 | Direct X API publish returns 402 (credits depleted); the $100/mo write tier is off the table pre-revenue. The GUI drafts; the owner copy-pastes. The human gate is preserved and spend stays near-zero |
 | 65 | DeepSeek is the default provider for X rewrite and poster generation | p4 | Moonshot/Kimi key is rejected by the provider; DeepSeek works and is cheap. `X_REWRITE_PROVIDER` keeps it configurable so the default can change when Kimi is restored |
+| 66 | Poster posters are black on white; variety comes from form, not colour | p4 | Six variants differ by card shape, tilt, bullet marker, texture, mascot, section layout and title squiggle. One ink keeps the set coherent as a feed; changing hue per poster read as six unrelated brands |
+| 67 | The poster summary is a required prose paragraph, and a blank one fails generation | p4 | A poster shipped with an empty "At a Glance" box. An absent summary must be a loud failure, not a silent hole — the same reasoning as the render guards. A list-shaped provider response is joined into a paragraph rather than dropped |
+| 68 | A fixed-canvas layout is verified by measurement, not estimate | p4 | `gui/src/app/poster-preview/page.tsx` renders every variant against a worst case and Playwright measures the footer against 1350px. `overflow-hidden` makes a clipped poster look fine and makes `scrollHeight` report no overflow, so eyeballing cannot catch it |
+| 69 | Poster fonts are self-hosted through `next/font`, not linked from Google | p4 | `html-to-image` inlines same-origin fonts; a stylesheet linked from `fonts.googleapis.com` renders correctly on screen but exports the PNG in fallback type |
 
 ---
 
