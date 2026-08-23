@@ -12,7 +12,7 @@ import {
   type Story,
   type Poster,
 } from "@/lib/api";
-import PosterCard from "@/components/PosterCard";
+import PosterCard, { getPosterTheme, type PosterTheme } from "@/components/PosterCard";
 
 const TONE_PRESETS = [
   { label: "Concise", value: "concise" },
@@ -43,6 +43,7 @@ export default function XPage() {
   // Poster state
   const [posterStyle, setPosterStyle] = useState("light");
   const [poster, setPoster] = useState<Poster | null>(null);
+  const [posterTheme, setPosterTheme] = useState<PosterTheme | null>(null);
   const [generatingPoster, setGeneratingPoster] = useState(false);
   const [posterMode, setPosterMode] = useState<"story" | "manual">("story");
   const [manualTopic, setManualTopic] = useState("");
@@ -107,6 +108,7 @@ export default function XPage() {
         result = await generatePosterFromText(manualTopic, bullets, posterStyle);
       }
       setPoster(result);
+      setPosterTheme(getPosterTheme());
     } catch (err: any) {
       setError(err.message || "Poster generation failed");
     } finally {
@@ -118,7 +120,7 @@ export default function XPage() {
     if (!posterRef.current || !poster) return;
     setDownloadingPoster(true);
     try {
-      const dataUrl = await toPng(posterRef.current, { cacheBust: true, pixelRatio: 1 });
+      const dataUrl = await toPng(posterRef.current, { cacheBust: true, pixelRatio: 2 });
       const link = document.createElement("a");
       link.download = `${poster.title.replace(/\s+/g, "_").toLowerCase()}_poster.png`;
       link.href = dataUrl;
@@ -405,9 +407,13 @@ export default function XPage() {
                   </div>
                   <div className="overflow-auto rounded-xl border border-border bg-background p-4">
                     <div className="origin-top-left scale-[0.35] sm:scale-[0.45]">
-                      <div ref={posterRef}>
-                        <PosterCard poster={poster} />
-                      </div>
+                      <PosterCard poster={poster} variant={posterTheme ?? undefined} />
+                    </div>
+                  </div>
+                  {/* Hidden full-size element for capture — avoids scale/clip issues */}
+                  <div className="fixed -left-[9999px] top-0" aria-hidden="true">
+                    <div ref={posterRef}>
+                      <PosterCard poster={poster} variant={posterTheme ?? undefined} />
                     </div>
                   </div>
                 </div>

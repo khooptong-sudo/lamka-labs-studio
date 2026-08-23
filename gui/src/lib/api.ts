@@ -1,4 +1,4 @@
-export const WORKER_URL = process.env.NEXT_PUBLIC_WORKER_URL || "http://127.0.0.1:8000";
+export const WORKER_URL = (process.env.NEXT_PUBLIC_WORKER_URL || "http://127.0.0.1:8000").trim();
 
 export type Story = {
   id: string;
@@ -69,6 +69,7 @@ export type PosterSection = {
 export type Poster = {
   title: string;
   subtitle: string;
+  summary?: string;
   sections: PosterSection[];
   footer: string;
   style: string;

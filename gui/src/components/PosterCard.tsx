@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo } from "react";
 import type { CSSProperties, ReactNode } from "react";
 
 export type PosterSection = {
@@ -10,12 +11,15 @@ export type PosterSection = {
 export type Poster = {
   title: string;
   subtitle: string;
-  summary?: string[];
+  summary?: string;
   sections: PosterSection[];
   footer: string;
   style: string;
   theme?: string;
 };
+
+/** Masthead kicker above the Lamka Labs lockup. One place to rename it. */
+const KICKER = "Finance Explained";
 
 const INK = "#111111";
 const MAROON = "#991b1b";
@@ -127,17 +131,38 @@ export const POSTER_THEMES: PosterTheme[] = [
 ];
 
 let lastVariant = "";
+const sceneryHistory: number[] = [];
 
-/** Pick a variant. Without a name, never returns the same one twice in a row. */
+/**
+ * Scenery is picked independently of the variant so the two do not travel as a
+ * fixed pair, and the recent history is excluded so consecutive posters never
+ * show the same scene.
+ */
+function pickScenery(): number {
+  const all = CHIBI_SCENERIES.map((_, i) => i);
+  const fresh = all.filter((i) => !sceneryHistory.includes(i));
+  const picked = (fresh.length ? fresh : all)[
+    Math.floor(Math.random() * (fresh.length ? fresh.length : all.length))
+  ];
+  sceneryHistory.push(picked);
+  while (sceneryHistory.length > CHIBI_SCENERIES.length - 2) sceneryHistory.shift();
+  return picked;
+}
+
+/**
+ * Pick a variant. Without a name, never returns the same one twice in a row.
+ * The result carries its own scenery, so the caller must hold on to the object
+ * — re-picking on every render would re-roll the artwork mid-capture.
+ */
 export function getPosterTheme(name?: string): PosterTheme {
   if (name) {
     const found = POSTER_THEMES.find((t) => t.name === name);
-    if (found) return found;
+    if (found) return { ...found, scenery: pickScenery() };
   }
   const pool = POSTER_THEMES.filter((t) => t.name !== lastVariant);
   const picked = pool[Math.floor(Math.random() * pool.length)];
   lastVariant = picked.name;
-  return picked;
+  return { ...picked, scenery: pickScenery() };
 }
 
 /* ---------------------------------------------------------------- mascots */
@@ -340,6 +365,9 @@ const sceneryProps = {
   strokeWidth: 2,
   strokeLinecap: "round" as const,
   strokeLinejoin: "round" as const,
+  // Fill the band edge to edge and anchor to the ground line, cropping sky
+  // rather than shrinking the scene to fit the band height.
+  preserveAspectRatio: "xMidYMax slice",
   className: "w-full h-full",
 };
 
@@ -408,6 +436,38 @@ const CHIBI_SCENERIES: ReactNode[] = [
     <path d="M100 60h40M120 40v40" />
     <path d="M60 110c0-8 7-15 15-15s15 7 15 15M280 90c0-10 8-18 18-18s18 8 18 18M920 70c0-9 7-16 16-16s16 7 16 16" />
   </svg>,
+  // Railway bridge
+  <svg key="railway" {...sceneryProps}>
+    <path d="M0 190h1080" />
+    <path d="M120 190v70M260 190v70M400 190v70M540 190v70M680 190v70M820 190v70M960 190v70" />
+    <path d="M120 260c0-34 28-62 62-62M260 198c34 0 62 28 62 62M400 260c0-34 28-62 62-62M540 198c34 0 62 28 62 62M680 260c0-34 28-62 62-62M820 198c34 0 62 28 62 62" />
+    <path d="M180 190V120h250v70M180 120l125-40 125 40" />
+    <circle cx="240" cy="155" r="12" /><circle cx="305" cy="155" r="12" /><circle cx="370" cy="155" r="12" />
+    <path d="M620 190v-60h180v60M620 130h180M680 190v-60M740 190v-60" />
+    <path d="M900 90c14-12 32-12 46 0M960 70c10-9 24-9 34 0" />
+    <path d="M60 120l8 8M480 70l8 8M1020 140l8 8" />
+  </svg>,
+  // Hot-air balloons
+  <svg key="balloons" {...sceneryProps}>
+    <path d="M0 250c90-24 180 24 270 8s180-40 270-16 180 40 270 16 180-32 270-8" />
+    <path d="M200 120c0-32-25-58-56-58s-56 26-56 58c0 26 34 56 56 76 22-20 56-50 56-76z" />
+    <path d="M126 152l18 26M162 152l-18 26M132 178h24v18h-24z" />
+    <path d="M560 96c0-26-20-46-45-46s-45 20-45 46c0 21 27 45 45 61 18-16 45-40 45-61z" />
+    <path d="M500 122l15 21M530 122l-15 21M506 143h19v15h-19z" />
+    <path d="M900 140c0-22-17-40-38-40s-38 18-38 40c0 18 23 38 38 52 15-14 38-34 38-52z" />
+    <path d="M850 162l12 18M874 162l-12 18M855 180h15v13h-15z" />
+    <path d="M320 60c12-10 28-10 40 0M700 44c10-9 24-9 34 0" />
+  </svg>,
+  // Lantern street
+  <svg key="lanterns" {...sceneryProps}>
+    <path d="M0 260h1080" />
+    <path d="M40 260V60M1040 260V60M40 70c180 34 360 46 500 46s320-12 500-46" />
+    <path d="M170 100v26M330 118v26M500 126v26M670 122v26M840 108v26M990 86v26" />
+    <path d="M150 126h40v34h-40zM310 144h40v34h-40zM480 152h40v34h-40zM650 148h40v34h-40zM820 134h40v34h-40zM970 112h40v34h-40z" />
+    <path d="M170 160v12M330 178v12M500 186v12M670 182v12M840 168v12M990 146v12" />
+    <path d="M120 260v-50h120v50M260 260v-64h130v64M420 260v-46h120v46M580 260v-58h130v58M740 260v-44h120v44" />
+    <path d="M150 232h24M300 226h24M460 238h24M620 230h24M780 240h24" />
+  </svg>,
 ];
 
 /* ---------------------------------------------------------------- doodles */
@@ -467,16 +527,28 @@ function formatGeneratedAt(): string {
 export default function PosterCard({
   poster,
   className = "",
-  theme: themeName,
+  variant: suppliedVariant,
 }: {
   poster: Poster;
   className?: string;
-  theme?: string;
+  /**
+   * Pass the object returned by getPosterTheme() and hold on to it. Without it
+   * the card picks its own, which is fine for a one-off preview but re-rolls
+   * the scenery whenever the poster prop changes.
+   */
+  variant?: PosterTheme;
 }) {
-  const variant = getPosterTheme(themeName || poster.theme);
+  const ownVariant = useMemo(() => getPosterTheme(poster.theme), [poster]);
+  const variant = suppliedVariant ?? ownVariant;
   const generatedAt = formatGeneratedAt();
   const sections = poster.sections.slice(0, 6);
-  const cardClass = `${variant.card} p-5`;
+
+  // The poster is a fixed 1080x1350 frame, so a full summary paragraph plus
+  // five sections of five bullets has to buy its space from type and padding
+  // rather than from height. One step down is enough for the worst case.
+  const bulletCount = sections.reduce((n, section) => n + section.bullets.length, 0);
+  const dense = sections.length >= 4 || bulletCount >= 16;
+  const cardClass = `${variant.card} ${dense ? "p-4" : "p-5"}`;
 
   const heading = (text: string) =>
     variant.chipHeadings ? (
@@ -501,64 +573,52 @@ export default function PosterCard({
       <div className="absolute inset-0 pointer-events-none" style={patternStyle(variant.pattern)} />
       <Doodles marker={variant.marker} />
 
-      {/* Chibi scenery — corner to corner along the bottom edge */}
-      <div
-        className="absolute bottom-0 left-0 right-0 h-56 opacity-20 pointer-events-none"
-        style={{ color: INK }}
-        aria-hidden="true"
-      >
-        {CHIBI_SCENERIES[variant.scenery]}
-      </div>
-
-      {/* Header */}
-      <header className="relative z-10 mb-7 flex items-start justify-between">
-        <div className="flex items-center gap-4">
-          <div
-            className="w-[74px] h-[74px] rounded-2xl border-2 p-2 flex-shrink-0"
-            style={{ borderColor: INK, color: INK, backgroundColor: "#ffffff" }}
-          >
-            {MASCOTS[variant.mascot]}
-          </div>
-          <div className="flex flex-col">
-            <span className="text-base uppercase tracking-[0.28em]" style={{ fontFamily: DISPLAY, fontWeight: 600 }}>
-              Finance Explained
-            </span>
-            <span className="text-[11px] tracking-wider opacity-60 mt-1">{generatedAt}</span>
-          </div>
+      {/* Header — kicker, then the Lamka Labs lockup, then the timestamp */}
+      <header className={`relative z-10 ${dense ? "mb-5" : "mb-7"} flex items-center gap-4`}>
+        <div
+          className="w-[76px] h-[76px] rounded-2xl border-2 p-2 flex-shrink-0"
+          style={{ borderColor: INK, color: INK, backgroundColor: "#ffffff" }}
+        >
+          {MASCOTS[variant.mascot]}
         </div>
-        <div className="flex items-center gap-2.5">
-          <img src="/logo-black.png" alt="" className="w-6 h-6 object-contain flex-shrink-0" />
-          <span className="text-sm uppercase tracking-[0.2em]" style={{ fontFamily: DISPLAY, fontWeight: 600 }}>
-            <span>Lamka </span>
-            <span style={{ color: MAROON }}>Labs</span>
+        <div className="flex flex-col gap-1.5">
+          <span
+            className="text-base uppercase tracking-[0.28em] leading-none"
+            style={{ fontFamily: DISPLAY, fontWeight: 600 }}
+          >
+            {KICKER}
           </span>
+          <span className="flex items-center gap-2 leading-none">
+            <img src="/logo-black.png" alt="" className="w-[18px] h-[18px] object-contain flex-shrink-0" />
+            <span className="text-sm uppercase tracking-[0.2em]" style={{ fontFamily: DISPLAY, fontWeight: 600 }}>
+              <span>Lamka </span>
+              <span style={{ color: MAROON }}>Labs</span>
+            </span>
+          </span>
+          <span className="text-[11px] tracking-wider opacity-60 leading-none">{generatedAt}</span>
         </div>
       </header>
 
       {/* Title */}
-      <div className="relative z-10 mb-5">
-        <h1 className="text-[62px] leading-[1.02] tracking-tight mb-1" style={{ fontFamily: DISPLAY, fontWeight: 700 }}>
+      <div className={`relative z-10 ${dense ? "mb-4" : "mb-5"}`}>
+        <h1
+          className={`${dense ? "text-[52px]" : "text-[62px]"} leading-[1.02] tracking-tight mb-1`}
+          style={{ fontFamily: DISPLAY, fontWeight: 700 }}
+        >
           {poster.title}
         </h1>
         <Underline index={variant.underline} />
-        <p className="text-2xl leading-snug mt-3 opacity-75">{poster.subtitle}</p>
+        <p className={`${dense ? "text-xl" : "text-2xl"} leading-snug mt-3 opacity-75`}>{poster.subtitle}</p>
       </div>
 
       {/* Summary */}
-      <div className={`relative z-10 mb-6 ${cardClass}`} style={variant.cardStyle}>
+      <div className={`relative z-10 ${dense ? "mb-4" : "mb-6"} ${cardClass}`} style={variant.cardStyle}>
         <div className="mb-3">{heading("At a Glance")}</div>
-        <ul className="space-y-2">
-          {(poster.summary ?? []).slice(0, 5).map((point, index) => (
-            <li key={index} className="flex items-start gap-3 text-base leading-snug">
-              <Marker kind={variant.marker} className="w-3.5 h-3.5 mt-1 flex-shrink-0" />
-              {point}
-            </li>
-          ))}
-        </ul>
+        <p className={`${dense ? "text-[15px] leading-[1.55]" : "text-[17px] leading-relaxed"}`}>{poster.summary}</p>
       </div>
 
       {/* Sections */}
-      <div className="relative z-10 grid grid-cols-2 gap-5 flex-1 content-start">
+      <div className={`relative z-10 grid grid-cols-2 ${dense ? "gap-4" : "gap-5"} content-start`}>
         {sections.map((section, index) => (
           <div
             key={index}
@@ -569,10 +629,10 @@ export default function PosterCard({
               marginTop: variant.layout === "stagger" && index % 2 === 1 ? 22 : undefined,
             }}
           >
-            <div className="mb-3">{heading(section.heading)}</div>
-            <ul className="space-y-2">
+            <div className={dense ? "mb-2.5" : "mb-3"}>{heading(section.heading)}</div>
+            <ul className={dense ? "space-y-1.5" : "space-y-2"}>
               {section.bullets.map((bullet, bIndex) => (
-                <li key={bIndex} className="flex items-start gap-2.5 text-sm leading-snug">
+                <li key={bIndex} className={`flex items-start gap-2.5 ${dense ? "text-[13px]" : "text-sm"} leading-snug`}>
                   <Marker kind={variant.marker} className="w-3 h-3 mt-1 flex-shrink-0" />
                   {bullet}
                 </li>
@@ -582,12 +642,29 @@ export default function PosterCard({
         ))}
       </div>
 
+      {/* Chibi scenery — its own band, corner to corner above the footer */}
+      <div
+        className={`relative z-10 mt-auto ${dense ? "h-[124px]" : "h-[164px]"} w-[1080px] -mx-12 flex-shrink-0 overflow-hidden opacity-70 pointer-events-none`}
+        style={{ color: INK }}
+        aria-hidden="true"
+      >
+        {CHIBI_SCENERIES[variant.scenery]}
+      </div>
+
       {/* Footer */}
       <footer
-        className="relative z-10 mt-auto -mx-12 -mb-12 px-12 py-5 border-t-2"
+        className="relative z-10 -mx-12 -mb-12 px-12 pt-5 pb-6 border-t-2"
         style={{ borderColor: INK, backgroundColor: "#ffffff" }}
       >
-        <div className="flex items-start gap-2.5 text-xs opacity-70 mb-4">
+        <div className="text-center mb-4">
+          <p className="text-[11px] uppercase tracking-[0.18em]" style={{ fontFamily: DISPLAY, fontWeight: 600 }}>
+            A Lamka Exchange Society Pvt Ltd Production
+          </p>
+          <p className="text-[10px] uppercase tracking-[0.2em] opacity-60 mt-1">
+            in collaboration with Lamka Labs Studio
+          </p>
+        </div>
+        <div className="flex items-center justify-center gap-2.5 text-xs opacity-70">
           <svg
             viewBox="0 0 16 16"
             className="w-4 h-4 flex-shrink-0 mt-0.5"
@@ -602,14 +679,6 @@ export default function PosterCard({
             <path d="M8 5.5v3.2M8 11h.01" />
           </svg>
           <p>{poster.footer}</p>
-        </div>
-        <div className="text-center">
-          <p className="text-[11px] uppercase tracking-[0.18em]" style={{ fontFamily: DISPLAY, fontWeight: 600 }}>
-            A Lamka Exchange Society Pvt Ltd Production
-          </p>
-          <p className="text-[10px] uppercase tracking-[0.2em] opacity-60 mt-1">
-            in collaboration with Lamka Labs Studio
-          </p>
         </div>
       </footer>
     </div>
