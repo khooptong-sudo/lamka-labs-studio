@@ -12,7 +12,9 @@ from app import db
 from app.llm import providers
 
 MAX_BULLET_LENGTH = 120
-MAX_SUMMARY_CHARS = 900
+MIN_SUMMARY_WORDS = 70
+MAX_SUMMARY_WORDS = 120
+MAX_SUMMARY_CHARS = 500
 MAX_SECTIONS = 6
 MAX_BULLETS_PER_SECTION = 5
 
@@ -120,9 +122,16 @@ def _validate_and_trim(poster: dict[str, Any]) -> dict[str, Any]:
     # is not silently dropped into an empty "At a Glance" box.
     if isinstance(summary, list):
         summary = " ".join(str(b).strip() for b in summary if str(b).strip())
-    clean_summary = str(summary or "").strip()[:MAX_SUMMARY_CHARS]
+    clean_summary = " ".join(str(summary or "").split())
     if not clean_summary:
         raise PosterError("poster missing summary")
+    if len(clean_summary) > MAX_SUMMARY_CHARS:
+        raise PosterError(f"summary must be {MAX_SUMMARY_CHARS} characters or fewer")
+    word_count = len(clean_summary.split())
+    if not MIN_SUMMARY_WORDS <= word_count <= MAX_SUMMARY_WORDS:
+        raise PosterError(
+            f"summary must contain {MIN_SUMMARY_WORDS} to {MAX_SUMMARY_WORDS} words"
+        )
 
     if not isinstance(sections, list) or not sections:
         raise PosterError("poster missing sections")

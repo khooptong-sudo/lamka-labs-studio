@@ -69,7 +69,7 @@ export type PosterSection = {
 export type Poster = {
   title: string;
   subtitle: string;
-  summary?: string;
+  summary: string;
   sections: PosterSection[];
   footer: string;
   style: string;

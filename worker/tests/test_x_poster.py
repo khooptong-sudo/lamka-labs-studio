@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 import uuid
 from unittest.mock import AsyncMock, patch
 
@@ -12,11 +13,17 @@ from app.main import app
 
 client = TestClient(app)
 
+VALID_SUMMARY = (
+    "EV/EBITDA compares a company's enterprise value with earnings before interest, taxes, depreciation and amortisation. "
+    "It adds market capitalisation and debt, then subtracts cash. Investors use it to compare companies with different financing structures in the same industry. "
+    "A high multiple can reflect rich expectations, while a low one may signal weaker growth or value. "
+    "The ratio should be read with cash flow, debt, margins and future earnings prospects before judging a company's valuation."
+)
 
 SAMPLE_POSTER_JSON = """{
   "title": "EV/EBITDA",
   "subtitle": "What it is & why it matters",
-  "summary": "EV/EBITDA compares the total value of a company to its earnings before interest, taxes, depreciation and amortisation. Analysts use it to screen for valuation across companies with different debt loads. A higher ratio can point to overvaluation.",
+  "summary": "EV/EBITDA compares a company's enterprise value with earnings before interest, taxes, depreciation and amortisation. It adds market capitalisation and debt, then subtracts cash. Investors use it to compare companies with different financing structures in the same industry. A high multiple can reflect rich expectations, while a low one may signal weaker growth or value. The ratio should be read with cash flow, debt, margins and future earnings prospects before judging a company's valuation.",
   "sections": [
     {"heading": "What is it?", "bullets": ["EV = Market Cap + Debt - Cash", "EBITDA = earnings before interest and taxes"]},
     {"heading": "Why use it?", "bullets": ["Useful for comparing valuation over time", "Helps spot overvaluation"]}
@@ -84,14 +91,47 @@ async def test_generate_poster_normalises_list_summary(monkeypatch):
     """A provider that returns the old bullet-list shape still yields a paragraph."""
     from app.x import poster
 
+    first_half = " ".join(["First"] * 35)
+    second_half = " ".join(["Second"] * 35)
+
     async def fake_llm(_system, _user):
-        return '{"title":"T","subtitle":"S","summary":["First point.","Second point."],"sections":[{"heading":"H","bullets":["B"]}],"footer":"F"}'
+        return json.dumps({"title": "T", "subtitle": "S", "summary": [first_half, second_half], "sections": [{"heading": "H", "bullets": ["B"]}], "footer": "F"})
 
     monkeypatch.setattr(poster, "_llm_call", fake_llm)
     monkeypatch.setenv("DEEPSEEK_API_KEY", "test-key")
 
     result = await poster.generate_poster_from_text("Topic", ["A"])
-    assert result["summary"] == "First point. Second point."
+    assert result["summary"] == f"{first_half} {second_half}"
+
+
+def test_validate_poster_rejects_summary_under_70_words():
+    from app.x.poster import PosterError, _validate_and_trim
+
+    poster = {
+        "title": "T",
+        "subtitle": "S",
+        "summary": "This is a short summary that does not contain enough words to stand alone as a useful news briefing for the reader.",
+        "sections": [{"heading": "H", "bullets": ["B"]}],
+        "footer": "F",
+    }
+
+    with pytest.raises(PosterError, match="summary must contain 70 to 120 words"):
+        _validate_and_trim(poster)
+
+
+def test_validate_poster_rejects_summary_over_500_characters():
+    from app.x.poster import PosterError, _validate_and_trim
+
+    poster = {
+        "title": "T",
+        "subtitle": "S",
+        "summary": "word " * 101,
+        "sections": [{"heading": "H", "bullets": ["B"]}],
+        "footer": "F",
+    }
+
+    with pytest.raises(PosterError, match="summary must be 500 characters or fewer"):
+        _validate_and_trim(poster)
 
 
 @pytest.mark.asyncio
@@ -114,7 +154,7 @@ async def test_generate_poster_from_text_allows_advice_when_guardrails_disabled(
     from app.x import poster
 
     async def fake_llm(_system, _user):
-        return '{"title":"Buy now","subtitle":"S","summary":["A"],"sections":[{"heading":"H","bullets":["You should buy this stock now"]}],"footer":"F"}'
+        return json.dumps({"title": "Buy now", "subtitle": "S", "summary": VALID_SUMMARY, "sections": [{"heading": "H", "bullets": ["You should buy this stock now"]}], "footer": "F"})
 
     monkeypatch.setattr(poster, "_llm_call", fake_llm)
     monkeypatch.setenv("DEEPSEEK_API_KEY", "test-key")
@@ -143,7 +183,7 @@ async def test_generate_poster_from_text_rejects_missing_sections(monkeypatch):
     from app.x import poster
 
     async def fake_llm(_system, _user):
-        return '{"title":"T","subtitle":"S","summary":["A"],"sections":[],"footer":"F"}'
+        return json.dumps({"title": "T", "subtitle": "S", "summary": VALID_SUMMARY, "sections": [], "footer": "F"})
 
     monkeypatch.setattr(poster, "_llm_call", fake_llm)
     monkeypatch.setenv("DEEPSEEK_API_KEY", "test-key")
