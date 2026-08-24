@@ -29,6 +29,18 @@ Vault: `F:\Vault the Brain\The Brain` — catalog is `index.md`, section "Conten
 - [[Tool - lamka-labs-studio]] — the toolshed registry entry
 
 ## Standing traps in this repo
+- **UNCOMMITTED, AS OF 2026-08-24: the compliance floor is torn out in the working tree.**
+  `BASE_COMPLIANCE_RULES` and `BASE_BLOCKLIST` are emptied, `_check_compliance` is gone from
+  `x/publish.py` and `x/rewrite.py`, the pasted-storyboard gate and the advice prohibitions are
+  gone from `youtube.py`, and the bypass regression test is deleted. The replacement matcher
+  (`channels.find_blocked_terms`, word-boundary aware, fixes "buyback"/"selling" false positives)
+  exists but is fed an empty tuple, so it can never match. **The suite is green** — the tests were
+  edited with it. Loosening the blocklist is at least partly deliberate (the vault already records
+  the poster-side disable, and the false positives are real: news says "buyback" and "sell-off"),
+  so do not blind-revert it either. The problem is the half-migrated state, not the intent: finish
+  it by populating the blocklist and calling `find_blocked_terms` from the three call sites, or
+  restore. Do not commit as-is, and do not read a passing `pytest` as evidence here.
+  Restore: `git checkout -- worker/app/channels.py worker/app/x/publish.py worker/app/x/rewrite.py worker/app/youtube.py worker/tests/`. See PROGRESS.md #73, #74.
 - **Restart the worker after touching `worker/`.** No hot reload. This is the first thing to check when a change "did not take".
 - **Never run `pytest` while an end-to-end run is in flight** — the DB tests truncate tables and will delete the story mid-render.
 - **Running the full suite silently disables every news source** (`test_cold_start.py` sets `active = false` and never restores it). Never run it right before a demo. Restore command is in Claude Code memory, `local-dev-environment-gotchas`.
