@@ -3,6 +3,8 @@
 import { useMemo } from "react";
 import type { CSSProperties, ReactNode } from "react";
 
+import { CHIBI_SCENERIES } from "./posterScenery";
+
 export type PosterSection = {
   heading: string;
   bullets: string[];
@@ -128,41 +130,116 @@ export const POSTER_THEMES: PosterTheme[] = [
     layout: "hero",
     underline: 1,
   },
+  {
+    name: "ledger",
+    card: "rounded-lg bg-white border-2",
+    cardStyle: { borderColor: INK, borderTopWidth: 6 },
+    chipHeadings: false,
+    tilt: [0, 0, 0, 0, 0, 0],
+    marker: "dot",
+    pattern: "rule",
+    mascot: 0,
+    scenery: 6,
+    layout: "grid",
+    underline: 4,
+  },
+  {
+    name: "cutout",
+    card: "rounded-[1.25rem] bg-white border-[3px]",
+    cardStyle: { borderColor: INK, boxShadow: `-6px 6px 0 ${INK}` },
+    chipHeadings: false,
+    tilt: [1.3, -1.3, -0.9, 0.9, 1.1, -1.1],
+    marker: "spark",
+    pattern: "dots",
+    mascot: 6,
+    scenery: 10,
+    layout: "stagger",
+    underline: 5,
+  },
+  {
+    name: "postcard",
+    card: "rounded-3xl bg-white border-2 border-dotted",
+    cardStyle: { borderColor: INK },
+    chipHeadings: false,
+    tilt: [-0.5, 0.5, 0.7, -0.7, 0.4, -0.4],
+    marker: "heart",
+    pattern: "none",
+    mascot: 7,
+    scenery: 8,
+    layout: "hero",
+    underline: 6,
+  },
+  {
+    name: "chalk",
+    card: "rounded-2xl border-0",
+    cardStyle: { backgroundColor: "#f1f1f2", boxShadow: `inset 0 0 0 2px ${INK}` },
+    chipHeadings: true,
+    tilt: [0, 0, 0, 0, 0, 0],
+    marker: "star",
+    pattern: "hatch",
+    mascot: 2,
+    scenery: 11,
+    layout: "grid",
+    underline: 2,
+  },
 ];
 
+/**
+ * Patterns are rolled per poster rather than owned by a theme. "none" appears
+ * twice so a plain white sheet stays the most common background.
+ */
+const PATTERNS: PatternKind[] = ["dots", "grid", "hatch", "rule", "none", "none"];
+
 let lastVariant = "";
-const sceneryHistory: number[] = [];
+const recent: Record<string, number[]> = {};
 
 /**
- * Scenery is picked independently of the variant so the two do not travel as a
- * fixed pair, and the recent history is excluded so consecutive posters never
- * show the same scene.
+ * Pick an index, avoiding whatever the last few posters used. Keeping one
+ * history per trait is what stops two consecutive posters from sharing a
+ * mascot or a scene even when they land on different themes.
  */
-function pickScenery(): number {
-  const all = CHIBI_SCENERIES.map((_, i) => i);
-  const fresh = all.filter((i) => !sceneryHistory.includes(i));
-  const picked = (fresh.length ? fresh : all)[
-    Math.floor(Math.random() * (fresh.length ? fresh.length : all.length))
-  ];
-  sceneryHistory.push(picked);
-  while (sceneryHistory.length > CHIBI_SCENERIES.length - 2) sceneryHistory.shift();
+function pickFresh(trait: string, count: number): number {
+  const seen = recent[trait] ?? (recent[trait] = []);
+  const all = Array.from({ length: count }, (_, i) => i);
+  const pool = all.filter((i) => !seen.includes(i));
+  const from = pool.length ? pool : all;
+  const picked = from[Math.floor(Math.random() * from.length)];
+  seen.push(picked);
+  while (seen.length > Math.min(count - 1, 5)) seen.shift();
   return picked;
 }
 
 /**
+ * Mascot, scenery, underline and background are rolled independently of the
+ * theme. They cannot clash with a card design, so every combination is safe
+ * without anyone having looked at it — which is how a dozen hand-checked
+ * themes cover thousands of distinct posters. Card shape, heading style,
+ * bullet marker, tilt and layout stay bundled, because those DO interact.
+ */
+function roll(theme: PosterTheme): PosterTheme {
+  return {
+    ...theme,
+    scenery: pickFresh("scenery", CHIBI_SCENERIES.length),
+    mascot: pickFresh("mascot", MASCOTS.length),
+    underline: pickFresh("underline", UNDERLINES.length),
+    pattern: PATTERNS[pickFresh("pattern", PATTERNS.length)],
+  };
+}
+
+/**
  * Pick a variant. Without a name, never returns the same one twice in a row.
- * The result carries its own scenery, so the caller must hold on to the object
- * — re-picking on every render would re-roll the artwork mid-capture.
+ * The result carries its own rolled traits, so the caller must hold on to the
+ * object — re-picking on every render would re-roll the artwork mid-capture.
  */
 export function getPosterTheme(name?: string): PosterTheme {
   if (name) {
     const found = POSTER_THEMES.find((t) => t.name === name);
-    if (found) return { ...found, scenery: pickScenery() };
+    if (found) return roll(found);
   }
   const pool = POSTER_THEMES.filter((t) => t.name !== lastVariant);
   const picked = pool[Math.floor(Math.random() * pool.length)];
   lastVariant = picked.name;
-  return { ...picked, scenery: pickScenery() };
+  return roll(picked);
 }
 
 /* ---------------------------------------------------------------- mascots */
@@ -242,6 +319,27 @@ const MASCOTS: ReactNode[] = [
     <circle cx="46" cy="65" r="1.8" fill="currentColor" stroke="none" />
     <circle cx="54" cy="65" r="1.8" fill="currentColor" stroke="none" />
   </svg>,
+  // Chibi fox
+  <svg key="fox" {...mascotProps}>
+    <path d="M28 40L20 14l22 12M72 40l8-26-22 12" />
+    <path d="M24 48c0-14 12-24 26-24s26 10 26 24c0 18-12 34-26 34S24 66 24 48z" />
+    <circle cx="40" cy="46" r="3.4" fill="currentColor" stroke="none" />
+    <circle cx="60" cy="46" r="3.4" fill="currentColor" stroke="none" />
+    <path d="M46 60h8l-4 5z" fill="currentColor" stroke="none" />
+    <path d="M43 68c3 4 11 4 14 0" />
+    <path d="M76 74c10 2 16-6 14-16" />
+  </svg>,
+  // Chibi robot
+  <svg key="robot" {...mascotProps}>
+    <path d="M28 34h44a6 6 0 016 6v34a6 6 0 01-6 6H28a6 6 0 01-6-6V40a6 6 0 016-6z" />
+    <circle cx="40" cy="52" r="4" fill="currentColor" stroke="none" />
+    <circle cx="60" cy="52" r="4" fill="currentColor" stroke="none" />
+    <path d="M40 64c5 5 15 5 20 0" />
+    <path d="M50 34V22" />
+    <circle cx="50" cy="16" r="6" />
+    <path d="M22 48h-8v18h8M78 48h8v18h-8" />
+    <path d="M36 80v8M64 80v8" />
+  </svg>,
 ];
 
 /* --------------------------------------------------------------- markers */
@@ -303,6 +401,9 @@ const UNDERLINES: string[][] = [
   ["M4 10c66-8 132-8 198-3s72 5 106 1"],
   ["M4 7c72-6 144-6 216 0", "M20 14c66-5 132-5 198 0"],
   ["M4 13l26-9 26 9 26-9 26 9 26-9 26 9 26-9 26 9 26-9 26 9"],
+  ["M4 9q40 8 80 0t80 0 80 0 80 0 76 2"],
+  ["M6 12c40-10 84 6 124-2s84-8 124 2 44 4 82-2", "M60 6c46 4 92 4 138 0"],
+  ["M4 8q54 11 108 0t108 0 108 0 106 4"],
 ];
 
 function Underline({ index }: { index: number }) {
@@ -314,7 +415,7 @@ function Underline({ index }: { index: number }) {
       height={20}
       fill="none"
       stroke={INK}
-      strokeWidth={index === 1 ? 6 : 3.4}
+      strokeWidth={index === 1 || index === 5 ? 6 : 3.8}
       strokeLinecap="round"
       aria-hidden="true"
     >
@@ -355,120 +456,6 @@ function patternStyle(kind: PatternKind): CSSProperties {
       return { opacity: 0 };
   }
 }
-
-/* ---------------------------------------------------------------- scenery */
-
-const sceneryProps = {
-  viewBox: "0 0 1080 260",
-  fill: "none",
-  stroke: "currentColor",
-  strokeWidth: 2,
-  strokeLinecap: "round" as const,
-  strokeLinejoin: "round" as const,
-  // Fill the band edge to edge and anchor to the ground line, cropping sky
-  // rather than shrinking the scene to fit the band height.
-  preserveAspectRatio: "xMidYMax slice",
-  className: "w-full h-full",
-};
-
-const CHIBI_SCENERIES: ReactNode[] = [
-  // City skyline
-  <svg key="city" {...sceneryProps}>
-    <path d="M0 260h1080" />
-    <path d="M40 260V160h50v100M120 260V110h70v150M220 260V80h60v180M320 260V140h80v120M440 260V60h90v200M570 260V100h60v160M670 260V150h70v110M780 260V90h80v170M900 260V130h60v130M990 260V170h50v90" />
-    <path d="M60 180h20v20H60zM150 140h20v20h-20zM250 110h20v20h-20zM480 90h20v20h-20zM700 170h20v20h-20zM930 150h20v20h-20z" />
-    <path d="M300 60c0-22 18-40 40-40s40 18 40 40" />
-    <circle cx="340" cy="55" r="8" fill="currentColor" />
-    <path d="M800 40c15-15 35-15 50 0M880 50c10-10 25-10 35 0" />
-    <path d="M120 70l8 8M150 50l8 8M900 60l8 8M940 45l8 8" />
-  </svg>,
-  // Mountain range
-  <svg key="mountains" {...sceneryProps}>
-    <path d="M0 260L160 60 300 200 480 40 640 180 820 30 1080 260z" />
-    <path d="M180 120l20-20 20 20M500 90l25-25 25 25M840 80l20-20 20 20" />
-    <path d="M160 60L140 30M160 60L180 30M480 40L455 10M480 40L505 10M820 30L800 0M820 30L840 0" />
-    <circle cx="920" cy="55" r="22" />
-    <circle cx="940" cy="50" r="4" fill="currentColor" />
-    <path d="M60 260c40-30 90-30 130 0M260 260c50-35 110-35 160 0M560 260c45-30 100-30 145 0M820 260c40-25 85-25 125 0" />
-    <path d="M100 220c10-10 25-10 35 0M620 220c10-10 25-10 35 0" />
-  </svg>,
-  // Forest
-  <svg key="forest" {...sceneryProps}>
-    <path d="M0 260h1080" />
-    <path d="M60 260V180l-25-40h50l-25 40zM160 260V150l-30-55h60l-30 55zM280 260V170l-25-45h50l-25 45zM400 260V130l-35-65h70l-35 65zM540 260V160l-28-50h56l-28 50zM680 260V140l-32-60h64l-32 60zM820 260V170l-25-45h50l-25 45zM940 260V150l-30-55h60l-30 55z" />
-    <circle cx="90" cy="140" r="28" /><circle cx="200" cy="110" r="32" /><circle cx="330" cy="130" r="26" />
-    <circle cx="460" cy="90" r="34" /><circle cx="580" cy="120" r="28" /><circle cx="720" cy="100" r="30" />
-    <circle cx="850" cy="130" r="26" /><circle cx="970" cy="110" r="32" />
-    <path d="M70 200c5-5 12-5 17 0M190 190c5-5 12-5 17 0M560 195c5-5 12-5 17 0M940 185c5-5 12-5 17 0" />
-    <path d="M150 60c0-8 7-15 15-15s15 7 15 15M350 50c0-10 8-18 18-18s18 8 18 18M850 55c0-9 7-16 16-16s16 7 16 16" />
-  </svg>,
-  // Ocean coast
-  <svg key="ocean" {...sceneryProps}>
-    <path d="M0 260h1080" />
-    <path d="M0 220c60-20 120 20 180 0s120-20 180 0 120 20 180 0 120-20 180 0 120 20 180 0" />
-    <path d="M0 245c60-20 120 20 180 0s120-20 180 0 120 20 180 0 120-20 180 0 120 20 180 0" />
-    <path d="M900 260V140h60v120M880 140h100M930 110V60M910 80h40" />
-    <circle cx="930" cy="45" r="16" />
-    <path d="M150 120c0-25 20-45 45-45s45 20 45 45M700 100c0-20 16-36 36-36s36 16 36 36" />
-    <path d="M80 60c12-8 28-8 40 0M320 50c10-7 24-7 34 0M600 65c12-8 28-8 40 0" />
-  </svg>,
-  // Space
-  <svg key="space" {...sceneryProps}>
-    <path d="M520 260V140c-30-10-50-40-50-75 0-45 35-80 80-80s80 35 80 80c0 35-20 65-50 75v120" />
-    <circle cx="550" cy="65" r="14" />
-    <path d="M470 200l-50 60h50M610 200l50 60h-50" />
-    <path d="M500 140h120" />
-    <circle cx="200" cy="60" r="20" />
-    <path d="M185 60h30M200 45v30" />
-    <circle cx="850" cy="80" r="16" />
-    <path d="M840 80h20M850 70v20" />
-    <path d="M80 100l10 10M120 50l10 10M300 120l10 10M700 40l10 10M950 130l10 10M1000 70l10 10" />
-    <path d="M100 180c0-6 5-11 11-11s11 5 11 11M750 160c0-6 5-11 11-11s11 5 11 11" />
-  </svg>,
-  // Countryside
-  <svg key="countryside" {...sceneryProps}>
-    <path d="M0 260c80-60 200-60 280-20s200 20 320-30 240-40 360 10 120 40 120 40" />
-    <path d="M720 260V110h80v150M760 110V70M740 90h40M720 130h80M720 170h80" />
-    <path d="M760 70l-25 20M760 70l25 20M760 70l-8 30M760 70l8 30" />
-    <path d="M150 260V180h60v80M170 180v-30h20v30" />
-    <path d="M350 260V200h50v60M375 200v-25" />
-    <circle cx="120" cy="60" r="22" />
-    <path d="M100 60h40M120 40v40" />
-    <path d="M60 110c0-8 7-15 15-15s15 7 15 15M280 90c0-10 8-18 18-18s18 8 18 18M920 70c0-9 7-16 16-16s16 7 16 16" />
-  </svg>,
-  // Railway bridge
-  <svg key="railway" {...sceneryProps}>
-    <path d="M0 190h1080" />
-    <path d="M120 190v70M260 190v70M400 190v70M540 190v70M680 190v70M820 190v70M960 190v70" />
-    <path d="M120 260c0-34 28-62 62-62M260 198c34 0 62 28 62 62M400 260c0-34 28-62 62-62M540 198c34 0 62 28 62 62M680 260c0-34 28-62 62-62M820 198c34 0 62 28 62 62" />
-    <path d="M180 190V120h250v70M180 120l125-40 125 40" />
-    <circle cx="240" cy="155" r="12" /><circle cx="305" cy="155" r="12" /><circle cx="370" cy="155" r="12" />
-    <path d="M620 190v-60h180v60M620 130h180M680 190v-60M740 190v-60" />
-    <path d="M900 90c14-12 32-12 46 0M960 70c10-9 24-9 34 0" />
-    <path d="M60 120l8 8M480 70l8 8M1020 140l8 8" />
-  </svg>,
-  // Hot-air balloons
-  <svg key="balloons" {...sceneryProps}>
-    <path d="M0 250c90-24 180 24 270 8s180-40 270-16 180 40 270 16 180-32 270-8" />
-    <path d="M200 120c0-32-25-58-56-58s-56 26-56 58c0 26 34 56 56 76 22-20 56-50 56-76z" />
-    <path d="M126 152l18 26M162 152l-18 26M132 178h24v18h-24z" />
-    <path d="M560 96c0-26-20-46-45-46s-45 20-45 46c0 21 27 45 45 61 18-16 45-40 45-61z" />
-    <path d="M500 122l15 21M530 122l-15 21M506 143h19v15h-19z" />
-    <path d="M900 140c0-22-17-40-38-40s-38 18-38 40c0 18 23 38 38 52 15-14 38-34 38-52z" />
-    <path d="M850 162l12 18M874 162l-12 18M855 180h15v13h-15z" />
-    <path d="M320 60c12-10 28-10 40 0M700 44c10-9 24-9 34 0" />
-  </svg>,
-  // Lantern street
-  <svg key="lanterns" {...sceneryProps}>
-    <path d="M0 260h1080" />
-    <path d="M40 260V60M1040 260V60M40 70c180 34 360 46 500 46s320-12 500-46" />
-    <path d="M170 100v26M330 118v26M500 126v26M670 122v26M840 108v26M990 86v26" />
-    <path d="M150 126h40v34h-40zM310 144h40v34h-40zM480 152h40v34h-40zM650 148h40v34h-40zM820 134h40v34h-40zM970 112h40v34h-40z" />
-    <path d="M170 160v12M330 178v12M500 186v12M670 182v12M840 168v12M990 146v12" />
-    <path d="M120 260v-50h120v50M260 260v-64h130v64M420 260v-46h120v46M580 260v-58h130v58M740 260v-44h120v44" />
-    <path d="M150 232h24M300 226h24M460 238h24M620 230h24M780 240h24" />
-  </svg>,
-];
 
 /* ---------------------------------------------------------------- doodles */
 
@@ -553,8 +540,8 @@ export default function PosterCard({
   const heading = (text: string) =>
     variant.chipHeadings ? (
       <span
-        className="inline-block px-3 py-1.5 rounded-full text-base uppercase tracking-wide leading-none"
-        style={{ backgroundColor: INK, color: "#ffffff", fontFamily: DISPLAY, fontWeight: 600 }}
+        className="inline-block px-3 py-1.5 rounded-full border-2 text-base uppercase tracking-wide leading-none"
+        style={{ borderColor: INK, color: INK, fontFamily: DISPLAY, fontWeight: 600 }}
       >
         {text}
       </span>
@@ -644,7 +631,7 @@ export default function PosterCard({
 
       {/* Chibi scenery — its own band, corner to corner above the footer */}
       <div
-        className={`relative z-10 mt-auto ${dense ? "h-[124px]" : "h-[164px]"} w-[1080px] -mx-12 flex-shrink-0 overflow-hidden opacity-70 pointer-events-none`}
+        className={`relative z-10 mt-auto ${dense ? "h-[150px]" : "h-[178px]"} w-[1080px] -mx-12 flex-shrink-0 overflow-hidden opacity-95 pointer-events-none`}
         style={{ color: INK }}
         aria-hidden="true"
       >

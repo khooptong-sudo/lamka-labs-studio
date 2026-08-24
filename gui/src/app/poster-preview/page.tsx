@@ -8,6 +8,7 @@
  */
 
 import PosterCard, { POSTER_THEMES, type Poster } from "@/components/PosterCard";
+import { CHIBI_SCENERIES } from "@/components/posterScenery";
 
 const SAMPLE: Poster = {
   title: "Stock Picks Unveiled: Jayaswal Neco & More",
@@ -73,6 +74,18 @@ const SAMPLE: Poster = {
 export default function PosterPreviewPage() {
   return (
     <div className="p-8 space-y-12 bg-neutral-200">
+      {/* Every scene on its own, at the band's real size. Reviewing the art
+          inside a full poster hides detail that only shows at 1:1. */}
+      <div className="space-y-2">
+        <p className="font-mono text-sm text-black">scenery band · 1080x178</p>
+        {CHIBI_SCENERIES.map((scene, index) => (
+          <div key={index} className="relative w-[1080px] bg-white outline outline-1 outline-neutral-400">
+            <div className="h-[178px] w-full text-black">{scene}</div>
+            <span className="absolute left-2 top-1 font-mono text-xs text-neutral-500">{index}</span>
+          </div>
+        ))}
+      </div>
+
       {POSTER_THEMES.map((variant, index) => (
         <div key={variant.name} className="space-y-2">
           <p className="font-mono text-sm text-black">
