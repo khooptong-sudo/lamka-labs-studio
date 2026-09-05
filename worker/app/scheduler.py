@@ -80,6 +80,9 @@ async def build_job_specs() -> list[JobSpec]:
     async def poll_nse() -> None:
         await run_all_sources(kind="nse")
 
+    async def poll_reddit() -> None:
+        await run_all_sources(kind="reddit")
+
     async def cluster_job() -> None:
         await cluster_new_items()
 
@@ -96,6 +99,7 @@ async def build_job_specs() -> list[JobSpec]:
         JobSpec(id="poll_rss", minutes=cfg.rss_poll_minutes, fn=poll_rss),
         JobSpec(id="poll_edgar", minutes=cfg.edgar_poll_minutes, fn=poll_edgar),
         JobSpec(id="poll_nse", minutes=cfg.nse_poll_minutes, fn=poll_nse),
+        JobSpec(id="poll_reddit", minutes=60, fn=poll_reddit),
         JobSpec(id="cluster_new", minutes=10, fn=cluster_job),
         JobSpec(id="score_new", minutes=10, fn=score_job),
         JobSpec(id="autopilot_overnight", minutes=30, fn=autopilot_overnight),

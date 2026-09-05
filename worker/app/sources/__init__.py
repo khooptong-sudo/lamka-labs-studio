@@ -9,12 +9,14 @@ from __future__ import annotations
 from app.sources.base import Source, SourceError
 from app.sources.edgar import EDGARSource
 from app.sources.nse import NSESource
+from app.sources.reddit import RedditSource
 from app.sources.rss import RSSSource
 
 _REGISTRY: dict[str, type[Source]] = {
     "rss": RSSSource,
     "edgar": EDGARSource,
     "nse": NSESource,
+    "reddit": RedditSource,
     # 'internal' reserved for P2 (LE price tables). No P1 implementation.
 }
 
@@ -27,4 +29,4 @@ def get_source(kind: str) -> Source:
     return cls()
 
 
-__all__ = ["get_source", "Source", "SourceError", "RSSSource", "EDGARSource", "NSESource"]
+__all__ = ["get_source", "Source", "SourceError", "RSSSource", "EDGARSource", "NSESource", "RedditSource"]
