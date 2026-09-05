@@ -29,18 +29,7 @@ export function Sidebar() {
   return (
     <aside className="studio-sidebar">
       <div className="studio-brand">
-        <img
-          src="/logo-black.png"
-          alt=""
-          className="studio-brand-logo dark:hidden"
-          aria-hidden="true"
-        />
-        <img
-          src="/logo-white.png"
-          alt=""
-          className="studio-brand-logo hidden dark:block"
-          aria-hidden="true"
-        />
+        <span className="studio-brand-mark" aria-hidden="true">LV</span>
         <div>
           <h1>LAMKA LABS</h1>
           <p>STUDIO</p>

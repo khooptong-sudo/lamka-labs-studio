@@ -143,6 +143,23 @@ textarea {
   flex-shrink: 0;
 }
 
+.studio-brand-mark {
+  display: flex;
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface-recessed);
+  font-family: var(--font-inter), "Segoe UI Variable", "Segoe UI", system-ui, sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--foreground);
+}
+
 .studio-brand h1,
 .studio-brand p {
   margin: 0;
