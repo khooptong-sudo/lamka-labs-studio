@@ -292,8 +292,9 @@ async def test_picker_skips_drafted_stale_and_honors_cap(db):
             "INSERT INTO drafts (story_id, status) VALUES (%s, 'pending')",
             (drafted_id,),
         )
-        stale_item = await _seed_queue_item(
-            db, source_id, published_at=now - timedelta(hours=72))
+    stale_item = await _seed_queue_item(
+        db, source_id, published_at=now - timedelta(hours=72))
+    async with db.connection() as conn:
         await conn.execute(
             "INSERT INTO story_items (story_id, item_id) VALUES (%s, %s)",
             (stale_id, stale_item),

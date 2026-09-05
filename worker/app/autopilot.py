@@ -57,7 +57,7 @@ async def set_queue_flag(story_id: uuid.UUID, queued: bool) -> bool:
         cursor = await conn.execute(
             "UPDATE stories SET autopilot_queued_at = CASE WHEN %s THEN now() ELSE NULL END "
             "WHERE id = %s",
-            queued, story_id,
+            (queued, story_id),
         )
         return cursor.rowcount > 0
 
@@ -67,7 +67,7 @@ async def clear_queue_flag(story_id: uuid.UUID) -> None:
     async with pool.connection() as conn:
         await conn.execute(
             "UPDATE stories SET autopilot_queued_at = NULL WHERE id = %s",
-            story_id,
+            (story_id,),
         )
 
 
