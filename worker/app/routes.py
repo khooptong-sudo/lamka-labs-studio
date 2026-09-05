@@ -515,6 +515,24 @@ async def create_manual_story_endpoint(req: ManualStoryRequest) -> dict:
     return {"id": str(story_id)}
 
 
+class StoryQueueRequest(BaseModel):
+    queued: bool
+
+
+@router.patch("/stories/{story_id}/queue")
+async def story_queue(story_id: str, req: StoryQueueRequest) -> dict:
+    """Queue/unqueue a story for the overnight run. Flag only, never a status flip."""
+    from app import autopilot
+
+    try:
+        sid = uuid.UUID(story_id)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="invalid story_id (must be a uuid)")
+    if not await autopilot.set_queue_flag(sid, req.queued):
+        raise HTTPException(status_code=404, detail="story not found")
+    return {"id": str(sid), "queued": req.queued}
+
+
 @router.get("/drafts")
 async def get_drafts() -> list[dict]:
     """Fetch all drafts."""

@@ -25,6 +25,20 @@ export async function fetchXStories(): Promise<Story[]> {
   return res.json();
 }
 
+export async function setStoryQueued(storyId: string, queued: boolean): Promise<boolean> {
+  const res = await fetch(`${WORKER_URL}/stories/${storyId}/queue`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ queued }),
+  });
+  if (!res.ok) {
+    const payload = await res.json().catch(() => ({}));
+    throw new Error(payload.detail || `Queue toggle failed: ${res.status}`);
+  }
+  const data = await res.json();
+  return data.queued;
+}
+
 export async function rewriteStoryToPost(storyId: string, tone?: string | null, length?: "short" | "long"): Promise<string> {
   const res = await fetch(`${WORKER_URL}/x/rewrite`, {
     method: "POST",

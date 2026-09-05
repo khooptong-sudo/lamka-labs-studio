@@ -332,6 +332,17 @@ async def test_picker_orders_oldest_queued_first_and_honors_limit(db):
 
 
 @pytest.mark.integration
+async def test_pending_stories_carry_the_queue_flag(db):
+    from app.autopilot import set_queue_flag
+    from app.db import get_pending_stories
+
+    story_id = await _seed_queue_story(db, "Queued marker story")
+    await set_queue_flag(story_id, True)
+    row = next(s for s in await get_pending_stories(fresh_hours=48) if s["id"] == story_id)
+    assert row["autopilot_queued_at"] is not None
+
+
+@pytest.mark.integration
 async def test_set_queue_flag_sets_and_clears(db):
     from app.autopilot import set_queue_flag
 

@@ -1,6 +1,7 @@
 import { Calendar, TrendingUp, Users, Video, FileText, Inbox } from "lucide-react";
 import AddIdeaForm from "@/components/AddIdeaForm";
 import GenerateDraftButton from "@/components/GenerateDraftButton";
+import QueueToggle from "@/components/QueueToggle";
 import { WORKER_URL } from "@/lib/api";
 
 export default async function Home() {
@@ -85,7 +86,8 @@ export default async function Home() {
                     </span>
                   </div>
                 </div>
-                <div className="opacity-0 group-hover:opacity-100 transform translate-x-4 group-hover:translate-x-0 transition-all duration-300">
+                <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transform translate-x-4 group-hover:translate-x-0 transition-all duration-300">
+                  <QueueToggle storyId={story.id} initialQueued={!!story.autopilot_queued_at} />
                   <GenerateDraftButton storyId={story.id} storyChannelId={story.channel_id} />
                 </div>
               </div>

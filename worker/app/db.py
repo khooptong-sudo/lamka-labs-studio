@@ -599,7 +599,8 @@ async def get_pending_stories(
             conn,
             f"""
             SELECT s.id, s.headline, s.status, s.channel_id, s.created_at,
-                   s.score, s.angle, s.vertical, s.content_archetype
+                   s.score, s.angle, s.vertical, s.content_archetype,
+                   s.autopilot_queued_at
               FROM stories s
              WHERE s.status = 'inbox'
                AND ({FRESH_WINDOW_PREDICATE})
