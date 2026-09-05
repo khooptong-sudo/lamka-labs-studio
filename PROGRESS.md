@@ -48,6 +48,11 @@
 
 **Live-ingest proof:** `{"fetched":50,"new":50,"embedded":50,"embed_failures":0}` from ET Markets. `/stats`: items=50, embedding_health=ok, orphaned=0.
 
+**Script-quality gates ops (piece 1, merged):** deployments whose `llm` config row
+already exists must add the route once, or every fact-check fails loud with
+`no available provider for task 'fact_check'` and nothing generates:
+`UPDATE config SET value = jsonb_set(value, '{routing,fact_check}', '{"primary": "deepseek", "fallback": "openai"}') WHERE key = 'llm';`
+
 ---
 
 ## Deploy bugs (the full list — 9 found, all fixed)
@@ -144,6 +149,7 @@
 | 72 | Illustration is reviewed on a 1:1 contact sheet, never inside the finished poster | p4 | Four rounds of defects (pines drawn apex down, a ridge line that read as a graph, boats that read as flags on mounds) were invisible at poster scale and obvious at band scale. `poster-preview` now renders every scene alone at 1080x178 |
 | 73 | The uncommitted compliance teardown is held out of git pending the owner's call | p4 | The working tree empties `BASE_COMPLIANCE_RULES` and `BASE_BLOCKLIST`, deletes `_check_compliance` from X publish and rewrite, drops the pasted-storyboard gate and the advice prohibitions from the YouTube script prompt, and deletes the bypass regression test. It reads as a half-finished fix for blocklist false positives: the smarter `find_blocked_terms` matcher exists but is fed an empty tuple. Committing a half-migrated compliance layer is worse than either end state |
 | 74 | A green suite is not evidence about a guard that was removed with its test | p4 | 35 tests pass against the teardown in #73, because the tests were edited alongside it. #53 generalized: the suite proves the code does what the tests now say, never what the product still requires |
+| 75 | Script contract + fact-check gate on the generated path; override boards skip both | quality-first | Hook/chapters/closing enforced by a pure validator next to MIN_SCRIPT_FRAMES; BLOCK aborts pre-TTS with audit, FLAG audits and continues to human review; drafter excluded via a new router `exclude` param so the checker is never the drafter. New `script_quality.py`, `fact_check` route default (deepseek→openai). Spec + plan in `docs/superpowers/specs/2026-09-05-*` and `docs/superpowers/plans/2026-09-05-*` |
 
 ---
 
