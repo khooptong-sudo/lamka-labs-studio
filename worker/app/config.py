@@ -57,6 +57,11 @@ class IngestConfig:
 
 
 @dataclass(frozen=True)
+class AutopilotConfig:
+    max_per_night: int = 3
+
+
+@dataclass(frozen=True)
 class EdgarConfig:
     form_types: tuple[str, ...] = ("8-K", "13F-HR")
     company_watch: tuple[str, ...] = ()
@@ -110,6 +115,11 @@ async def get_clustering_config() -> ClusteringConfig:
 async def get_ingest_config() -> IngestConfig:
     raw = await _load("ingest")
     return IngestConfig(**{k: v for k, v in raw.items() if k in IngestConfig.__dataclass_fields__})
+
+
+async def get_autopilot_config() -> AutopilotConfig:
+    raw = await _load("autopilot")
+    return AutopilotConfig(**{k: v for k, v in raw.items() if k in AutopilotConfig.__dataclass_fields__})
 
 
 async def get_edgar_config() -> EdgarConfig:
