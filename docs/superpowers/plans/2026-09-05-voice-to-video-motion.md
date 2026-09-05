@@ -121,7 +121,7 @@ async def test_ingest_converts_non_mp3_through_ffmpeg(tmp_path):
     clip = _clip(tmp_path, "a.wav", b"RIFF....WAVE")
     with patch("app.youtube.subprocess.run") as run:
         await _ingest_voice_clips(board, tmp_path, [clip])
-    args = run.await_args.args[0] if run.await_args else run.call_args.args[0]
+    args = run.call_args.args[0]
     assert args[0] == "ffmpeg"
     assert str(tmp_path / "assets" / "voice" / "01.mp3") in args
 ```

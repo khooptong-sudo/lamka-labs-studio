@@ -52,6 +52,48 @@ MIN_SCRIPT_FRAMES = int(os.environ.get("MIN_SCRIPT_FRAMES", "3"))
 # 503 UNAVAILABLE from Gemini is routine and clears in seconds.
 SCRIPT_MAX_ATTEMPTS = int(os.environ.get("SCRIPT_MAX_ATTEMPTS", "4"))
 
+MAX_VOICE_CLIP_BYTES = 8 * 1024 * 1024
+MAX_VOICE_CLIPS = 12
+
+
+def is_mp3_bytes(data: bytes) -> bool:
+    """True when bytes are already MP3: ID3 header or frame-sync word."""
+    if data[:3] == b"ID3":
+        return True
+    return len(data) >= 2 and data[0] == 0xFF and (data[1] & 0xE0) == 0xE0
+
+
+async def _ingest_voice_clips(board, video_dir: Path, clip_paths: list[Path]) -> None:
+    """Stage owner narration onto each frame's voice path. Raises, never substitutes.
+
+    Clips match scenes by order. MP3 bytes land directly; anything else is
+    normalized through ffmpeg (extension never trusted). Probing happens later
+    in the shared attach_audio step.
+    """
+    if len(clip_paths) != len(board.frames):
+        raise ValueError(f"expected {len(board.frames)} voice clips, got {len(clip_paths)}")
+    voice_dir = video_dir / "assets" / "voice"
+    voice_dir.mkdir(parents=True, exist_ok=True)
+    for frame, source in zip(board.frames, clip_paths):
+        size = source.stat().st_size
+        if size == 0:
+            raise ValueError(f"voice clip for scene {frame.index} is empty")
+        if size > MAX_VOICE_CLIP_BYTES:
+            raise ValueError(
+                f"voice clip for scene {frame.index} exceeds {MAX_VOICE_CLIP_BYTES} bytes"
+            )
+        destination = video_dir / frame.voice_filename
+        raw = source.read_bytes()
+        if is_mp3_bytes(raw):
+            destination.write_bytes(raw)
+            continue
+        subprocess.run(
+            ["ffmpeg", "-y", "-i", str(source), str(destination)],
+            check=True,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+        )
+
 
 def _get_youtube_credentials(scopes: list[str]) -> Any:
     """
@@ -110,6 +152,7 @@ async def generate_youtube_video(
     image_provider: str | None = None,
     voice_key: str | None = None,
     cinematic_controls: dict[str, str] | None = None,
+    voice_clip_paths: list[Path] | None = None,
 ) -> uuid.UUID | None:
     """
     Main entrypoint for generating a YouTube video from a story.
@@ -254,32 +297,68 @@ async def generate_youtube_video(
         )
         return None
 
-    log.info("youtube_audio_generation_started", video_dir=str(video_dir), frames=len(board.frames))
-    await _stage(job_id, "narration", 0, len(board.frames))
-    silenced = await _generate_frame_audio(
-        board,
-        video_dir,
-        script_content,
-        voice_key=channel.voice_key,
-    )
-    if silenced:
-        # Silence renders and validates exactly like narration, so nothing
-        # downstream notices. A mostly-mute explainer is not the video the story
-        # asked for; refuse it here rather than publish it.
-        ratio = len(silenced) / len(board.frames)
-        log.error(
-            "narration_degraded",
-            story_id=str(story_id),
-            silenced=len(silenced),
-            frames=len(board.frames),
-            slugs=silenced,
-        )
-        if ratio > MAX_SILENT_RATIO:
-            log.error("youtube_generation_aborted", reason="too_many_silent_frames")
+    using_owner_voice = voice_clip_paths is not None
+    if using_owner_voice:
+        if len(voice_clip_paths) > MAX_VOICE_CLIPS:
+            log.error(
+                "youtube_generation_aborted",
+                reason="too_many_voice_clips",
+                story_id=str(story_id),
+                clips=len(voice_clip_paths),
+                maximum=MAX_VOICE_CLIPS,
+            )
             return None
+        if voice_key:
+            log.info("youtube_owner_voice_ignores_voice_key", story_id=str(story_id))
+        log.info("youtube_audio_owner_voice", video_dir=str(video_dir), frames=len(board.frames))
+        await _stage(job_id, "narration", 0, len(board.frames))
+        try:
+            await _ingest_voice_clips(board, video_dir, voice_clip_paths)
+        except Exception as e:
+            log.error(
+                "youtube_generation_aborted",
+                reason="voice_clip_rejected",
+                story_id=str(story_id),
+                error=str(e)[:200],
+            )
+            return None
+    else:
+        log.info("youtube_audio_generation_started", video_dir=str(video_dir), frames=len(board.frames))
+        await _stage(job_id, "narration", 0, len(board.frames))
+        silenced = await _generate_frame_audio(
+            board,
+            video_dir,
+            script_content,
+            voice_key=channel.voice_key,
+        )
+        if silenced:
+            # Silence renders and validates exactly like narration, so nothing
+            # downstream notices. A mostly-mute explainer is not the video the story
+            # asked for; refuse it here rather than publish it.
+            ratio = len(silenced) / len(board.frames)
+            log.error(
+                "narration_degraded",
+                story_id=str(story_id),
+                silenced=len(silenced),
+                frames=len(board.frames),
+                slugs=silenced,
+            )
+            if ratio > MAX_SILENT_RATIO:
+                log.error("youtube_generation_aborted", reason="too_many_silent_frames")
+                return None
 
     prune_stale_assets(board, video_dir)
     attach_audio(board, video_dir)
+    if using_owner_voice:
+        unprobed = [frame.slug for frame in board.frames if not frame.audio_duration]
+        if unprobed:
+            log.error(
+                "youtube_generation_aborted",
+                reason="voice_clip_unprobed",
+                story_id=str(story_id),
+                slugs=unprobed,
+            )
+            return None
     assign_timing(board, board.meta.get("pacing"))
 
     index_html_path = video_dir / "index.html"
