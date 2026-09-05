@@ -23,6 +23,7 @@ from typing import Awaitable, Callable
 
 import structlog
 
+from app import gpu
 from app.scene3d.author import author_shot, author_world
 from app.scene3d.probes import ProbeStats, frames_are_distinct
 from app.scene3d.shell import render_3d_frame
@@ -475,23 +476,16 @@ async def _generate_cinematic_image(prompt: str, destination: Path, provider: st
     await _generate_comfyui_cinematic_image(prompt, destination)
 
 
-async def build_cinematic_frames(
+async def _build_cinematic_frames_inner(
     board,
     video_dir: Path,
-    provider: str | None = None,
+    selected: str,
     on_frame_complete: Callable[[int, int], Awaitable[None]] | None = None,
 ) -> list[str]:
-    """Build image-led portrait scenes without ever substituting a fallback frame.
-
-    A missing or failed keyframe is a content-quality failure, not a reason to
-    send a title card to render. The caller therefore receives an exception and
-    the job stops with an actionable error.
-    """
     frames_dir = video_dir / "compositions" / "frames"
     assets_dir = video_dir / "assets" / "cinematic"
     frames_dir.mkdir(parents=True, exist_ok=True)
     assets_dir.mkdir(parents=True, exist_ok=True)
-    selected = require_cinematic_image_provider(provider)
 
     total_frames = len(board.frames)
     ease, boost = motion_style(motion_intent_of(board.direction))
@@ -508,3 +502,22 @@ async def build_cinematic_frames(
 
     log.info("cinematic_frames_built", frames=len(board.frames), provider=selected, model=GEMINI_IMAGE_MODEL)
     return []
+
+
+async def build_cinematic_frames(
+    board,
+    video_dir: Path,
+    provider: str | None = None,
+    on_frame_complete: Callable[[int, int], Awaitable[None]] | None = None,
+) -> list[str]:
+    """Build image-led portrait scenes without ever substituting a fallback frame.
+
+    A missing or failed keyframe is a content-quality failure, not a reason to
+    send a title card to render. The caller therefore receives an exception and
+    the job stops with an actionable error.
+    """
+    selected = require_cinematic_image_provider(provider)
+    if selected == "comfyui":
+        async with gpu.slot:
+            return await _build_cinematic_frames_inner(board, video_dir, selected, on_frame_complete)
+    return await _build_cinematic_frames_inner(board, video_dir, selected, on_frame_complete)

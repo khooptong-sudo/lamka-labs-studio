@@ -11,7 +11,7 @@ from typing import Any
 
 import structlog
 
-from app import db
+from app import db, gpu
 from app.audit import audit_log
 from app.channels import BASE_COMPLIANCE_RULES, Channel
 from app.scene3d.backend import (
@@ -432,7 +432,8 @@ async def generate_youtube_video(
                 check=True
             )
             
-        proc = await asyncio.to_thread(run_hyperframes)
+        async with gpu.slot:
+            proc = await asyncio.to_thread(run_hyperframes)
         log.info("youtube_rendering_complete")
     except subprocess.CalledProcessError as e:
         log.error("youtube_rendering_failed", returncode=e.returncode)
@@ -1086,32 +1087,34 @@ async def _generate_frame_compositions_local(board: Storyboard, video_dir: Path)
     frames_dir.mkdir(parents=True, exist_ok=True)
     degraded: list[str] = []
 
-    async with httpx.AsyncClient(timeout=OLLAMA_TIMEOUT) as client:
+    # One GPU serves one planning request at a time (see app/gpu.py).
+    async with gpu.slot:
+        async with httpx.AsyncClient(timeout=OLLAMA_TIMEOUT) as client:
 
-        # Each frame is planned in isolation, so without this the model reaches
-        # for the same shape every time and the video reads as one slide repeated.
-        used_archetypes: list[str] = []
+            # Each frame is planned in isolation, so without this the model reaches
+            # for the same shape every time and the video reads as one slide repeated.
+            used_archetypes: list[str] = []
 
-        async def build(frame: Frame) -> None:
-            plan, used_fallback = await plan_frame(
-                voiceover=frame.voiceover,
-                scene=frame.scene,
-                title=frame.title,
-                direction=board.direction,
-                client=client,
-                used_archetypes=used_archetypes,
-            )
-            if used_fallback:
-                degraded.append(frame.slug)
-            used_archetypes.append(plan.get("archetype", ""))
-            (frames_dir / f"{frame.slug}.html").write_text(
-                render_archetype(frame.slug, frame.duration, plan), encoding="utf-8"
-            )
+            async def build(frame: Frame) -> None:
+                plan, used_fallback = await plan_frame(
+                    voiceover=frame.voiceover,
+                    scene=frame.scene,
+                    title=frame.title,
+                    direction=board.direction,
+                    client=client,
+                    used_archetypes=used_archetypes,
+                )
+                if used_fallback:
+                    degraded.append(frame.slug)
+                used_archetypes.append(plan.get("archetype", ""))
+                (frames_dir / f"{frame.slug}.html").write_text(
+                    render_archetype(frame.slug, frame.duration, plan), encoding="utf-8"
+                )
 
-        # Sequential: one local GPU serves one request at a time, so fanning out
-        # only adds queueing latency.
-        for frame in board.frames:
-            await build(frame)
+            # Sequential: one local GPU serves one request at a time, so fanning out
+            # only adds queueing latency.
+            for frame in board.frames:
+                await build(frame)
 
     log.info(
         "frame_compositions_generated",
