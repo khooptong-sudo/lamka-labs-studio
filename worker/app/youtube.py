@@ -52,6 +52,10 @@ MIN_SCRIPT_FRAMES = int(os.environ.get("MIN_SCRIPT_FRAMES", "3"))
 # 503 UNAVAILABLE from Gemini is routine and clears in seconds.
 SCRIPT_MAX_ATTEMPTS = int(os.environ.get("SCRIPT_MAX_ATTEMPTS", "4"))
 
+# An unbounded HyperFrames render wedges the GPU slot forever. Bound the wait
+# and fail the job loud on expiry (default 20 minutes).
+HYPERFRAMES_TIMEOUT_SECONDS = float(os.environ.get("HYPERFRAMES_TIMEOUT_SECONDS", "1200"))
+
 MAX_VOICE_CLIP_BYTES = 8 * 1024 * 1024
 MAX_VOICE_CLIPS = 12
 
@@ -429,12 +433,16 @@ async def generate_youtube_video(
                 [npx_cmd, "hyperframes", "render", "--output", "renders/video.mp4"],
                 cwd=str(video_dir),
                 capture_output=True,
-                check=True
+                check=True,
+                timeout=HYPERFRAMES_TIMEOUT_SECONDS,
             )
-            
+
         async with gpu.slot:
             proc = await asyncio.to_thread(run_hyperframes)
         log.info("youtube_rendering_complete")
+    except subprocess.TimeoutExpired as e:
+        log.error("youtube_rendering_failed", reason="timeout", timeout_seconds=e.timeout)
+        raise Exception("youtube rendering timed out")
     except subprocess.CalledProcessError as e:
         log.error("youtube_rendering_failed", returncode=e.returncode)
         raise Exception("youtube rendering failed")

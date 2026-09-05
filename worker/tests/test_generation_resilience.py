@@ -110,6 +110,37 @@ async def test_render_failure_is_not_swallowed_by_the_thumbnail_guard(
 
 
 @pytest.mark.asyncio
+@patch("app.youtube._fetch_story_details")
+@patch("app.youtube._record_youtube_draft")
+@patch("app.youtube._generate_script_for_story")
+@patch("app.youtube._generate_frame_audio")
+@patch("app.youtube._build_frames")
+@patch("app.youtube.subprocess.run")
+@patch("app.youtube.fact_check_script", AsyncMock(return_value={"verdict": "PASS", "violations": []}))
+@patch("app.youtube._research_packet", return_value="packet")
+async def test_hung_render_fails_loud_on_timeout(
+    mock_packet, mock_run, mock_frames, mock_audio, mock_script, mock_record, mock_fetch, tmp_path
+):
+    """An unbounded render wedges the GPU slot forever. It must abort loud."""
+    import subprocess
+
+    from app import youtube
+
+    story_id = uuid.uuid4()
+    _arrange((mock_run, mock_frames, mock_audio, mock_script, mock_record, mock_fetch))
+    mock_run.side_effect = subprocess.TimeoutExpired(cmd="hyperframes", timeout=1200)
+
+    with patch("app.youtube.VIDEOS_DIR", tmp_path), \
+            patch("app.channels.resolve", AsyncMock(return_value=FINANCE)):
+        with pytest.raises(Exception, match="timed out"):
+            await youtube.generate_youtube_video(
+                story_id=story_id, channel_id="finance", upload_preference="manual"
+            )
+
+    mock_record.assert_not_called()
+
+
+@pytest.mark.asyncio
 @pytest.mark.parametrize("upload_preference", ["manual", "auto"])
 @patch("app.youtube._fetch_story_details")
 @patch("app.youtube._record_youtube_draft")

@@ -12,6 +12,7 @@ report whether it's running.
 
 from __future__ import annotations
 
+import asyncio
 import json
 import os
 import re
@@ -30,7 +31,7 @@ router = APIRouter()
 # Background generation tasks are held here for their lifetime. asyncio keeps
 # only a weak reference to a bare create_task(), so without this a long render
 # can be garbage-collected mid-run.
-_RUNNING_JOBS: set = set()
+_RUNNING_JOBS: dict = {}
 
 
 @router.get("/health")
@@ -288,8 +289,8 @@ async def youtube_job_start(req: YouTubeJobRequest) -> dict:
 
     # Held so the task is not garbage-collected mid-render.
     task = asyncio.create_task(run())
-    _RUNNING_JOBS.add(task)
-    task.add_done_callback(_RUNNING_JOBS.discard)
+    _RUNNING_JOBS[job_id] = task
+    task.add_done_callback(lambda _t: _RUNNING_JOBS.pop(job_id, None))
 
     return {"job_id": str(job_id)}
 
@@ -394,8 +395,8 @@ async def youtube_job_with_voice(
             await fail_job(job_id, str(exc))
 
     task = asyncio.create_task(run())
-    _RUNNING_JOBS.add(task)
-    task.add_done_callback(_RUNNING_JOBS.discard)
+    _RUNNING_JOBS[job_id] = task
+    task.add_done_callback(lambda _t: _RUNNING_JOBS.pop(job_id, None))
 
     return {"job_id": str(job_id)}
 
@@ -425,6 +426,24 @@ async def youtube_job_status(job_id: str) -> dict:
         key: (str(value) if isinstance(value, uuid.UUID) else value)
         for key, value in job.items()
     }
+
+
+@router.delete("/youtube/jobs/{job_id}")
+async def youtube_job_cancel(job_id: str) -> dict:
+    """Cancel a live run. A finished/unknown id is 404, never a silent no-op."""
+    from app.jobs import fail_job
+
+    try:
+        jid = uuid.UUID(job_id)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="invalid job_id (must be a uuid)")
+
+    task = _RUNNING_JOBS.get(jid)
+    if task is None or task.done():
+        raise HTTPException(status_code=404, detail="job not found or already finished")
+    task.cancel()
+    await fail_job(jid, "cancelled by owner")
+    return {"cancelled": True}
 
 
 _VIDEOS_DIR = Path(os.environ.get("VIDEOS_DIR", "../videos")).resolve()
