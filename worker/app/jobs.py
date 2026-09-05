@@ -23,7 +23,7 @@ log = structlog.get_logger()
 # Ordered. "world" is unique to the code-authored Story Film. Both formats use
 # the "shots" stage: it verifies Three.js shots for a film and creates final
 # image-led 3D visuals for a Short.
-STAGES = ["queued", "script", "narration", "world", "shots", "render", "done"]
+STAGES = ["queued", "script", "fact_check", "narration", "world", "shots", "render", "thumbnails", "done"]
 
 
 async def create_job(kind: str, story_id: uuid.UUID) -> uuid.UUID:

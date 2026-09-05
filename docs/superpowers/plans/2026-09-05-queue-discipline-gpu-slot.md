@@ -467,7 +467,18 @@ git commit -m "Add job cancel endpoint and bound the render wait"
 
 **Files:**
 - Modify: `worker/app/jobs.py` (STAGES), `worker/app/youtube.py` (`thumbnails` emit), `gui/src/components/FilmProgress.tsx` (mirror + labels)
-- Test: `worker/tests/test_jobs_stages.py` (new; DB-free — STAGES is a pure constant, `set_stage` validation needs no DB... `set_stage` calls `get_pool` AFTER validation, so the unknown-stage ValueError raises before any I/O ✓)
+- Test: `worker/tests/test_jobs.py` (extend the existing stage-contract test)
+
+**Interfaces:**
+- Consumes: existing `_stage(job_id, ...)` calls.
+- Produces: `STAGES = ["queued", "script", "fact_check", "narration", "world", "shots", "render", "thumbnails", "done"]`.
+
+- [ ] **Step 1: Update the existing contract test**
+
+`worker/tests/test_jobs.py::test_stages_are_the_expected_set_in_order` already
+asserts the exact list (plus monotonic/unique/unknown-stage tests that stay
+valid untouched). Update its expected list to the 9-stage list above — no new
+test file; duplicating this contract in a second file is clutter.
 
 **Interfaces:**
 - Consumes: existing `_stage(job_id, ...)` calls.

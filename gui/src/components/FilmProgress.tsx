@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { AlertTriangle, Check, Loader2 } from "lucide-react";
 
 // Mirrors STAGES in worker/app/jobs.py. Order is what the bar draws.
-const STAGES = ["queued", "script", "narration", "world", "shots", "render", "done"] as const;
+const STAGES = ["queued", "script", "fact_check", "narration", "world", "shots", "render", "thumbnails", "done"] as const;
 
 // "world" is unique to the code-authored Story Film. Both formats create
 // visuals at the "shots" stage; the user-facing label is clearer than the
@@ -13,10 +13,12 @@ const FILM_ONLY = new Set(["world"]);
 const STAGE_LABELS: Record<(typeof STAGES)[number], string> = {
   queued: "queued",
   script: "script",
+  fact_check: "fact check",
   narration: "narration",
   world: "world",
   shots: "visuals",
   render: "render",
+  thumbnails: "thumbnails",
   done: "done",
 };
 

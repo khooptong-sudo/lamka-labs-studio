@@ -454,6 +454,7 @@ async def generate_youtube_video(
 
     _write_upload_txt(video_dir, channel, title, description, tags=tags)
 
+    await _stage(job_id, "thumbnails")
     await build_thumbnail_variants(
         title=title,
         hook=(board.frames[0].voiceover if board.frames else title),

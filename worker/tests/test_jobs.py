@@ -6,7 +6,10 @@ from app.jobs import STAGES, set_stage
 
 
 def test_stages_are_the_expected_set_in_order():
-    assert STAGES == ["queued", "script", "narration", "world", "shots", "render", "done"]
+    assert STAGES == [
+        "queued", "script", "fact_check", "narration", "world",
+        "shots", "render", "thumbnails", "done",
+    ]
 
 
 def test_stage_ordering_is_monotonic():
