@@ -268,56 +268,61 @@ export default function CinemaPage() {
 
   return (
     <div className="mx-auto max-w-4xl space-y-4 p-6">
-        <header>
-          <h1 className="text-lg font-semibold">Cinema</h1>
-          <p className="text-sm text-[var(--muted)]">
+        <header className="border-b border-border pb-5">
+          <h1 className="text-[27px] font-semibold leading-none tracking-[-0.025em]">Cinema</h1>
+          <p className="mt-1 text-sm text-[var(--muted)]">
             Describe a scene, let CinePrompt fill in the cinematography, then generate video.
           </p>
         </header>
 
-        <section className="rounded-xl border border-border bg-[var(--surface-deck)] p-4 space-y-3">
+        <section className="space-y-3 rounded-[var(--radius)] border border-border bg-[var(--surface-deck)] p-4">
           <textarea
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             placeholder="A woman in a cramped office at dawn, wide shot, tense..."
-            className="min-h-24 w-full rounded-lg border border-border bg-[var(--surface-recessed)] p-3 text-sm text-foreground focus:border-primary focus:outline-none"
+            className="field-well min-h-24 w-full p-3 text-sm placeholder:text-[var(--muted)] focus:outline-none"
           />
           <div className="flex flex-wrap gap-3">
-            <select value={mode} onChange={(e) => setMode(e.target.value as typeof mode)} className="min-h-9 rounded-lg border border-border bg-[var(--surface-recessed)] px-2 text-sm">
+            <select value={mode} onChange={(e) => setMode(e.target.value as typeof mode)} className="field-well min-h-11 px-2 text-sm">
               {MODES.map((m) => <option key={m} value={m}>{m}</option>)}
             </select>
-            <select value={level} onChange={(e) => setLevel(e.target.value as typeof level)} className="min-h-9 rounded-lg border border-border bg-[var(--surface-recessed)] px-2 text-sm">
+            <select value={level} onChange={(e) => setLevel(e.target.value as typeof level)} className="field-well min-h-11 px-2 text-sm">
               {LEVELS.map((l) => <option key={l} value={l}>{l}</option>)}
             </select>
             <button
               onClick={handleFill}
               disabled={filling || description.trim().length === 0}
-              className="ml-auto inline-flex min-h-9 items-center gap-2 rounded-lg bg-primary px-3 text-sm font-medium text-primary-foreground disabled:opacity-50"
+              className="btn-ink ml-auto"
             >
               {filling ? <Loader2 className="h-4 w-4 animate-spin" /> : <Wand2 className="h-4 w-4" />}
               Fill
             </button>
           </div>
-          {error && <p className="text-xs text-[var(--destructive)]">{error}</p>}
+          {error && (
+            <div role="alert" className="flex flex-wrap items-center gap-3 rounded-[var(--radius)] border border-[color-mix(in_srgb,var(--destructive)_35%,var(--border))] bg-[color-mix(in_srgb,var(--destructive)_8%,transparent)] px-4 py-3 text-sm text-[var(--destructive)]">
+              <span className="chip">Error</span>
+              <p className="m-0">{error}</p>
+            </div>
+          )}
         </section>
 
         {Object.keys(vocabData).length > 0 && (
-          <section className="rounded-xl border border-border bg-[var(--surface-deck)] p-4 space-y-4">
-            <h2 className="text-sm font-semibold">Browse fields</h2>
+          <section className="space-y-4 rounded-[var(--radius)] border border-border bg-[var(--surface-deck)] p-4">
+            <h2 className="text-[17px] font-semibold tracking-tight">Browse fields</h2>
             {Object.entries(vocabData).map(([section, sectionFields]) => (
-              <details key={section} open className="space-y-2">
-                <summary className="cursor-pointer text-xs font-semibold uppercase text-[var(--muted)]">
+              <details key={section} open className="border-t border-border pt-3">
+                <summary className="cursor-pointer text-sm font-semibold tracking-tight">
                   {section}
                 </summary>
                 <div className="space-y-3 pt-2">
                   {Object.entries(sectionFields).map(([field, { values, free_text }]) => (
-                    <div key={field}>
-                      <p className="text-xs text-[var(--muted)]">{toTitleCase(field)}</p>
+                    <div key={field} className="border-t border-border pt-3 first:border-t-0 first:pt-0">
+                      <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--muted)]">{toTitleCase(field)}</p>
                       {free_text ? (
                         <textarea
                           value={typeof fields[field] === "string" ? (fields[field] as string) : ""}
                           onChange={(e) => updateFreeTextField(field, e.target.value)}
-                          className="mt-1 min-h-16 w-full rounded-lg border border-border bg-[var(--surface-recessed)] p-2 text-sm text-foreground"
+                          className="field-well mt-1 min-h-16 w-full p-2 text-sm focus:outline-none"
                         />
                       ) : (
                         <div className="mt-1 flex flex-wrap gap-1.5">
@@ -327,10 +332,10 @@ export default function CinemaPage() {
                               type="button"
                               aria-pressed={isChipActive(field, value)}
                               onClick={() => toggleChip(field, value)}
-                              className={`rounded-full border px-2.5 py-1 text-xs ${
+                              className={`chip ${
                                 isChipActive(field, value)
-                                  ? "border-primary bg-primary/10 text-foreground"
-                                  : "border-border text-[var(--muted)]"
+                                  ? "border-primary bg-primary/10 text-primary"
+                                  : "text-[var(--muted)]"
                               }`}
                             >
                               {toTitleCase(value)}
@@ -347,8 +352,8 @@ export default function CinemaPage() {
         )}
 
         {Object.keys(fields).length > 0 && (
-          <section className="rounded-xl border border-border bg-[var(--surface-deck)] p-4 space-y-3">
-            <h2 className="text-sm font-semibold">Fields</h2>
+          <section className="space-y-3 rounded-[var(--radius)] border border-border bg-[var(--surface-deck)] p-4">
+            <h2 className="text-[17px] font-semibold tracking-tight">Fields</h2>
             <div className="grid gap-2 sm:grid-cols-2">
               {Object.entries(fields).map(([key, value]) => (
                 <label key={key} className="text-xs text-[var(--muted)]">
@@ -356,7 +361,7 @@ export default function CinemaPage() {
                   <input
                     value={fieldDisplayValue(value)}
                     onChange={(e) => updateField(key, e.target.value)}
-                    className="mt-1 min-h-9 w-full rounded-lg border border-border bg-[var(--surface-recessed)] px-2 text-sm text-foreground"
+                    className="field-well mt-1 min-h-11 w-full px-2 text-sm focus:outline-none"
                   />
                 </label>
               ))}
@@ -364,14 +369,14 @@ export default function CinemaPage() {
             <div className="flex items-center gap-3">
               <label className="text-xs text-[var(--muted)]">
                 Prompt format
-                <select value={model} onChange={(e) => setModel(e.target.value as typeof model)} className="mt-1 block min-h-9 rounded-lg border border-border bg-[var(--surface-recessed)] px-2 text-sm">
+                <select value={model} onChange={(e) => setModel(e.target.value as typeof model)} className="field-well mt-1 block min-h-11 px-2 text-sm">
                   {MODELS.map((m) => <option key={m} value={m}>{m}</option>)}
                 </select>
               </label>
               <button
                 onClick={handleBuild}
                 disabled={building}
-                className="inline-flex min-h-9 items-center gap-2 rounded-lg bg-primary px-3 text-sm font-medium text-primary-foreground disabled:opacity-50"
+                className="btn-ink"
               >
                 {building ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
                 Build prompt
@@ -381,15 +386,15 @@ export default function CinemaPage() {
         )}
 
         {prompt && (
-          <section className="rounded-xl border border-border bg-[var(--surface-deck)] p-4">
-            <h2 className="text-sm font-semibold">Prompt</h2>
-            <p className="mt-2 text-sm">{prompt}</p>
+          <section className="rounded-[var(--radius)] border border-border bg-[var(--surface-deck)] p-4">
+            <h2 className="text-[17px] font-semibold tracking-tight">Prompt</h2>
+            <p className="field-well mt-2 p-3 text-sm leading-relaxed">{prompt}</p>
           </section>
         )}
 
         {prompt && (
-          <section className="rounded-xl border border-border bg-[var(--surface-deck)] p-4 space-y-3">
-            <h2 className="text-sm font-semibold">Generate</h2>
+          <section className="space-y-3 rounded-[var(--radius)] border border-border bg-[var(--surface-deck)] p-4">
+            <h2 className="text-[17px] font-semibold tracking-tight">Generate</h2>
             <p className="text-xs text-[var(--muted)]">
               Generated with Kling 2.0 via fal.run — the prompt format above does not change the generator.
             </p>
@@ -399,24 +404,24 @@ export default function CinemaPage() {
                 type="password"
                 value={falKey}
                 onChange={(e) => saveFalKey(e.target.value)}
-                className="mt-1 min-h-9 w-full rounded-lg border border-border bg-[var(--surface-recessed)] px-2 text-sm"
+                className="field-well mt-1 min-h-11 w-full px-2 text-sm focus:outline-none"
               />
             </label>
             <button
               onClick={handleGenerate}
               disabled={generating || falKey.trim().length === 0}
-              className="inline-flex min-h-9 items-center gap-2 rounded-lg bg-primary px-3 text-sm font-medium text-primary-foreground disabled:opacity-50"
+              className="btn-primary"
             >
               {generating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
               Generate
             </button>
             {videoUrl && (
               <div className="space-y-2">
-                <video src={videoUrl} controls className="w-full rounded-lg" />
+                <video src={videoUrl} controls className="w-full rounded-[var(--radius)]" />
                 <button
                   onClick={handleSave}
                   disabled={saving}
-                  className="inline-flex min-h-9 items-center gap-2 rounded-lg border border-border px-3 text-sm font-medium disabled:opacity-50"
+                  className="btn-ghost"
                 >
                   {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
                   Save
@@ -427,13 +432,14 @@ export default function CinemaPage() {
         )}
 
         {history.length > 0 && (
-          <section className="rounded-xl border border-border bg-[var(--surface-deck)] p-4 space-y-2">
-            <h2 className="text-sm font-semibold">History</h2>
-            <ul className="space-y-1">
+          <section className="space-y-2 rounded-[var(--radius)] border border-border bg-[var(--surface-deck)] p-4">
+            <h2 className="text-[17px] font-semibold tracking-tight">History</h2>
+            <ul className="divide-y divide-border">
               {history.map((row) => (
-                <li key={row.id} className="space-y-1 text-sm text-[var(--muted)]">
-                  <p>{row.description}</p>
-                  <video src={`/api/videos/${row.local_path}`} controls className="w-full rounded-lg" />
+                <li key={row.id} className="space-y-2 py-3 text-sm first:pt-1 last:pb-0">
+                  <p className="text-foreground">{row.description}</p>
+                  <p className="font-mono text-xs text-[var(--muted)]">{row.created_at}</p>
+                  <video src={`/api/videos/${row.local_path}`} controls className="w-full rounded-[var(--radius)]" />
                 </li>
               ))}
             </ul>

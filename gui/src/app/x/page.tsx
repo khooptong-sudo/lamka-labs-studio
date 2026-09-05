@@ -155,28 +155,30 @@ export default function XPage() {
   return (
     <div className="h-[calc(100vh-2rem)] flex gap-4">
       {/* Column 1: Story list */}
-      <section className="w-1/3 min-w-[280px] max-w-md flex flex-col glass-panel rounded-2xl overflow-hidden">
-        <div className="px-5 py-4 border-b border-border bg-foreground/[0.02]">
-          <h2 className="text-lg font-bold tracking-wide">Inbox</h2>
-          <p className="text-xs text-foreground/50 mt-1">Select a story to work with</p>
+      <section className="w-1/3 min-w-[280px] max-w-md flex flex-col overflow-hidden rounded-[var(--radius)] border border-border bg-[var(--surface-deck)]">
+        <div className="border-b border-border px-5 py-4">
+          <h2 className="text-[17px] font-semibold tracking-tight">Inbox</h2>
+          <p className="mt-1 text-xs text-[var(--muted)]">Select a story to work with</p>
         </div>
-        <div className="flex-1 overflow-y-auto divide-y divide-border/50">
+        <div className="flex-1 overflow-y-auto divide-y divide-border">
           {loadingStories ? (
-            <div className="p-8 text-center text-foreground/50 text-sm">Loading stories...</div>
+            <div className="p-8 text-center text-sm text-[var(--muted)]">Loading stories...</div>
           ) : stories.length === 0 ? (
-            <div className="p-8 text-center text-foreground/50 text-sm">No pending stories.</div>
+            <div className="p-8 text-center text-sm text-[var(--muted)]">No pending stories.</div>
           ) : (
             stories.map((story) => (
               <button
                 key={story.id}
                 onClick={() => setSelected(story)}
-                className={`w-full text-left p-4 transition-colors hover:bg-foreground/[0.03] ${
-                  selected?.id === story.id ? "bg-primary/10 border-l-4 border-primary" : "border-l-4 border-transparent"
+                className={`w-full border-l-2 p-4 text-left transition-colors hover:bg-foreground/[0.035] ${
+                  selected?.id === story.id ? "border-primary bg-primary/[0.08]" : "border-transparent"
                 }`}
               >
-                <h3 className="font-semibold text-sm leading-snug line-clamp-2">{story.headline}</h3>
-                <p className="text-[11px] text-foreground/40 mt-2 uppercase tracking-wider">
-                  {story.items[0]?.source_name || "Manual idea"} · {story.items.length} source{story.items.length !== 1 ? "s" : ""}
+                <h3 className="text-sm font-semibold leading-snug line-clamp-2">{story.headline}</h3>
+                <p className="mt-2 flex flex-wrap items-center gap-2 text-[11px] text-[var(--muted)]">
+                  <span className="chip">{story.items[0]?.source_name || "Manual idea"}</span>
+                  <span aria-hidden="true"> · </span>
+                  <span className="font-mono">{story.items.length} source{story.items.length !== 1 ? "s" : ""}</span>
                 </p>
               </button>
             ))
@@ -185,21 +187,21 @@ export default function XPage() {
       </section>
 
       {/* Column 2: Post / Poster tabs */}
-      <section className="flex-1 flex flex-col glass-panel rounded-2xl overflow-hidden">
-        <div className="px-5 py-4 border-b border-border bg-foreground/[0.02] flex justify-between items-center">
+      <section className="flex min-w-0 flex-1 flex-col overflow-hidden rounded-[var(--radius)] border border-border bg-[var(--surface-deck)]">
+        <div className="flex items-center justify-between gap-3 border-b border-border px-5">
           <div className="flex items-center gap-1">
             <button
               onClick={() => setActiveTab("post")}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                activeTab === "post" ? "bg-primary text-primary-foreground" : "text-foreground/70 hover:bg-foreground/[0.05]"
+              className={`-mb-px border-b-2 px-4 py-4 text-sm font-semibold transition-colors ${
+                activeTab === "post" ? "border-primary text-primary" : "border-transparent text-[var(--muted)] hover:text-foreground"
               }`}
             >
               Post
             </button>
             <button
               onClick={() => setActiveTab("poster")}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                activeTab === "poster" ? "bg-primary text-primary-foreground" : "text-foreground/70 hover:bg-foreground/[0.05]"
+              className={`-mb-px border-b-2 px-4 py-4 text-sm font-semibold transition-colors ${
+                activeTab === "poster" ? "border-primary text-primary" : "border-transparent text-[var(--muted)] hover:text-foreground"
               }`}
             >
               Poster
@@ -209,18 +211,18 @@ export default function XPage() {
             <button
               onClick={handleRewrite}
               disabled={rewriting}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 disabled:opacity-50"
+              className="btn-primary my-2"
             >
               {rewriting ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
               Rewrite
             </button>
           )}
           {activeTab === "poster" && (
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 py-2">
               <button
                 onClick={downloadPoster}
                 disabled={downloadingPoster || !poster}
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-secondary text-secondary-foreground text-sm font-medium hover:bg-secondary/80 disabled:opacity-50"
+                className="btn-ghost"
               >
                 {downloadingPoster ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
                 Download PNG
@@ -228,7 +230,7 @@ export default function XPage() {
               <button
                 onClick={handleGeneratePoster}
                 disabled={generatingPoster}
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 disabled:opacity-50"
+                className="btn-primary"
               >
                 {generatingPoster ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Image className="w-4 h-4" />}
                 Generate
@@ -239,16 +241,17 @@ export default function XPage() {
 
         <div className="flex-1 overflow-y-auto p-5 space-y-5">
           {error && (
-            <div className="rounded-lg bg-red-500/10 border border-red-500/20 p-3 text-sm text-red-400">
-              {error}
+            <div role="alert" className="flex flex-wrap items-center gap-3 rounded-[var(--radius)] border border-[color-mix(in_srgb,var(--destructive)_35%,var(--border))] bg-[color-mix(in_srgb,var(--destructive)_8%,transparent)] px-4 py-3 text-sm text-[var(--destructive)]">
+              <span className="chip">Error</span>
+              <p className="m-0">{error}</p>
             </div>
           )}
 
           {activeTab === "post" ? (
             selected ? (
               <>
-                <div className="rounded-xl bg-foreground/[0.03] p-4 border border-border/50">
-                  <h3 className="font-semibold text-foreground">{selected.headline}</h3>
+                <div className="field-well p-4">
+                  <h3 className="text-[15px] font-semibold tracking-tight">{selected.headline}</h3>
                   <ul className="mt-3 space-y-2">
                     {selected.items.map((item) => (
                       <li key={item.id} className="text-sm text-foreground/70">
@@ -256,34 +259,35 @@ export default function XPage() {
                           href={item.url}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="hover:text-primary hover:underline"
+                          className="hover:underline"
                         >
                           {item.title}
                         </a>
-                        <span className="text-foreground/40 ml-2 text-xs">({item.source_name})</span>
+                        <span className="ml-2 text-xs text-[var(--muted)]">({item.source_name})</span>
                       </li>
                     ))}
                     {selected.items.length === 0 && (
-                      <li className="text-sm text-foreground/40 italic">No linked sources.</li>
+                      <li className="text-sm italic text-[var(--muted)]">No linked sources.</li>
                     )}
                   </ul>
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-foreground/50 mb-2">
+                  <label className="mb-2 block text-xs font-semibold uppercase tracking-[0.2em] text-[var(--muted)]">
                     Tone
                   </label>
-                  <div className="flex flex-wrap gap-2 mb-3">
+                  <div className="mb-3 flex flex-wrap gap-1 rounded-[var(--radius)] border border-border bg-[var(--surface-recessed)] p-1" role="group" aria-label="Tone presets">
                     {TONE_PRESETS.map((preset) => {
                       const active = tone === preset.value;
                       return (
                         <button
                           key={preset.value}
                           onClick={() => setTone(active ? "" : preset.value)}
-                          className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
+                          aria-pressed={active}
+                          className={`min-h-9 rounded-[calc(var(--radius)-4px)] border px-3 py-1.5 text-xs font-medium transition-colors ${
                             active
-                              ? "bg-primary text-primary-foreground"
-                              : "bg-foreground/[0.05] text-foreground/70 hover:bg-foreground/[0.10]"
+                              ? "border-border bg-[var(--surface-deck)] text-foreground"
+                              : "border-transparent text-[var(--muted)] hover:bg-foreground/[0.035] hover:text-foreground"
                           }`}
                         >
                           {preset.label}
@@ -296,22 +300,22 @@ export default function XPage() {
                     value={tone}
                     onChange={(e) => setTone(e.target.value)}
                     placeholder="Or type a custom tone..."
-                    className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+                    className="field-well min-h-11 w-full px-3 py-2 text-sm placeholder:text-[var(--muted)] focus:outline-none"
                   />
                 </div>
 
                 {post && (
-                  <div className="rounded-xl bg-foreground/[0.03] border border-border/50 p-4">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-xs font-bold uppercase tracking-wider text-foreground/50">
+                  <div className="field-well p-4">
+                    <div className="mb-2 flex items-center justify-between">
+                      <span className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--muted)]">
                         Draft post
                       </span>
-                      <span className="text-xs text-foreground/40">{post.length}/280</span>
+                      <span className="font-mono text-xs text-[var(--muted)]">{post.length}/280</span>
                     </div>
                     <p className="text-foreground whitespace-pre-wrap leading-relaxed">{post}</p>
                     <button
                       onClick={copyPost}
-                      className="mt-4 inline-flex items-center gap-2 px-3 py-1.5 rounded-md bg-secondary text-secondary-foreground text-xs font-medium hover:bg-secondary/80"
+                      className="mt-4 inline-flex items-center gap-2 rounded-lg border border-transparent px-2 py-1 text-xs text-[var(--muted)] transition-colors hover:border-border hover:text-foreground disabled:opacity-40"
                     >
                       {copiedPost ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
                       {copiedPost ? "Copied" : "Copy post"}
@@ -320,25 +324,27 @@ export default function XPage() {
                 )}
               </>
             ) : (
-              <div className="h-full flex items-center justify-center text-foreground/40 text-sm">
+              <div className="flex h-full items-center justify-center p-8 text-center text-sm text-[var(--muted)]">
                 Select a story from the inbox.
               </div>
             )
           ) : (
             <>
-              <div className="flex items-center gap-2 mb-2">
+              <div className="flex flex-wrap items-center gap-1 rounded-[var(--radius)] border border-border bg-[var(--surface-recessed)] p-1" role="group" aria-label="Poster source">
                 <button
                   onClick={() => setPosterMode("story")}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-medium ${
-                    posterMode === "story" ? "bg-primary text-primary-foreground" : "bg-foreground/[0.05] text-foreground/70"
+                  aria-pressed={posterMode === "story"}
+                  className={`min-h-9 rounded-[calc(var(--radius)-4px)] border px-3 py-1.5 text-xs font-medium transition-colors ${
+                    posterMode === "story" ? "border-border bg-[var(--surface-deck)] text-foreground" : "border-transparent text-[var(--muted)] hover:bg-foreground/[0.035] hover:text-foreground"
                   }`}
                 >
                   From story
                 </button>
                 <button
                   onClick={() => setPosterMode("manual")}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-medium ${
-                    posterMode === "manual" ? "bg-primary text-primary-foreground" : "bg-foreground/[0.05] text-foreground/70"
+                  aria-pressed={posterMode === "manual"}
+                  className={`min-h-9 rounded-[calc(var(--radius)-4px)] border px-3 py-1.5 text-xs font-medium transition-colors ${
+                    posterMode === "manual" ? "border-border bg-[var(--surface-deck)] text-foreground" : "border-transparent text-[var(--muted)] hover:bg-foreground/[0.035] hover:text-foreground"
                   }`}
                 >
                   Manual topic
@@ -347,12 +353,12 @@ export default function XPage() {
 
               {posterMode === "story" ? (
                 selected ? (
-                  <div className="rounded-xl bg-foreground/[0.03] p-4 border border-border/50">
-                    <h3 className="font-semibold text-foreground">{selected.headline}</h3>
-                    <p className="text-xs text-foreground/50 mt-1">{selected.items.length} linked source(s)</p>
+                  <div className="field-well p-4">
+                    <h3 className="text-[15px] font-semibold tracking-tight">{selected.headline}</h3>
+                    <p className="mt-1 font-mono text-xs text-[var(--muted)]">{selected.items.length} linked source(s)</p>
                   </div>
                 ) : (
-                  <div className="rounded-xl bg-foreground/[0.03] p-4 border border-border/50 text-sm text-foreground/50">
+                  <div className="field-well p-4 text-sm text-[var(--muted)]">
                     Select a story from the inbox.
                   </div>
                 )
@@ -363,33 +369,34 @@ export default function XPage() {
                     value={manualTopic}
                     onChange={(e) => setManualTopic(e.target.value)}
                     placeholder="Topic, e.g. CAGR vs XIRR"
-                    className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+                    className="field-well min-h-11 w-full px-3 py-2 text-sm placeholder:text-[var(--muted)] focus:outline-none"
                   />
                   <textarea
                     value={manualBullets}
                     onChange={(e) => setManualBullets(e.target.value)}
                     placeholder="Paste raw bullet points, one per line..."
                     rows={5}
-                    className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 resize-none"
+                    className="field-well min-h-24 w-full resize-none px-3 py-2 text-sm placeholder:text-[var(--muted)] focus:outline-none"
                   />
                 </div>
               )}
 
               <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-foreground/50 mb-2">
+                <label className="mb-2 block text-xs font-semibold uppercase tracking-[0.2em] text-[var(--muted)]">
                   Poster style
                 </label>
-                <div className="flex flex-wrap gap-2">
+                <div className="flex flex-wrap gap-1 rounded-[var(--radius)] border border-border bg-[var(--surface-recessed)] p-1" role="group" aria-label="Poster style">
                   {POSTER_STYLES.map((s) => {
                     const active = posterStyle === s.value;
                     return (
                       <button
                         key={s.value}
                         onClick={() => setPosterStyle(s.value)}
-                        className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
+                        aria-pressed={active}
+                        className={`min-h-9 rounded-[calc(var(--radius)-4px)] border px-3 py-1.5 text-xs font-medium transition-colors ${
                           active
-                            ? "bg-primary text-primary-foreground"
-                            : "bg-foreground/[0.05] text-foreground/70 hover:bg-foreground/[0.10]"
+                            ? "border-border bg-[var(--surface-deck)] text-foreground"
+                            : "border-transparent text-[var(--muted)] hover:bg-foreground/[0.035] hover:text-foreground"
                         }`}
                       >
                         {s.label}
@@ -401,11 +408,11 @@ export default function XPage() {
 
               {poster && (
                 <div className="space-y-3">
-                  <div className="flex items-center gap-2 text-xs text-foreground/50">
+                  <div className="flex items-center gap-2 text-xs text-[var(--muted)]">
                     <Lightbulb className="w-3.5 h-3.5" />
                     <span>Preview is scaled down. Downloaded PNG is 1080×1350.</span>
                   </div>
-                  <div className="overflow-auto rounded-xl border border-border bg-background p-4">
+                  <div className="overflow-auto rounded-[var(--radius)] border border-border bg-[var(--surface-deck)] p-4">
                     <div className="origin-top-left scale-[0.35] sm:scale-[0.45]">
                       <PosterCard poster={poster} variant={posterTheme ?? undefined} />
                     </div>
@@ -424,14 +431,14 @@ export default function XPage() {
       </section>
 
       {/* Column 3: Reply */}
-      <section className="w-1/3 min-w-[280px] max-w-md flex flex-col glass-panel rounded-2xl overflow-hidden">
-        <div className="px-5 py-4 border-b border-border bg-foreground/[0.02]">
-          <h2 className="text-lg font-bold tracking-wide">Reply helper</h2>
-          <p className="text-xs text-foreground/50 mt-1">Paste a comment; AI suggests a reply.</p>
+      <section className="w-1/3 min-w-[280px] max-w-md flex flex-col overflow-hidden rounded-[var(--radius)] border border-border bg-[var(--surface-deck)]">
+        <div className="border-b border-border px-5 py-4">
+          <h2 className="text-[17px] font-semibold tracking-tight">Reply helper</h2>
+          <p className="mt-1 text-xs text-[var(--muted)]">Paste a comment; AI suggests a reply.</p>
         </div>
         <div className="flex-1 overflow-y-auto p-5 space-y-5">
           <div>
-            <label className="block text-xs font-bold uppercase tracking-wider text-foreground/50 mb-2">
+            <label className="mb-2 block text-xs font-semibold uppercase tracking-[0.2em] text-[var(--muted)]">
               Comment
             </label>
             <textarea
@@ -439,29 +446,29 @@ export default function XPage() {
               onChange={(e) => setComment(e.target.value)}
               placeholder="Paste the comment here..."
               rows={4}
-              className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 resize-none"
+              className="field-well min-h-24 w-full resize-none px-3 py-2 text-sm placeholder:text-[var(--muted)] focus:outline-none"
             />
           </div>
 
           <button
             onClick={handleReply}
             disabled={replying || !comment.trim()}
-            className="w-full inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 disabled:opacity-50"
+            className="btn-ink w-full"
           >
             {replying ? <RefreshCw className="w-4 h-4 animate-spin" /> : <MessageSquare className="w-4 h-4" />}
             Suggest reply
           </button>
 
           {reply && (
-            <div className="rounded-xl bg-foreground/[0.03] border border-border/50 p-4">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-xs font-bold uppercase tracking-wider text-foreground/50">Suggested reply</span>
-                <span className="text-xs text-foreground/40">{reply.length}/280</span>
+            <div className="field-well p-4">
+              <div className="mb-2 flex items-center justify-between">
+                <span className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--muted)]">Suggested reply</span>
+                <span className="font-mono text-xs text-[var(--muted)]">{reply.length}/280</span>
               </div>
               <p className="text-foreground whitespace-pre-wrap leading-relaxed">{reply}</p>
               <button
                 onClick={copyReply}
-                className="mt-4 inline-flex items-center gap-2 px-3 py-1.5 rounded-md bg-secondary text-secondary-foreground text-xs font-medium hover:bg-secondary/80"
+                className="mt-4 inline-flex items-center gap-2 rounded-lg border border-transparent px-2 py-1 text-xs text-[var(--muted)] transition-colors hover:border-border hover:text-foreground disabled:opacity-40"
               >
                 {copiedReply ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
                 {copiedReply ? "Copied" : "Copy reply"}
