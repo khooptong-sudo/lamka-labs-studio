@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Loader2, PlayCircle, Settings2, Video, FileText, PlaySquare, Download } from "lucide-react";
+import { Loader2, PlayCircle, Video, FileText, PlaySquare, Download } from "lucide-react";
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
@@ -26,16 +26,16 @@ function CopyField({ label, value }: { label: string; value: string }) {
   return (
     <div className="mb-3">
       <div className="flex items-center justify-between mb-1">
-        <span className="text-xs font-black text-foreground/40 uppercase tracking-[0.2em]">{label}</span>
+        <span className="text-xs font-semibold text-[var(--muted)] uppercase tracking-[0.2em]">{label}</span>
         <button
           onClick={copy}
           disabled={!value}
-          className="text-xs rounded-lg border border-foreground/10 px-2 py-1 text-foreground/60 hover:text-foreground hover:border-foreground/20 transition-colors disabled:opacity-40"
+          className="rounded-lg border border-transparent px-2 py-1 text-xs text-[var(--muted)] transition-colors hover:border-border hover:text-foreground disabled:opacity-40"
         >
           {copyState === "copied" ? "Copied" : copyState === "unavailable" ? "Copy unavailable" : "Copy"}
         </button>
       </div>
-      <p className="whitespace-pre-wrap text-sm text-foreground/70">{value || "Not generated"}</p>
+      <p className="whitespace-pre-wrap text-sm text-foreground/80">{value || "Not generated"}</p>
     </div>
   );
 }
@@ -61,26 +61,22 @@ export default function DraftsPage() {
     return (
       <div className="flex flex-col items-center justify-center h-[50vh] space-y-4">
         <Loader2 className="w-8 h-8 animate-spin text-primary" />
-        <p className="text-foreground/50 tracking-widest uppercase text-xs font-bold animate-pulse">Syncing Database...</p>
+        <p className="text-[var(--muted)] tracking-widest uppercase text-xs font-bold animate-pulse">Syncing Database...</p>
       </div>
     );
   }
 
   return (
     <div className="space-y-8 max-w-6xl mx-auto">
-      <header className="pb-6 border-b border-border flex justify-between items-end">
-        <div>
-          <h1 className="text-4xl font-black tracking-tight text-foreground">Drafts Queue</h1>
-          <p className="text-foreground/50 mt-2 font-medium tracking-wide">Review your AI-generated drafts and rendered videos before publishing.</p>
-        </div>
+      <header className="border-b border-border pb-5">
+        <h1 className="text-[27px] font-semibold leading-none tracking-[-0.025em]">Drafts Queue</h1>
+        <p className="mt-1 text-sm text-[var(--muted)]">Review your AI-generated drafts and rendered videos before publishing.</p>
       </header>
 
       {drafts.length === 0 ? (
-        <div className="p-16 text-center flex flex-col items-center justify-center space-y-4 glass-panel rounded-3xl">
-          <div className="w-20 h-20 rounded-full bg-foreground/5 flex items-center justify-center">
-            <FileText className="w-10 h-10 text-foreground/20" />
-          </div>
-          <p className="text-foreground/50 font-medium tracking-wide text-lg">No drafts found. Generate a draft from the Inbox first.</p>
+        <div className="flex flex-col items-center justify-center space-y-4 rounded-[var(--radius)] border border-border bg-[var(--surface-deck)] p-16 text-center">
+          <FileText className="h-10 w-10 text-[var(--muted)]" aria-hidden="true" />
+          <p className="text-lg font-medium text-[var(--muted)]">No drafts found. Generate a draft from the Inbox first.</p>
         </div>
       ) : (
         <div className="space-y-6 mt-8">
@@ -130,45 +126,37 @@ function DraftCard({ draft }: { draft: any }) {
   const storyboardUrl = `/api/videos/story-${draft.story_id}/STORYBOARD.md`;
 
   return (
-    <div className="glass-panel rounded-3xl overflow-hidden shadow-2xl border-border transition-all duration-300 hover:border-primary/30 group">
+    <div className="overflow-hidden rounded-[var(--radius)] border border-border bg-[var(--surface-deck)]">
       {/* Card Header */}
-      <div className="p-6 md:p-8 border-b border-border bg-foreground/[0.01] flex justify-between items-start relative overflow-hidden">
-        <div className="absolute top-0 left-0 w-1 h-full bg-primary/50 group-hover:bg-primary transition-colors" />
+      <div className="flex items-start justify-between gap-4 border-b border-border p-6 md:px-8">
         <div>
-          <div className="flex items-center space-x-4 mb-3">
-            <span className={`px-2.5 py-1 text-[10px] font-black rounded-md uppercase tracking-widest ${
-              success ? "bg-green-500/10 text-green-400 border border-green-500/20" : "bg-primary/10 text-primary border border-primary/20 shadow-[0_0_10px_rgba(59,130,246,0.2)]"
-            }`}>
+          <div className="mb-3 flex items-center gap-3">
+            <span className={`chip ${success ? "text-[var(--success)]" : "text-primary"}`}>
               {success ? "Published" : "Approved"}
             </span>
-            <span className="text-foreground/40 text-xs font-mono tracking-wider">ID: {draft.id.substring(0, 8)}</span>
+            <span className="font-mono text-xs text-[var(--muted)]">ID: {draft.id.substring(0, 8)}</span>
           </div>
-          <h2 className="text-2xl md:text-3xl font-bold text-foreground tracking-tight leading-snug">{draft.headline || "Untitled Story"}</h2>
-        </div>
-        <div className="flex space-x-2">
-          <button className="p-2.5 rounded-xl bg-foreground/5 hover:bg-foreground/10 text-foreground/50 hover:text-foreground transition-colors border border-transparent hover:border-border">
-            <Settings2 className="w-5 h-5" />
-          </button>
+          <h2 className="text-[17px] font-semibold tracking-tight">{draft.headline || "Untitled Story"}</h2>
         </div>
       </div>
 
       {/* Tabs */}
-      <div className="flex border-b border-border px-6 md:px-8 bg-foreground/[0.02]">
-        <button 
+      <div className="flex border-b border-border px-6 md:px-8">
+        <button
           onClick={() => setActiveTab("overview")}
-          className={`py-4 px-6 text-sm font-bold tracking-wider uppercase border-b-2 transition-colors ${
-            activeTab === "overview" ? "border-primary text-primary" : "border-transparent text-foreground/50 hover:text-foreground"
+          className={`border-b-2 px-6 py-4 text-sm font-semibold uppercase tracking-wider transition-colors ${
+            activeTab === "overview" ? "border-primary text-primary" : "border-transparent text-[var(--muted)] hover:text-foreground"
           }`}
         >
           Overview
         </button>
-        <button 
+        <button
           onClick={() => setActiveTab("youtube")}
-          className={`py-4 px-6 text-sm font-bold tracking-wider uppercase border-b-2 transition-colors flex items-center space-x-2 ${
-            activeTab === "youtube" ? "border-[#ff0000] text-[#ff0000]" : "border-transparent text-foreground/50 hover:text-foreground"
+          className={`flex items-center gap-2 border-b-2 px-6 py-4 text-sm font-semibold uppercase tracking-wider transition-colors ${
+            activeTab === "youtube" ? "border-[#ff0000] text-[#ff0000]" : "border-transparent text-[var(--muted)] hover:text-foreground"
           }`}
         >
-          <PlaySquare className="w-4 h-4" />
+          <PlaySquare className="h-4 w-4" />
           <span>YouTube Package</span>
         </button>
       </div>
@@ -179,21 +167,21 @@ function DraftCard({ draft }: { draft: any }) {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12">
             {/* Draft Content (Left 2/3) */}
             <div className="md:col-span-2 space-y-6">
-              <div className="p-5 rounded-2xl bg-black/60 border border-border shadow-inner">
+              <div className="field-well p-5">
                 <CopyField label="Title" value={draft.title} />
                 <CopyField label="Description" value={draft.description} />
               </div>
 
               <div>
-                <h3 className="text-xs font-black text-foreground/40 uppercase tracking-[0.2em] mb-3">Video Render Details</h3>
-                <div className="p-5 rounded-2xl bg-black/60 border border-border shadow-inner text-foreground/80 font-mono text-[13px] leading-relaxed space-y-3">
+                <h3 className="text-xs font-semibold text-[var(--muted)] uppercase tracking-[0.2em] mb-3">Video Render Details</h3>
+                <div className="field-well space-y-3 p-5 text-[13px] leading-relaxed">
                   <div className="flex items-start">
-                    <span className="text-primary font-bold mr-2 w-24 flex-shrink-0">File:</span> 
-                    <span className="break-all text-foreground/60">{filePath}</span>
+                    <span className="mr-2 w-24 flex-shrink-0 text-xs font-semibold uppercase tracking-wider text-[var(--muted)]">File</span>
+                    <span className="break-all font-mono">{filePath}</span>
                   </div>
                   <div className="flex items-start">
-                    <span className="text-accent font-bold mr-2 w-24 flex-shrink-0">Config:</span> 
-                    <span className="text-foreground/60">{draft.upload_preference}</span>
+                    <span className="mr-2 w-24 flex-shrink-0 text-xs font-semibold uppercase tracking-wider text-[var(--muted)]">Config</span>
+                    <span className="font-mono">{draft.upload_preference}</span>
                   </div>
                 </div>
               </div>
@@ -201,15 +189,15 @@ function DraftCard({ draft }: { draft: any }) {
 
             {/* Action Panel (Right 1/3) */}
             <div className="space-y-4">
-              <h3 className="text-xs font-black text-foreground/40 uppercase tracking-[0.2em] mb-3">Production</h3>
-              
-              <div className="p-6 rounded-2xl border border-primary/20 bg-primary/5 flex flex-col items-center text-center space-y-4 shadow-[inset_0_0_20px_rgba(59,130,246,0.02)]">
-                <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center text-primary mb-2 shadow-[0_0_15px_rgba(59,130,246,0.2)]">
-                  <Video className="w-7 h-7" />
+              <h3 className="text-xs font-semibold text-[var(--muted)] uppercase tracking-[0.2em] mb-3">Production</h3>
+
+              <div className="field-well flex flex-col items-center space-y-4 p-6 text-center">
+                <div className="mb-2 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 text-primary">
+                  <Video className="h-7 w-7" />
                 </div>
                 <div>
-                  <h4 className="text-foreground font-bold tracking-wide">{success ? "Published" : "Rendered Successfully"}</h4>
-                  <p className="text-[11px] text-foreground/50 mt-1 uppercase tracking-wider font-semibold">
+                  <h4 className="font-semibold tracking-wide">{success ? "Published" : "Rendered Successfully"}</h4>
+                  <p className="mt-1 text-[11px] font-semibold uppercase tracking-wider text-[var(--muted)]">
                     {success ? "Live" : "Copy the metadata above to publish manually"}
                   </p>
                 </div>
@@ -219,37 +207,37 @@ function DraftCard({ draft }: { draft: any }) {
         )}
 
         {activeTab === "youtube" && (
-          <div className="space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-500">
+          <div className="space-y-8">
             {/* Audio Preview */}
-            <div className="p-6 rounded-2xl border border-border bg-foreground/[0.01]">
-              <h3 className="text-xs font-black text-foreground/40 uppercase tracking-[0.2em] mb-4 flex items-center">
-                <PlayCircle className="w-4 h-4 mr-2" /> Voiceover Preview
+            <div className="field-well p-6">
+              <h3 className="mb-4 flex items-center text-xs font-semibold text-[var(--muted)] uppercase tracking-[0.2em]">
+                <PlayCircle className="mr-2 h-4 w-4" /> Voiceover Preview
               </h3>
-              <audio controls className="w-full h-12 rounded-lg bg-background" src={audioUrl}>
+              <audio controls className="h-12 w-full rounded-lg" src={audioUrl}>
                 Your browser does not support the audio element.
               </audio>
             </div>
 
             {/* Download Assets */}
-            <div className="flex space-x-4">
-              <a href={storyboardUrl} target="_blank" rel="noreferrer" className="flex-1 p-4 rounded-xl border border-primary/20 bg-primary/5 hover:bg-primary/10 transition-colors flex items-center justify-between text-primary font-bold tracking-wide group">
-                <span className="flex items-center"><FileText className="w-5 h-5 mr-3" /> Download Script</span>
-                <Download className="w-5 h-5 opacity-50 group-hover:opacity-100 transition-opacity" />
+            <div className="flex gap-4">
+              <a href={storyboardUrl} target="_blank" rel="noreferrer" className="flex flex-1 items-center justify-between rounded-[var(--radius)] border border-border bg-[var(--surface-recessed)] p-4 font-semibold tracking-wide transition-colors hover:bg-foreground/[0.035]">
+                <span className="flex items-center"><FileText className="mr-3 h-5 w-5 text-[var(--muted)]" /> Download Script</span>
+                <Download className="h-5 w-5 text-[var(--muted)]" />
               </a>
-              <a href={audioUrl} target="_blank" rel="noreferrer" className="flex-1 p-4 rounded-xl border border-accent/20 bg-accent/5 hover:bg-accent/10 transition-colors flex items-center justify-between text-accent font-bold tracking-wide group">
-                <span className="flex items-center"><PlayCircle className="w-5 h-5 mr-3" /> Download Audio</span>
-                <Download className="w-5 h-5 opacity-50 group-hover:opacity-100 transition-opacity" />
+              <a href={audioUrl} target="_blank" rel="noreferrer" className="flex flex-1 items-center justify-between rounded-[var(--radius)] border border-border bg-[var(--surface-recessed)] p-4 font-semibold tracking-wide transition-colors hover:bg-foreground/[0.035]">
+                <span className="flex items-center"><PlayCircle className="mr-3 h-5 w-5 text-[var(--muted)]" /> Download Audio</span>
+                <Download className="h-5 w-5 text-[var(--muted)]" />
               </a>
             </div>
 
             {/* Script Display */}
             <div className="space-y-4">
-              <h3 className="text-xs font-black text-foreground/40 uppercase tracking-[0.2em]">Storyboard & Script</h3>
-              <div className="p-6 md:p-8 rounded-3xl bg-background border border-border shadow-inner max-h-[600px] overflow-y-auto custom-scrollbar">
+              <h3 className="text-xs font-semibold text-[var(--muted)] uppercase tracking-[0.2em]">Storyboard & Script</h3>
+              <div className="max-h-[600px] overflow-y-auto rounded-[var(--radius)] border border-border bg-[var(--surface-recessed)] p-6 md:p-8">
                 {loadingMarkdown ? (
                   <div className="flex flex-col items-center justify-center h-32 space-y-4">
                     <Loader2 className="w-6 h-6 animate-spin text-primary" />
-                    <span className="text-foreground/40 text-xs font-bold uppercase tracking-widest">Loading Script...</span>
+                    <span className="text-[var(--muted)] text-xs font-bold uppercase tracking-widest">Loading Script...</span>
                   </div>
                 ) : (
                   <article className="prose prose-sm md:prose-base dark:prose-invert max-w-none prose-headings:font-black prose-a:text-primary">

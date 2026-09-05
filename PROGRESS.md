@@ -156,6 +156,7 @@ already exists must add the route once, or every fact-check fails loud with
 | 79 | GPU slot + cancel + render timeout + named stages | piece-4 | One in-process semaphore around Ollama/ComfyUI/render; cloud paths overlap. DELETE cancels live runs. Render bounded at 20 min default. fact_check/thumbnails join STAGES + GUI mirror. No scheduler rewrite. |
 | 80 | History/science/mystery channels seeded merge-only; both routes proven per channel | piece-5 | Built-ins in code, merge adds missing ids only. Shared taxonomy untouched. Manual-first; feeds are a follow-up. GUI already dynamic. |
 | 81 | Long-form as acts on the cinematic path; per-act gates, merged render | long-form | Outline→acts→merge; 3-4×7-9 scenes (21-36). Same validator scaled, same fact-check per act. New mode + pacing, brief labeled owner-supplied. API-first. |
+| 82 | Editorial Dual Phase 1: tokens, shell, films, drafts | gui-redesign | Light porcelain + refined dark, Inter, hairline structure, frozen poster/export path. Verified by tsc + build + screenshots. |
 
 ---
 
