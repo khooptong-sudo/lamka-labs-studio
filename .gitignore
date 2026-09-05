@@ -28,6 +28,10 @@ supabase/.temp/
 # Editor / OS
 .vscode/
 .idea/
+
+# Studio app-mode browser profiles (per-machine, created by the launchers)
+.studio-chrome-profile/
+.studio-edge-profile/
 .DS_Store
 Thumbs.db
 

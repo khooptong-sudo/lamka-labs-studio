@@ -49,7 +49,7 @@ if exist "%COMFY_ROOT%\python_embeded\python.exe" (
   start "ComfyUI Local" /min /D "%COMFY_ROOT%" "%COMFY_ROOT%\python_embeded\python.exe" -s ComfyUI\main.py --disable-auto-launch --windows-standalone-build --port 8188
   timeout /t 5 /nobreak >nul
 ) else (
-  echo ComfyUI portable is not installed yet. OpenAI remains available until local setup finishes.
+    echo ComfyUI portable is not installed yet. Gemini remains available until local setup finishes.
 )
 
 :comfy_ready
@@ -59,5 +59,17 @@ timeout /t 8 /nobreak >nul
 start "Lamka Labs Studio" /min /D "%ROOT%gui" cmd.exe /d /c "npm.cmd run dev"
 timeout /t 5 /nobreak >nul
 
-start "" "http://localhost:3000/films"
+rem Standalone window: app mode has no tabs or address bar, so the Studio
+rem feels like its own program. Falls back to the default browser.
+set "STUDIO_URL=http://localhost:3000/films"
+if exist "%ProgramFiles%\Google\Chrome\Application\chrome.exe" goto :studio_chrome
+set "STUDIO_EDGE=%ProgramFiles(x86)%\Microsoft\Edge\Application\msedge.exe"
+if exist "%STUDIO_EDGE%" goto :studio_edge
+start "" "%STUDIO_URL%"
+exit /b 0
+:studio_chrome
+start "" "%ProgramFiles%\Google\Chrome\Application\chrome.exe" --app=%STUDIO_URL% --user-data-dir="%ROOT%.studio-chrome-profile"
+exit /b 0
+:studio_edge
+start "" "%STUDIO_EDGE%" --app=%STUDIO_URL% --user-data-dir="%ROOT%.studio-edge-profile"
 exit /b 0
