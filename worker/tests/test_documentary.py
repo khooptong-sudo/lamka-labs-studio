@@ -1,6 +1,11 @@
 """Documentary acts: pure planning math, no network, no LLMs."""
 
+import uuid
+from unittest.mock import AsyncMock, MagicMock, patch
+
 import pytest
+
+from app.channels import Channel
 
 
 def _items(n):
@@ -148,3 +153,133 @@ def test_last_voiceover_returns_the_final_line():
     board = "# Scene 1 — A\nVoiceover: \"First line here.\"\n\n# Scene 2 — B\nVoiceover: \"Second line here.\"\n"
     assert last_voiceover(board) == "Second line here."
     assert last_voiceover("no scenes here") == ""
+
+
+DOC_FINANCE = Channel(
+    id="financial-channel", display_name="Finance", voice_key="adult_male",
+    script_prompt="Be sober.", extra_blocklist=(),
+)
+
+
+def _doc_act_board(start, n=7):
+    scenes = "\n\n".join(
+        f"# Scene {i} — Ch{i}\n"
+        f"Voiceover: \"A sufficiently long narration line for scene {i} here.\"\n"
+        f"Scene: art {i}."
+        for i in range(start, start + n)
+    )
+    return f"---\ntitle: Doc\ndescription: D\npreset: adult_male\n---\n\n{scenes}"
+
+
+def _doc_acts():
+    from app import documentary
+
+    return [
+        documentary.ActPlan(title="A", hook="h", beats=["b"] * 7, sources=[0]),
+        documentary.ActPlan(title="B", hook="h", beats=["b"] * 7, sources=[1]),
+        documentary.ActPlan(title="C", hook="h", beats=["b"] * 7, sources=[2]),
+    ]
+
+
+@pytest.mark.asyncio
+@patch("app.channels.resolve", AsyncMock(return_value=DOC_FINANCE))
+@patch("app.youtube._fetch_story_details")
+@patch("app.youtube._record_youtube_draft")
+@patch("app.youtube._generate_script_for_story", AsyncMock(side_effect=AssertionError("shorts path must not run")))
+@patch("app.youtube.fact_check_script")
+@patch("app.youtube._generate_frame_audio")
+@patch("app.youtube._build_frames")
+@patch("app.youtube.subprocess.run")
+@patch("app.youtube.build_thumbnail_variants")
+@patch("app.youtube._research_packet", return_value="packet")
+async def test_documentary_branch_aborts_when_an_act_fails(
+    mock_packet, mock_thumb, mock_run, mock_frames, mock_audio, mock_fact, mock_record, mock_fetch, tmp_path, monkeypatch
+):
+    from app import documentary
+    from app.youtube import generate_youtube_video
+
+    monkeypatch.setattr(
+        documentary, "plan_outline",
+        AsyncMock(return_value=documentary.DocumentaryOutline(title="Doc", acts=_doc_acts())),
+    )
+    calls = {"n": 0}
+
+    async def fake_act(**kwargs):
+        calls["n"] += 1
+        if calls["n"] == 2:
+            raise RuntimeError("act provider down")
+        return _doc_act_board(1)
+
+    monkeypatch.setattr(documentary, "generate_act", fake_act)
+    mock_fetch.return_value = {"headline": "T", "items": [
+        {"title": "T0", "url": "https://x/0", "source_name": "S", "published_at": None, "full_text": "body"},
+    ]}
+    mock_fact.return_value = {"verdict": "PASS", "violations": []}
+    with patch("app.youtube.VIDEOS_DIR", tmp_path):
+        assert await generate_youtube_video(
+            story_id=uuid.uuid4(), channel_id="financial-channel",
+            documentary=True, brief="owner notes",
+        ) is None
+    assert calls["n"] == 2
+    mock_record.assert_not_called()
+
+
+@pytest.mark.asyncio
+@patch("app.channels.resolve", AsyncMock(return_value=DOC_FINANCE))
+@patch("app.youtube._fetch_story_details")
+@patch("app.youtube._record_youtube_draft")
+@patch("app.youtube._generate_script_for_story", AsyncMock(side_effect=AssertionError("shorts path must not run")))
+@patch("app.youtube.fact_check_script")
+@patch("app.youtube._generate_frame_audio")
+@patch("app.youtube._build_frames")
+@patch("app.youtube.subprocess.run")
+@patch("app.youtube.build_thumbnail_variants")
+@patch("app.youtube._research_packet", return_value="packet")
+async def test_documentary_happy_path_merges_and_records(
+    mock_packet, mock_thumb, mock_run, mock_frames, mock_audio, mock_fact, mock_record, mock_fetch, tmp_path, monkeypatch
+):
+    from app import documentary
+    from app.youtube import generate_youtube_video
+
+    monkeypatch.setattr(
+        documentary, "plan_outline",
+        AsyncMock(return_value=documentary.DocumentaryOutline(title="Doc", acts=_doc_acts())),
+    )
+    boards = [_doc_act_board(1), _doc_act_board(8), _doc_act_board(15)]
+    monkeypatch.setattr(
+        documentary, "generate_act",
+        AsyncMock(side_effect=list(boards)),
+    )
+    story_id = uuid.uuid4()
+    mock_fetch.return_value = {"headline": "T", "items": [
+        {"title": "T0", "url": "https://x/0", "source_name": "S", "published_at": None, "full_text": "body"},
+    ]}
+    mock_fact.return_value = {"verdict": "PASS", "violations": []}
+    mock_audio.return_value = []
+    mock_frames.return_value = []
+    mock_thumb.return_value = {}
+    mock_record.return_value = uuid.uuid4()
+    mock_run.return_value = MagicMock(stdout="mocked")
+    with patch("app.youtube.VIDEOS_DIR", tmp_path):
+        draft_id = await generate_youtube_video(
+            story_id=story_id, channel_id="financial-channel",
+            documentary=True, brief="owner notes",
+        )
+    assert draft_id is not None
+    assert mock_fact.await_count == 3
+    board_text = (tmp_path / f"story-{story_id}" / "STORYBOARD.md").read_text(encoding="utf-8")
+    assert board_text.count("# Scene") == 21
+    assert board_text.count("---") == 2  # one frontmatter block
+
+
+@pytest.mark.asyncio
+@patch("app.channels.resolve", AsyncMock(return_value=DOC_FINANCE))
+@patch("app.youtube._fetch_story_details")
+async def test_documentary_needs_evidence_or_brief(mock_fetch, tmp_path):
+    from app.youtube import generate_youtube_video
+
+    mock_fetch.return_value = {"headline": "T", "items": []}
+    with patch("app.youtube.VIDEOS_DIR", tmp_path):
+        assert await generate_youtube_video(
+            story_id=uuid.uuid4(), channel_id="financial-channel", documentary=True,
+        ) is None

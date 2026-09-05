@@ -19,7 +19,14 @@ from app.scene3d.backend import (
     build_3d_frames,
     build_cinematic_frames,
 )
-from app.script_quality import fact_check_script, validate_script_structure
+from app.script_quality import (
+    MAX_ACT_SCENES,
+    MAX_DOC_SCENES,
+    MIN_ACT_SCENES,
+    MIN_DOC_SCENES,
+    fact_check_script,
+    validate_script_structure,
+)
 from app.settings import get_settings
 from app.storyboard import (
     Frame,
@@ -157,6 +164,9 @@ async def generate_youtube_video(
     voice_key: str | None = None,
     cinematic_controls: dict[str, str] | None = None,
     voice_clip_paths: list[Path] | None = None,
+    *,
+    documentary: bool = False,
+    brief: str | None = None,
 ) -> uuid.UUID | None:
     """
     Main entrypoint for generating a YouTube video from a story.
@@ -191,7 +201,109 @@ async def generate_youtube_video(
     
     # 2. Scripting & Storyboard Generation
     await _stage(job_id, "script")
-    if storyboard_override and storyboard_override.strip():
+    if documentary:
+        from app import documentary as doc
+
+        if storyboard_override and storyboard_override.strip():
+            script_content = _ensure_storyboard_metadata(
+                storyboard_override,
+                fallback_title=str(story.get("headline") or "Manual storyboard"),
+            )
+            violations = validate_script_structure(
+                script_content, min_scenes=MIN_DOC_SCENES, max_scenes=MAX_DOC_SCENES,
+            )
+            if violations:
+                log.error(
+                    "youtube_generation_aborted",
+                    reason="documentary_contract_failed",
+                    story_id=str(story_id),
+                    violations=violations,
+                )
+                return None
+        else:
+            if not (story.get("items") or (brief or "").strip()):
+                log.error(
+                    "youtube_generation_aborted",
+                    reason="documentary_needs_evidence",
+                    story_id=str(story_id),
+                )
+                return None
+            try:
+                items = _research_items(story, max_sources=12)
+                drafter = doc.drafter_provider()
+                outline = await doc.plan_outline(
+                    headline=str(story.get("headline") or "Untitled"),
+                    packet=_render_packet(items),
+                    provider=drafter,
+                    n_sources=len(items),
+                )
+                dealt = doc.deal_sources(items, len(outline.acts))
+                act_markdowns = []
+                first_scene = 1
+                recap = ""
+                for index, act in enumerate(outline.acts):
+                    bundle = _render_packet(dealt[index])
+                    if brief and brief.strip():
+                        bundle = (
+                            "OWNER BRIEF (context, not sourced fact — "
+                            "dispute claims are FLAG, not BLOCK):\n"
+                            f"{brief.strip()}\n\n{bundle}"
+                        )
+                    text = await doc.generate_act(
+                        act=act, act_index=index, n_acts=len(outline.acts),
+                        first_scene=first_scene, recap=recap, bundle_text=bundle,
+                        channel_prompt=channel.script_prompt, provider=drafter,
+                        want_hook=index == 0,
+                        want_closing=index == len(outline.acts) - 1,
+                    )
+                    violations = validate_script_structure(
+                        text, min_scenes=MIN_ACT_SCENES, max_scenes=MAX_ACT_SCENES,
+                        require_hook=index == 0,
+                        require_closing=index == len(outline.acts) - 1,
+                    )
+                    if violations:
+                        raise ValueError(
+                            f"act {index + 1} failed contract: {'; '.join(violations)}"
+                        )
+                    verdict = await fact_check_script(
+                        script=text, evidence_packet=bundle, exclude=(drafter,),
+                    )
+                    if verdict.get("verdict") == "BLOCK":
+                        await audit_log(
+                            actor="worker", action="script_fact_check_blocked",
+                            entity=str(story_id), entity_type="story",
+                            after={"violations": verdict.get("violations", []),
+                                   "act": index + 1},
+                        )
+                        log.error(
+                            "youtube_generation_aborted", reason="fact_check_blocked",
+                            story_id=str(story_id), act=index + 1,
+                        )
+                        return None
+                    if verdict.get("verdict") == "FLAG":
+                        log.warning(
+                            "script_fact_check_flagged",
+                            story_id=str(story_id), act=index + 1,
+                        )
+                    recap = doc.last_voiceover(text)[-doc.RECAP_CHARS:]
+                    act_markdowns.append(text)
+                    first_scene += len(parse_storyboard(text).frames)
+                script_content = doc.merge_acts(act_markdowns)
+                script_content = _append_research_sources(script_content, story)
+                violations = validate_script_structure(
+                    script_content, min_scenes=MIN_DOC_SCENES, max_scenes=MAX_DOC_SCENES,
+                )
+                if violations:
+                    raise ValueError(
+                        f"merged board failed contract: {'; '.join(violations)}"
+                    )
+            except Exception as e:
+                log.error(
+                    "youtube_generation_aborted", reason="documentary_act_failed",
+                    story_id=str(story_id), error=str(e)[:200],
+                )
+                return None
+    elif storyboard_override and storyboard_override.strip():
         # A valid editor board stays byte-for-byte intact. If it was pasted in
         # a human-friendly outline form, add only the required upload metadata
         # so title/description validation cannot reject its scenes or narration.

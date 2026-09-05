@@ -32,3 +32,7 @@ def test_unknown_mode_raises_rather_than_defaulting(bad):
 
 def test_every_declared_mode_is_resolvable():
     assert all(backend_for_mode(mode) == MODE_BACKENDS[mode] for mode in MODE_BACKENDS)
+
+
+def test_documentary_selects_the_image_led_cinematic_backend():
+    assert backend_for_mode("documentary") == "cinematic"

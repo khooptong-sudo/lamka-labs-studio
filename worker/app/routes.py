@@ -155,6 +155,7 @@ class YouTubeJobRequest(BaseModel):
     image_provider: str | None = Field(default=None, max_length=20)
     voice_key: str | None = Field(default=None, max_length=40)
     cinematic_controls: CinematicControls | None = None
+    brief: str | None = Field(default=None, max_length=2000)
 
 
 # Shorts are the portrait image-led 3D format. Story Films keep the separate
@@ -163,6 +164,7 @@ MODE_BACKENDS: dict[str, str | None] = {
     "short": "cinematic",
     "film": "three",
     "cinematic": "cinematic",
+    "documentary": "cinematic",
 }
 
 
@@ -277,6 +279,8 @@ async def youtube_job_start(req: YouTubeJobRequest) -> dict:
                 cinematic_controls=(
                     req.cinematic_controls.model_dump() if req.cinematic_controls else None
                 ),
+                documentary=(req.mode == "documentary"),
+                brief=req.brief,
             )
             if draft_id is None:
                 # A guard refused the video. That is a completed decision, not a
@@ -305,6 +309,7 @@ async def youtube_job_with_voice(
     image_provider: str | None = Form(None),
     voice_key: str | None = Form(None),
     clips: list[UploadFile] | None = File(None),
+    brief: str | None = Form(default=None, max_length=2000),
 ) -> dict:
     """Voice-to-video: owner narration in, everything else like /youtube/jobs.
 
@@ -386,6 +391,8 @@ async def youtube_job_with_voice(
                 storyboard_override=storyboard,
                 image_provider=image_provider,
                 voice_clip_paths=clip_paths,
+                documentary=(mode == "documentary"),
+                brief=brief,
             )
             if draft_id is None:
                 await fail_job(job_id, "generation aborted by a quality guard; see worker logs")
