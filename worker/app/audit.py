@@ -27,8 +27,8 @@ async def audit_log(
     after: dict[str, Any] | None = None,
 ) -> None:
     """Append a durable event to audit_log. Never raises — failures are logged."""
-    pool = await get_pool()
     try:
+        pool = await get_pool()
         async with pool.connection() as conn:
             await conn.execute(
                 """
