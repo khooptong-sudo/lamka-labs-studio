@@ -14,6 +14,7 @@ import structlog
 from app import db, gpu
 from app.audit import audit_log
 from app.channels import BASE_COMPLIANCE_RULES, Channel
+from app.reddit_rights import credit_suffix, split_usable
 from app.scene3d.backend import (
     MIN_VERIFIED_FRAMES,
     build_3d_frames,
@@ -602,6 +603,52 @@ MAX_RESEARCH_SOURCES = 4
 MAX_RESEARCH_EXCERPT_CHARS = 4_000
 
 
+async def _reddit_rights_by_url(cur, urls: list[str]) -> dict[str, dict]:
+    """Load reddit rights for story urls in one query (Task 2 gate)."""
+    if not urls:
+        return {}
+    await cur.execute(
+        "SELECT post_url, state, author, subreddit FROM reddit_rights WHERE post_url = ANY(%s)",
+        (urls,),
+    )
+    return {r["post_url"]: r for r in await cur.fetchall()}
+
+
+async def _apply_reddit_rights_gate(cur, rows: list[dict]) -> list[dict]:
+    """Drop ungranted reddit items from story evidence (granted-only rule).
+
+    Non-reddit rows always pass. Reddit rows pass only with a `granted`
+    right; anything else (candidate, sent, denied, expired, review, or no
+    rights row at all) is held out of the script with a log line. Surviving
+    reddit rows carry their author/subreddit for credit downstream.
+    """
+    reddit_urls = [
+        r.get("url") for r in rows
+        if r.get("source_kind") == "reddit" and r.get("url")
+    ]
+    if not reddit_urls:
+        return rows
+    rights = await _reddit_rights_by_url(cur, reddit_urls)
+    probes = [
+        {"kind": ("reddit" if r.get("source_kind") == "reddit" else "other"),
+         "url": r.get("url")}
+        for r in rows
+    ]
+    _, held = split_usable(probes, {u: rights.get(u, {}).get("state") for u in reddit_urls})
+    if held:
+        held_urls = sorted({h["url"] for h in held})
+        log.info("reddit_items_held", held_urls=held_urls, held_count=len(held_urls))
+        rows = [r for r in rows if r.get("url") not in set(held_urls)]
+    for r in rows:
+        if r.get("source_kind") == "reddit":
+            right = rights.get(r.get("url")) or {}
+            if str(right.get("author") or "").strip():
+                r["author"] = right["author"]
+            if str(right.get("subreddit") or "").strip():
+                r["subreddit"] = right["subreddit"]
+    return rows
+
+
 async def _fetch_story_details(story_id: uuid.UUID) -> dict | None:
     """Load the selected story with the source material that formed it.
 
@@ -622,7 +669,8 @@ async def _fetch_story_details(story_id: uuid.UUID) -> dict | None:
             if row:
                 await cur.execute(
                     """
-                    SELECT i.title, i.url, i.published_at, i.full_text, s.name AS source_name
+                    SELECT i.title, i.url, i.published_at, i.full_text, s.name AS source_name,
+                           s.kind AS source_kind
                     FROM items i
                     JOIN story_items si ON si.item_id = i.id
                     JOIN sources s ON s.id = i.source_id
@@ -654,15 +702,20 @@ def _research_items(story: dict, max_sources: int = MAX_RESEARCH_SOURCES) -> lis
             continue
         seen_urls.add(url)
         text = " ".join(str(raw.get("full_text") or "").split())
-        items.append(
-            {
-                "title": str(raw.get("title") or "Untitled source").strip(),
-                "url": url,
-                "source_name": str(raw.get("source_name") or "Source").strip(),
-                "published_at": raw.get("published_at"),
-                "excerpt": text[:MAX_RESEARCH_EXCERPT_CHARS],
-            }
-        )
+        item = {
+            "title": str(raw.get("title") or "Untitled source").strip(),
+            "url": url,
+            "source_name": str(raw.get("source_name") or "Source").strip(),
+            "published_at": raw.get("published_at"),
+            "excerpt": text[:MAX_RESEARCH_EXCERPT_CHARS],
+        }
+        # Reddit credit rides along only when the caller already resolved it
+        # (granted rights lookup); never invented here.
+        if str(raw.get("author") or "").strip():
+            item["author"] = str(raw["author"]).strip()
+        if str(raw.get("subreddit") or "").strip():
+            item["subreddit"] = str(raw["subreddit"]).strip()
+        items.append(item)
         if len(items) >= max_sources:
             break
     return items
@@ -675,11 +728,12 @@ def _render_packet(items: list[dict]) -> str:
         published = item["published_at"]
         date = published.isoformat() if hasattr(published, "isoformat") else str(published or "Unknown date")
         excerpt = item["excerpt"] or "No article text was captured; use only the title and source attribution."
+        credit = credit_suffix(str(item.get("author") or ""), str(item.get("subreddit") or ""))
         blocks.append(
             f"SOURCE {number}\n"
             f"Publisher: {item['source_name']}\n"
             f"Published: {date}\n"
-            f"Title: {item['title']}\n"
+            f"Title: {item['title']}{credit}\n"
             f"URL: {item['url']}\n"
             f"Article excerpt: {excerpt}"
         )
@@ -700,7 +754,9 @@ def _research_packet(story: dict) -> str:
 def _append_research_sources(storyboard: str, story: dict) -> str:
     """Keep the exact evidence links beside the generated asset for audit/review."""
     citations = [
-        f"- {item['source_name']}: {item['title']} — {item['url']}"
+        f"- {item['source_name']}: {item['title']}"
+        f"{credit_suffix(str(item.get('author') or ''), str(item.get('subreddit') or ''))}"
+        f" — {item['url']}"
         for item in _research_items(story)
     ]
     if not citations:
