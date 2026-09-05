@@ -159,6 +159,7 @@ already exists must add the route once, or every fact-check fails loud with
 | 82 | Editorial Dual Phase 1: tokens, shell, films, drafts | gui-redesign | Light porcelain + refined dark, Inter, hairline structure, frozen poster/export path. Verified by tsc + build + screenshots. |
 | 83 | Editorial Dual Phase 2: dashboard, X, cinema, settings, docs | gui-redesign | ClassNames/structure only; copy, state, and API contracts untouched. Verified by tsc + build + screenshots. Redesign complete. |
 | 84 | VPS deploy is backup + chown + reset, and declared deps must also be installed | deploy | `/opt/fce/current` is a symlink to `releases/initial`; tar without `-h` backs up the link, not the tree. The tree had root-owned files (reset fails as `fce`) and half-applied session state — backup to `/opt/fce-backup-<date>.tgz`, chown, reset, clean. And: declaring `python-multipart` in pyproject while the VPS venv lacks it crash-loops the whole worker at route registration (FastAPI raises, not 422s) — install into the deploy venv in the same change. |
+| 85 | GUI `/api/*` rewrite follows NEXT_PUBLIC_WORKER_URL | gui-deploy | The rewrite hardcoded `127.0.0.1:8000`, so every client-side `/api/*` call 500s on the VPS launcher (direct fetches use the env URL and keep working — stories load, channels/drafts/jobs fail). Local default stays 8000 (run_worker.py default); VPS env points at :8002. |
 
 ---
 
