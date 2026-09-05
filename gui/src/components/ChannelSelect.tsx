@@ -93,7 +93,7 @@ export default function ChannelSelect({
       onChange={(e) => onChange(e.target.value)}
       disabled={disabled}
       aria-label="Channel"
-      className={`rounded-xl border border-border bg-background px-3 py-2 text-sm text-foreground focus:border-primary/40 focus:outline-none transition-all disabled:opacity-40 ${className}`}
+      className={`field-well min-h-[44px] px-3 py-2 text-sm transition-colors disabled:opacity-40 ${className}`}
     >
       <option value="">Choose a channel…</option>
       {channels.map((c) => (

@@ -72,7 +72,7 @@ export default function FilmProgress({ jobId }: { jobId: string }) {
   }, [jobId]);
 
   if (gone) {
-    return <p className="text-sm text-red-400">Job not found.</p>;
+    return <p className="text-sm text-[var(--destructive)]">Job not found.</p>;
   }
 
   if (!job) {
@@ -89,7 +89,7 @@ export default function FilmProgress({ jobId }: { jobId: string }) {
   const failed = Boolean(job.error);
 
   return (
-    <div className="glass-panel rounded-3xl p-6 space-y-5">
+    <div className="rounded-[var(--radius)] border border-border bg-[var(--surface-deck)] p-6 space-y-5">
       <ol className="flex flex-wrap gap-2">
         {STAGES.map((stage, i) => {
           const skipped = !isFilm && FILM_ONLY.has(stage);
@@ -99,16 +99,16 @@ export default function FilmProgress({ jobId }: { jobId: string }) {
           return (
             <li
               key={stage}
-              className={`flex items-center space-x-2 rounded-xl px-3 py-2 text-xs font-bold uppercase tracking-wider transition-all ${
+              className={`flex items-center space-x-2 rounded-xl px-3 py-2 text-xs font-bold uppercase tracking-wider transition-colors ${
                 complete
-                  ? "bg-green-500/10 text-green-400 border border-green-500/20"
+                  ? "border border-[var(--success)] bg-[color-mix(in_srgb,var(--success)_10%,transparent)] text-[var(--foreground)]"
                   : active
-                    ? "bg-primary/10 text-primary border border-primary/30"
-                    : "bg-foreground/[0.03] text-foreground/25 border border-transparent"
+                    ? "border border-[color-mix(in_srgb,var(--primary)_45%,transparent)] bg-[color-mix(in_srgb,var(--primary)_8%,transparent)] text-[var(--foreground)]"
+                    : "border border-transparent bg-[var(--surface-recessed)] text-[var(--muted)]"
               }`}
             >
-              {complete && <Check className="w-3 h-3" />}
-              {active && <Loader2 className="w-3 h-3 animate-spin" />}
+              {complete && <Check className="w-3 h-3 text-[var(--success)]" />}
+              {active && <Loader2 className="w-3 h-3 animate-spin text-[var(--primary)]" />}
               <span>{STAGE_LABELS[stage]}</span>
               {active && job.total > 0 && (
                 <span className="font-mono normal-case">
@@ -121,10 +121,10 @@ export default function FilmProgress({ jobId }: { jobId: string }) {
       </ol>
 
       {failed && (
-        <div className="flex items-start space-x-3 rounded-2xl border border-red-500/20 bg-red-500/5 p-4">
-          <AlertTriangle className="w-4 h-4 text-red-400 mt-0.5 flex-shrink-0" />
+        <div className="flex items-start space-x-3 rounded-[var(--radius)] border border-[color-mix(in_srgb,var(--destructive)_30%,transparent)] bg-[color-mix(in_srgb,var(--destructive)_6%,transparent)] p-4">
+          <AlertTriangle className="w-4 h-4 text-[var(--destructive)] mt-0.5 flex-shrink-0" />
           <div>
-            <p className="text-xs font-bold uppercase tracking-widest text-red-400">
+            <p className="text-xs font-bold uppercase tracking-widest text-[var(--destructive)]">
               Stopped at “{job.stage}”
             </p>
             <p className="mt-1 text-sm text-foreground/60">{job.error}</p>
@@ -135,7 +135,7 @@ export default function FilmProgress({ jobId }: { jobId: string }) {
       {job.stage === "done" && job.draft_id && (
         <a
           href="/drafts"
-          className="inline-flex items-center space-x-2 rounded-xl bg-green-500/10 px-4 py-2 text-sm font-semibold text-green-400 hover:bg-green-500/20 transition-all"
+          className="inline-flex items-center space-x-2 rounded-[var(--radius)] bg-[color-mix(in_srgb,var(--success)_12%,transparent)] px-4 py-2 text-sm font-semibold text-[var(--success)] hover:bg-[color-mix(in_srgb,var(--success)_20%,transparent)] transition-colors"
         >
           <Check className="w-4 h-4" />
           <span>Done — open in Drafts Queue</span>

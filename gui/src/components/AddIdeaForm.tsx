@@ -58,7 +58,7 @@ export default function AddIdeaForm() {
           onChange={(e) => setHeadline(e.target.value)}
           placeholder="Enter Original Idea..."
           required
-          className="px-4 py-2.5 rounded-xl border border-border bg-background text-base text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 w-80 shadow-sm"
+          className="field-well min-h-[44px] w-80 px-4 py-2.5 text-base transition-colors"
         />
         <ChannelSelect
           value={channelId}
@@ -73,14 +73,14 @@ export default function AddIdeaForm() {
         <button
           type="submit"
           disabled={saving || !channelId || !headline.trim()}
-          className="flex items-center space-x-2 px-4 py-2.5 bg-primary/10 text-primary font-bold text-base rounded-xl hover:bg-primary/20 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+          className="btn-primary"
         >
           {saving && <Loader2 className="w-4 h-4 animate-spin" />}
           <span>Add Idea</span>
         </button>
       </div>
       {(error || channelsError) && (
-        <p className="text-xs text-red-400 max-w-md text-right">{error || channelsError}</p>
+        <p className="text-xs text-[var(--destructive)] max-w-md text-right">{error || channelsError}</p>
       )}
     </form>
   );

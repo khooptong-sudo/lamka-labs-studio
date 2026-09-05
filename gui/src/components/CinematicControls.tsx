@@ -63,7 +63,7 @@ export default function CinematicControls({
               value={value[control.key]}
               disabled={disabled}
               onChange={(event) => onChange({ ...value, [control.key]: event.target.value })}
-              className="min-h-10 w-full rounded-md border border-border bg-[var(--surface-recessed)] px-2 text-xs text-foreground transition-colors focus:border-primary focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+              className="field-well min-h-10 w-full px-2 text-xs transition-colors disabled:cursor-not-allowed disabled:opacity-50"
             >
               {control.options.map((option) => <option key={option}>{option}</option>)}
             </select>

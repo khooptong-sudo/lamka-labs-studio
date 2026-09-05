@@ -16,7 +16,7 @@ export default function GenerateDraftButton({
   return (
     <Link
       href={`/films?${params.toString()}`}
-      className="inline-flex items-center gap-2 rounded-xl bg-primary/10 px-4 py-2 text-sm font-semibold text-primary transition-colors hover:bg-primary hover:text-foreground"
+      className="btn-ghost"
     >
       Review research
       <ArrowRight className="h-4 w-4" />

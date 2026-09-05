@@ -292,6 +292,95 @@ textarea {
   transition: background-color 150ms ease, border-color 150ms ease;
 }
 
+/* Editorial shared controls (Task 2, additive). Keyed off theme vars so
+   both modes ride the same classes. Focus ring comes from the base
+   :focus-visible rule above; buttons meet the 44px target floor. */
+.btn-primary,
+.btn-ink,
+.btn-ghost {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 1px solid transparent;
+  border-radius: var(--radius);
+  padding: 0 16px;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color 150ms ease-out, border-color 150ms ease-out, color 150ms ease-out;
+}
+
+.btn-primary {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: var(--primary-foreground);
+}
+
+.btn-primary:hover {
+  background: color-mix(in srgb, var(--primary) 85%, black);
+}
+
+.dark .btn-primary:hover {
+  background: color-mix(in srgb, var(--primary) 85%, white);
+}
+
+.btn-ink {
+  background: var(--foreground);
+  border-color: var(--foreground);
+  color: var(--background);
+}
+
+.btn-ink:hover {
+  background: color-mix(in srgb, var(--foreground) 88%, var(--background));
+}
+
+.btn-ghost {
+  background: transparent;
+  border-color: transparent;
+  color: var(--foreground);
+}
+
+.btn-ghost:hover {
+  border-color: var(--border);
+  background: color-mix(in srgb, var(--foreground) 5%, transparent);
+}
+
+.btn-primary:disabled,
+.btn-ink:disabled,
+.btn-ghost:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.field-well {
+  background: var(--surface-recessed);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--foreground);
+}
+
+.field-well:focus {
+  border-color: var(--ring);
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 4px 10px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  line-height: 1.4;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
