@@ -224,8 +224,6 @@ Keep both behaviours exactly as written.
 ```python
 def validate_tags(tags: list[str], blocklist: tuple[str, ...]) -> list[str]:
     """Return violations for a tag list. Empty means shippable."""
-    from app.channels import find_blocked_terms
-
     violations: list[str] = []
     if len(tags) > MAX_TAGS:
         violations.append(f"expected at most {MAX_TAGS} tags, found {len(tags)}")
@@ -235,11 +233,19 @@ def validate_tags(tags: list[str], blocklist: tuple[str, ...]) -> list[str]:
     for tag in tags:
         if len(tag) > MAX_TAG_LENGTH:
             violations.append(f"tag {tag!r} exceeds {MAX_TAG_LENGTH} characters")
-        blocked = find_blocked_terms(tag, blocklist)
+        blocked = [
+            term
+            for term in blocklist
+            if re.search(rf"(?<!\w){re.escape(term)}(?!\w)", tag, re.IGNORECASE)
+        ]
         if blocked:
             violations.append(f"tag {tag!r} contains blocked term(s): {', '.join(blocked)}")
     return violations
 ```
+
+(Matching is deliberately the same `(?<!\w)…(?!\w)` rule `_blocked_storyboard_terms`
+uses — and deliberately local: `channels.find_blocked_terms` exists only in
+uncommitted work, so depending on it would ImportError on a clean checkout.)
 
 Extend `_require_metadata`:
 
