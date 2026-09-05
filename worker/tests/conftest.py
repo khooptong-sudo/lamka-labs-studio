@@ -125,7 +125,7 @@ async def db(_session_pool):
                 audit_log, story_items, stories, items,
                 metrics, replies, mentions, drafts,
                 newsletter_issues, funnel_events, evergreen_bank,
-                cineprompt_generations
+                cineprompt_generations, reddit_rights, sources
             RESTART IDENTITY CASCADE
             """
         )
