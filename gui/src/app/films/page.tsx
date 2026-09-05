@@ -217,10 +217,10 @@ export default function FilmsPage() {
         FIRST VIEWPORT: Evidence ledger above a two-zone setup, with the production dock visible at the bottom.
         FORM: Contact-sheet production bench with a persistent transport dock; direction seed 6c12a7ff.
       */}
-      <header className="sticky top-0 z-30 flex min-h-[82px] flex-wrap items-center justify-between gap-4 border-b border-border bg-background/95 px-4 py-4 backdrop-blur-md lg:px-6">
+      <header className="sticky top-0 z-30 flex min-h-[82px] flex-wrap items-center justify-between gap-4 border-b border-border bg-background px-4 py-4 lg:px-6">
         <div>
           <div className="flex items-center gap-3">
-            <h1 className="text-xl font-semibold tracking-[-0.025em]">Production</h1>
+            <h1 className="text-[27px] font-semibold leading-none tracking-[-0.025em]">Production</h1>
             <span className="rounded-md border border-border bg-secondary px-2 py-1 font-mono text-[10px] text-secondary-foreground">
               {mode === "short" ? "PORTRAIT" : "LANDSCAPE"}
             </span>
@@ -234,7 +234,7 @@ export default function FilmsPage() {
       </header>
 
       <div className="space-y-3 p-3 lg:p-4">
-        <section className="overflow-hidden rounded-xl border border-border bg-[var(--surface-deck)]" aria-labelledby="evidence-heading">
+        <section className="overflow-hidden rounded-[var(--radius)] border border-border bg-[var(--surface-deck)]" aria-labelledby="evidence-heading">
           <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border px-4 py-3">
             <div>
               <h2 id="evidence-heading" className="text-sm font-semibold">Evidence ledger</h2>
@@ -308,7 +308,7 @@ export default function FilmsPage() {
         </section>
 
         <div className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_minmax(22rem,0.62fr)]">
-          <section className="rounded-xl border border-border bg-[var(--surface-deck)]" aria-labelledby="continuity-heading">
+          <section className="rounded-[var(--radius)] border border-border bg-[var(--surface-deck)]" aria-labelledby="continuity-heading">
             <div className="border-b border-border px-4 py-3">
               <h2 id="continuity-heading" className="text-sm font-semibold">Production setup</h2>
               <p className="mt-0.5 text-xs text-[var(--muted)]">The choices that alter the generated artifact.</p>
@@ -378,7 +378,7 @@ export default function FilmsPage() {
               {mode === "short" && (
                 <fieldset className="space-y-2">
                   <legend className="mb-2 text-xs font-medium text-[var(--muted)]">Image provider</legend>
-                  <div className="grid grid-cols-2 gap-2">
+                  <div className="grid grid-cols-2 gap-1 rounded-[var(--radius)] border border-border bg-[var(--surface-recessed)] p-1" role="group" aria-label="Image provider">
                     {imageProviders.map((provider) => {
                       const active = provider.id === imageProvider;
                       return (
@@ -387,7 +387,7 @@ export default function FilmsPage() {
                           type="button"
                           aria-pressed={active}
                           onClick={() => setImageProvider(provider.id)}
-                          className={`min-h-[72px] rounded-lg border p-3 text-left transition-colors active:translate-y-px ${active ? "border-primary bg-primary/10" : "border-border bg-[var(--surface-recessed)] hover:bg-secondary"}`}
+                          className={`min-h-[68px] rounded-[calc(var(--radius)-4px)] border p-3 text-left transition-colors ${active ? "border-border bg-[var(--surface-deck)]" : "border-transparent hover:bg-foreground/[0.035]"}`}
                         >
                           <span className="flex items-center gap-2 text-sm font-semibold">
                             <Cpu className={`h-4 w-4 ${active ? "text-primary" : "text-[var(--muted)]"}`} aria-hidden="true" />
@@ -412,7 +412,7 @@ export default function FilmsPage() {
             />
           </section>
 
-          <section className="flex min-h-[28rem] flex-col rounded-xl border border-border bg-[var(--surface-deck)]" aria-labelledby="storyboard-heading">
+          <section className="flex min-h-[28rem] flex-col rounded-[var(--radius)] border border-border bg-[var(--surface-deck)]" aria-labelledby="storyboard-heading">
             <div className="flex items-center justify-between gap-3 border-b border-border px-4 py-3">
               <div>
                 <h2 id="storyboard-heading" className="text-sm font-semibold">Storyboard control</h2>
@@ -434,20 +434,24 @@ export default function FilmsPage() {
         </div>
 
         {(selectedImageProvider && !selectedImageProvider.configured) && mode === "short" && (
-          <div className="rounded-lg border border-[color-mix(in_srgb,var(--warning)_35%,var(--border))] bg-[color-mix(in_srgb,var(--warning)_8%,transparent)] px-4 py-3 text-sm text-[var(--warning)]">
+          <div className="flex flex-wrap items-center gap-3 rounded-[var(--radius)] border border-[color-mix(in_srgb,var(--warning)_35%,var(--border))] bg-[color-mix(in_srgb,var(--warning)_8%,transparent)] px-4 py-3 text-sm text-[var(--warning)]">
+            <span className="chip">Setup needed</span>
+            <p className="m-0">
             {imageProvider === "comfyui"
               ? "Start ComfyUI and configure its URL and checkpoint, then restart the worker."
               : "Set a funded Gemini API key (GEMINI_API_KEY), then restart the worker."}
+            </p>
           </div>
         )}
 
         {error && (
-          <div role="alert" className="rounded-lg border border-[color-mix(in_srgb,var(--destructive)_35%,var(--border))] bg-[color-mix(in_srgb,var(--destructive)_8%,transparent)] px-4 py-3 text-sm text-[var(--destructive)]">
-            {error}
+          <div role="alert" className="flex flex-wrap items-center gap-3 rounded-[var(--radius)] border border-[color-mix(in_srgb,var(--destructive)_35%,var(--border))] bg-[color-mix(in_srgb,var(--destructive)_8%,transparent)] px-4 py-3 text-sm text-[var(--destructive)]">
+            <span className="chip">Error</span>
+            <p className="m-0">{error}</p>
           </div>
         )}
 
-        <section className="sticky bottom-3 z-20 grid overflow-hidden rounded-xl border border-border bg-[var(--surface-raised)] shadow-[0_18px_45px_rgba(0,0,0,0.28)] md:grid-cols-[1fr_1fr_1fr_1.2fr_auto]" aria-label="Production dock">
+        <section className="sticky bottom-3 z-20 grid rounded-[var(--radius)] border border-border bg-[var(--surface-raised)] md:grid-cols-[1fr_1fr_1fr_1.2fr_auto]" aria-label="Production dock">
           <div className="flex min-h-[76px] items-center gap-3 border-b border-border px-4 md:border-b-0 md:border-r">
             <Clapperboard className="h-5 w-5 text-[var(--muted)]" aria-hidden="true" />
             <div>
@@ -480,7 +484,7 @@ export default function FilmsPage() {
             type="button"
             onClick={generate}
             disabled={!canGenerate}
-            className="m-2 inline-flex min-h-[60px] min-w-48 items-center justify-center gap-2 rounded-lg bg-primary px-5 font-semibold text-primary-foreground transition-[transform,filter] hover:brightness-105 active:translate-y-px disabled:cursor-not-allowed disabled:opacity-35"
+            className="btn-primary m-2 min-h-[60px] min-w-48 text-[15px]"
           >
             {busy ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" /> : <Play className="h-4 w-4 fill-current" aria-hidden="true" />}
             {busy ? "Starting run" : "Build video"}
