@@ -160,7 +160,7 @@ def test_validate_tags_rejects_a_blocked_term():
 
     finance = Channel(
         id="finance", display_name="Finance", voice_key="adult_male",
-        script_prompt="A prompt.", extra_blocklist=(),
+        script_prompt="A prompt.", extra_blocklist=("buy",),
     )
     violations = validate_tags(["buy signals"], finance.effective_blocklist)
     assert violations

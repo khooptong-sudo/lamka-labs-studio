@@ -63,11 +63,10 @@ def test_missing_title_raises():
     assert "title" in str(exc.value)
 
 
-def test_valid_metadata_returns_both():
+def test_valid_metadata_returns_all_three():
     from app.youtube import _require_metadata
 
-    title, description = _require_metadata({"title": "T", "description": "D"})
-    assert (title, description) == ("T", "D")
+    assert _require_metadata({"title": "T", "description": "D"}) == ("T", "D", [])
 
 
 import uuid

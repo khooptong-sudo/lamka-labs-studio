@@ -232,7 +232,7 @@ async def generate_youtube_video(
     # with a missing/empty title or description must abort here, not after
     # burning the entire HyperFrames/ffmpeg render.
     frontmatter = _parse_storyboard_frontmatter(storyboard_path)
-    title, description = _require_metadata(frontmatter)
+    title, description, tags = _require_metadata(frontmatter, channel.effective_blocklist)
 
     # 3. Storyboard compilation (voice first, visuals second)
     #
@@ -363,7 +363,7 @@ async def generate_youtube_video(
 
     mp4_path = video_dir / "renders" / "video.mp4"
 
-    _write_upload_txt(video_dir, channel, title, description)
+    _write_upload_txt(video_dir, channel, title, description, tags=tags)
 
     thumbnail_path = video_dir / "thumbnail.jpg"
     if not thumbnail_path.exists():
@@ -398,6 +398,7 @@ async def generate_youtube_video(
         external_id=external_id,
         title=title,
         description=description,
+        tags=tags,
     )
     
     log.info("youtube_generation_finished", draft_id=str(draft_id))
@@ -603,6 +604,7 @@ Example format:
 ---
 title: "The video title"
 description: "A highly detailed, SEO-optimized description of the video. Write this as a human expert. NEVER mention or allude to AI, ChatGPT, or automated generation."
+tags: "comma, separated, search, tags (at most 12)"
 preset: {channel.voice_key}
 music: soft upbeat playful
 ---
@@ -758,6 +760,8 @@ async def _record_youtube_draft(
     external_id: str | None,
     title: str,
     description: str,
+    *,
+    tags: tuple[str, ...] | list[str] = (),
 ) -> uuid.UUID | None:
     pool = await db.get_pool()
     async with pool.connection() as conn:
@@ -782,6 +786,7 @@ async def _record_youtube_draft(
                         "upload_preference": upload_preference,
                         "title": title,
                         "description": description,
+                        "tags": list(tags),
                     }),
                     status,
                     db._dumps({"youtube": external_id}) if external_id else None,
@@ -1386,8 +1391,46 @@ async def get_youtube_analytics(video_ids: list[str]) -> dict:
         return {}
 
 
-def _require_metadata(frontmatter: dict[str, str]) -> tuple[str, str]:
-    """Return (title, description) or raise.
+MAX_TAGS = 12
+MAX_TAG_LENGTH = 60
+
+
+def parse_tags(frontmatter: dict[str, str]) -> list[str]:
+    """Split the frontmatter `tags:` line into clean tags. Absent means []."""
+    raw = (frontmatter.get("tags") or "")
+    seen: set[str] = set()
+    tags: list[str] = []
+    for chunk in raw.split(","):
+        tag = " ".join(chunk.split())
+        if tag and tag.lower() not in seen:
+            seen.add(tag.lower())
+            tags.append(tag)
+    return tags
+
+
+def validate_tags(tags: list[str], blocklist: tuple[str, ...]) -> list[str]:
+    """Return violations for a tag list. Empty means shippable."""
+    from app.channels import find_blocked_terms
+
+    violations: list[str] = []
+    if len(tags) > MAX_TAGS:
+        violations.append(f"expected at most {MAX_TAGS} tags, found {len(tags)}")
+    lowered = [t.lower() for t in tags]
+    if len(set(lowered)) != len(tags):
+        violations.append("duplicate tags")
+    for tag in tags:
+        if len(tag) > MAX_TAG_LENGTH:
+            violations.append(f"tag {tag!r} exceeds {MAX_TAG_LENGTH} characters")
+        blocked = find_blocked_terms(tag, blocklist)
+        if blocked:
+            violations.append(f"tag {tag!r} contains blocked term(s): {', '.join(blocked)}")
+    return violations
+
+
+def _require_metadata(
+    frontmatter: dict[str, str], blocklist: tuple[str, ...] = ()
+) -> tuple[str, str, list[str]]:
+    """Return (title, description, tags) or raise.
 
     The old publish path read `frontmatter.get("description") or title`, so a
     generation that produced no description silently yielded a one-line title in
@@ -1403,7 +1446,11 @@ def _require_metadata(frontmatter: dict[str, str]) -> tuple[str, str]:
             f"storyboard frontmatter is missing: {', '.join(missing)}"
         )
 
-    return title, description
+    tags = parse_tags(frontmatter)
+    tag_violations = validate_tags(tags, blocklist)
+    if tag_violations:
+        raise ValueError(f"storyboard tags invalid: {'; '.join(tag_violations)}")
+    return title, description, tags
 
 
 _FRONTMATTER_BLOCK = re.compile(
@@ -1528,7 +1575,8 @@ def _ensure_storyboard_metadata(storyboard: str, *, fallback_title: str) -> str:
 
 
 def _write_upload_txt(
-    video_dir: Path, channel: Channel, title: str, description: str
+    video_dir: Path, channel: Channel, title: str, description: str,
+    *, tags: tuple[str, ...] | list[str] = ()
 ) -> Path:
     """Write the paste-ready metadata beside the storyboard.
 
@@ -1547,6 +1595,14 @@ def _write_upload_txt(
         description,
         "",
     ]
+
+    if tags:
+        lines += [
+            "TAGS",
+            "----",
+            ", ".join(tags),
+            "",
+        ]
 
     if channel.id == "kids":
         lines += [

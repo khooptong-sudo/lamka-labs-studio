@@ -548,6 +548,7 @@ def test_script_prompt_carries_the_hook_and_chapter_contract():
     assert "4" in source and "8 scenes" in source
     assert "chapter" in source.lower()
     assert "What if I told you" in source
+    assert "tags" in source.lower()
 
 
 GOOD_CONTRACT_BOARD = (
