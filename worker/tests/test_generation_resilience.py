@@ -62,19 +62,19 @@ async def test_thumbnail_failure_still_records_the_draft(
     story_id = uuid.uuid4()
     _arrange((mock_run, mock_frames, mock_audio, mock_script, mock_record, mock_fetch))
 
-    thumb = AsyncMock(side_effect=FileNotFoundError("npx playwright not found"))
+    thumb = AsyncMock(side_effect=RuntimeError("gemini down"))
 
     with patch("app.youtube.VIDEOS_DIR", tmp_path), \
             patch("app.channels.resolve", AsyncMock(return_value=FINANCE)), \
-            patch("app.youtube._generate_thumbnail", thumb):
+            patch("app.youtube._generate_gemini_thumbnail_art", thumb), \
+            patch("app.youtube._compose_thumbnail", AsyncMock(side_effect=FileNotFoundError("npx playwright not found"))):
         draft_id = await youtube.generate_youtube_video(
             story_id=story_id, channel_id="finance", upload_preference="manual"
         )
 
-    thumb.assert_awaited_once()
+    assert thumb.await_count == 2
     assert draft_id is not None
     mock_record.assert_called_once()
-    # upload.txt is still written, so the manual upload still has its metadata.
     assert (tmp_path / f"story-{story_id}" / "upload.txt").exists()
 
 
@@ -135,7 +135,7 @@ async def test_new_drafts_are_always_pending(
 
     with patch("app.youtube.VIDEOS_DIR", tmp_path), \
             patch("app.channels.resolve", AsyncMock(return_value=FINANCE)), \
-            patch("app.youtube._generate_thumbnail", AsyncMock()):
+            patch("app.youtube.build_thumbnail_variants", AsyncMock()):
         await youtube.generate_youtube_video(
             story_id=story_id, channel_id="finance", upload_preference=upload_preference
         )

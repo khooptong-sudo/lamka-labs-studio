@@ -74,7 +74,7 @@ def test_absent_cinematic_controls_leave_storyboard_unchanged():
 @patch("app.youtube._generate_frame_audio")
 @patch("app.youtube._build_frames")
 @patch("app.youtube.subprocess.run")
-@patch("app.youtube._generate_thumbnail")
+@patch("app.youtube.build_thumbnail_variants")
 @patch("app.youtube.fact_check_script", AsyncMock(return_value={"verdict": "PASS", "violations": []}))
 @patch("app.youtube._research_packet", return_value="packet")
 async def test_generate_youtube_video_manual(
@@ -114,7 +114,7 @@ async def test_generate_youtube_video_manual(
 @patch("app.youtube._generate_frame_audio")
 @patch("app.youtube._build_frames")
 @patch("app.youtube.subprocess.run")
-@patch("app.youtube._generate_thumbnail")
+@patch("app.youtube.build_thumbnail_variants")
 @patch("app.youtube.fact_check_script", AsyncMock(return_value={"verdict": "PASS", "violations": []}))
 @patch("app.youtube._research_packet", return_value="packet")
 async def test_generate_youtube_video_auto_preference_is_still_pending(
@@ -444,7 +444,7 @@ async def test_build_frames_routes_to_cinematic_image_backend(tmp_path):
 @patch("app.youtube._generate_frame_audio")
 @patch("app.youtube._build_frames")
 @patch("app.youtube.subprocess.run")
-@patch("app.youtube._generate_thumbnail")
+@patch("app.youtube.build_thumbnail_variants")
 async def test_generation_uses_pasted_storyboard_without_regenerating_script(
     mock_thumb,
     mock_run,
@@ -574,7 +574,7 @@ SHORT_BOARD = (
 @patch("app.youtube._generate_frame_audio")
 @patch("app.youtube._build_frames")
 @patch("app.youtube.subprocess.run")
-@patch("app.youtube._generate_thumbnail")
+@patch("app.youtube.build_thumbnail_variants")
 @patch("app.youtube._research_packet", return_value="SOURCE 1\nPublisher: T\nPublished: d\nTitle: t\nURL: u\nArticle excerpt: e")
 async def test_structurally_invalid_board_aborts_before_audio(
     mock_packet, mock_thumb, mock_run, mock_frames, mock_audio, mock_fact, mock_script, mock_record, mock_fetch, tmp_path
@@ -597,7 +597,7 @@ async def test_structurally_invalid_board_aborts_before_audio(
 @patch("app.youtube._generate_frame_audio")
 @patch("app.youtube._build_frames")
 @patch("app.youtube.subprocess.run")
-@patch("app.youtube._generate_thumbnail")
+@patch("app.youtube.build_thumbnail_variants")
 @patch("app.youtube._research_packet", return_value="SOURCE 1\nPublisher: T\nPublished: d\nTitle: t\nURL: u\nArticle excerpt: e")
 @patch("app.youtube.audit_log")
 async def test_fact_check_block_aborts_before_audio(
@@ -624,7 +624,7 @@ async def test_fact_check_block_aborts_before_audio(
 @patch("app.youtube._generate_frame_audio")
 @patch("app.youtube._build_frames")
 @patch("app.youtube.subprocess.run")
-@patch("app.youtube._generate_thumbnail")
+@patch("app.youtube.build_thumbnail_variants")
 @patch("app.youtube._research_packet", return_value="SOURCE 1\nPublisher: T\nPublished: d\nTitle: t\nURL: u\nArticle excerpt: e")
 @patch("app.youtube.audit_log")
 async def test_fact_check_flag_continues_to_render(
@@ -654,7 +654,7 @@ async def test_fact_check_flag_continues_to_render(
 @patch("app.youtube._generate_frame_audio")
 @patch("app.youtube._build_frames")
 @patch("app.youtube.subprocess.run")
-@patch("app.youtube._generate_thumbnail")
+@patch("app.youtube.build_thumbnail_variants")
 @patch("app.youtube._research_packet", return_value="SOURCE 1\nPublisher: T\nPublished: d\nTitle: t\nURL: u\nArticle excerpt: e")
 async def test_fact_check_exhaustion_aborts_loudly(
     mock_packet, mock_thumb, mock_run, mock_frames, mock_audio, mock_fact, mock_script, mock_record, mock_fetch, tmp_path

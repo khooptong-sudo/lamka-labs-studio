@@ -1,4 +1,5 @@
 """YouTube video automation pipeline (Path B)."""
+import html
 import os
 import re
 import subprocess
@@ -365,20 +366,12 @@ async def generate_youtube_video(
 
     _write_upload_txt(video_dir, channel, title, description, tags=tags)
 
-    thumbnail_path = video_dir / "thumbnail.jpg"
-    if not thumbnail_path.exists():
-        # A thumbnail is a convenience for the manual upload, nothing more. The
-        # MP4 is already on disk at this point, so letting a missing playwright
-        # install propagate would throw away a completed render and leave no
-        # draft row behind. Only this one call is guarded.
-        try:
-            await _generate_thumbnail(title, str(thumbnail_path))
-        except Exception as exc:  # noqa: BLE001
-            log.warning(
-                "thumbnail_generation_failed",
-                story_id=str(story_id),
-                error=str(exc),
-            )
+    await build_thumbnail_variants(
+        title=title,
+        hook=(board.frames[0].voiceover if board.frames else title),
+        bible=board.direction,
+        video_dir=video_dir,
+    )
 
     # 4. Local Draft Registration
     # User requested all output videos to be stored locally and NOT pushed to VPS/Cloud.
@@ -1264,16 +1257,32 @@ async def _generate_audio_for_script(script_content: str, output_path: Path):
             "-t", "30", "-q:a", "9", "-acodec", "libmp3lame", str(output_path)
         ], check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
-async def _generate_thumbnail(title: str, output_path: str):
-    """
-    Generates a thumbnail using a minimal HTML template and Playwright.
-    """
-    from starlette.concurrency import run_in_threadpool
-    import subprocess
-    import tempfile
-    import sys
-    
-    html = f"""
+def build_thumbnail_art_prompt(*, title: str, hook: str, bible: str, mood: str) -> str:
+    """Background-art prompt for one thumbnail variant. Never any text."""
+    return f"""Create one original 16:9 landscape YouTube thumbnail background for a finance education video.
+
+VIDEO TITLE: {title}
+HOOK: {hook}
+WORLD BIBLE: {bible or "Warm stylized 3D animated-feature look, miniature-scale finance world."}
+MOOD: {mood}
+
+One decisive cinematic moment, premium stylized 3D render, strong readable silhouette, uncluttered
+negative space across the full upper third for a title band. Absolutely no words, letters, numbers,
+tickers, logos, watermarks, UI, or subtitles anywhere in the image."""
+
+
+def _thumbnail_html(*, layout: str, title: str, background: Path | None) -> str:
+    """Render one 1280x720 thumbnail template with the title overlaid."""
+    safe_title = html.escape(title)
+    if background is not None:
+        bg_layer = (
+            f'<img src="file:///{background.as_posix()}" '
+            'style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;">'
+        )
+    else:
+        bg_layer = ""
+    if layout == "top-band":
+        return f"""
     <!DOCTYPE html>
     <html>
     <head>
@@ -1283,23 +1292,49 @@ async def _generate_thumbnail(title: str, output_path: str):
                 width: 1280px;
                 height: 720px;
                 background: linear-gradient(135deg, #1e1e2f, #2a2a40);
-                display: flex;
-                align-items: center;
-                justify-content: center;
+                position: relative;
+                overflow: hidden;
                 font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
                 color: #ffffff;
+            }}
+            .band {{
+                position: absolute;
+                top: 0; left: 0; right: 0;
+                padding: 48px 60px;
+                background: rgba(11, 18, 32, 0.82);
                 text-align: center;
-                padding: 60px;
-                box-sizing: border-box;
-                border: 12px solid #ff4a5a;
             }}
             h1 {{
-                font-size: 80px;
+                font-size: 72px;
                 font-weight: 900;
                 text-transform: uppercase;
                 text-shadow: 0 10px 30px rgba(0,0,0,0.8);
-                line-height: 1.2;
+                line-height: 1.15;
                 margin: 0;
+            }}
+        </style>
+    </head>
+    <body>
+        {bg_layer}
+        <div class="band"><h1>{safe_title}</h1></div>
+    </body>
+    </html>
+    """
+    if layout == "bottom-band":
+        return f"""
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <style>
+            body {{
+                margin: 0;
+                width: 1280px;
+                height: 720px;
+                background: linear-gradient(135deg, #2a2a40, #1e1e2f);
+                position: relative;
+                overflow: hidden;
+                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                color: #ffffff;
             }}
             .badge {{
                 position: absolute;
@@ -1314,25 +1349,71 @@ async def _generate_thumbnail(title: str, output_path: str):
                 text-transform: uppercase;
                 box-shadow: 0 4px 15px rgba(255, 74, 90, 0.4);
             }}
+            .low {{
+                position: absolute;
+                bottom: 0; left: 0; right: 0;
+                padding: 40px 60px;
+                background: rgba(11, 18, 32, 0.82);
+                text-align: left;
+            }}
+            h1 {{
+                font-size: 64px;
+                font-weight: 900;
+                text-shadow: 0 10px 30px rgba(0,0,0,0.8);
+                line-height: 1.15;
+                margin: 0;
+            }}
         </style>
     </head>
     <body>
+        {bg_layer}
         <div class="badge">Trending</div>
-        <h1>{title}</h1>
+        <div class="low"><h1>{safe_title}</h1></div>
     </body>
     </html>
     """
-    
+    raise ValueError(f"unknown thumbnail layout {layout!r}")
+
+
+async def _generate_gemini_thumbnail_art(*, prompt: str, destination: Path) -> None:
+    """Paint one thumbnail background with the keyframe image model."""
+    from google import genai
+    from google.genai import types
+
+    from app.scene3d.backend import GEMINI_IMAGE_MODEL, extract_gemini_image_bytes
+
+    client = genai.Client(api_key=os.environ["GEMINI_API_KEY"])
+
+    def call():
+        return client.models.generate_content(
+            model=GEMINI_IMAGE_MODEL,
+            contents=[prompt],
+            config=types.GenerateContentConfig(response_modalities=["IMAGE"]),
+        )
+
+    response = await asyncio.to_thread(call)
+    destination.write_bytes(extract_gemini_image_bytes(response))
+
+
+async def _compose_thumbnail(*, layout: str, title: str, background: Path | None, output: Path) -> None:
+    """Screenshot one thumbnail template to `output` via the Playwright CLI."""
+    from starlette.concurrency import run_in_threadpool
+    import subprocess
+    import tempfile
+    import sys
+
+    page = _thumbnail_html(layout=layout, title=title, background=background)
+
     def _run():
         with tempfile.NamedTemporaryFile(suffix=".html", delete=False, mode="w", encoding="utf-8") as f:
-            f.write(html)
+            f.write(page)
             temp_html = f.name
-            
+
         npx_cmd = "npx.cmd" if sys.platform == "win32" else "npx"
         try:
             # We use playwright cli to snapshot it
             subprocess.run(
-                [npx_cmd, "playwright", "screenshot", f"file:///{temp_html.replace(chr(92), '/')}", output_path],
+                [npx_cmd, "playwright", "screenshot", f"file:///{temp_html.replace(chr(92), '/')}", str(output)],
                 check=True,
                 capture_output=True
             )
@@ -1342,8 +1423,40 @@ async def _generate_thumbnail(title: str, output_path: str):
                 os.unlink(temp_html)
             except:
                 pass
-                
+
     await run_in_threadpool(_run)
+
+
+_THUMBNAIL_VARIANTS = (
+    ("a", "top-band", "calm daylight"),
+    ("b", "bottom-band", "dramatic dusk"),
+)
+
+
+async def build_thumbnail_variants(*, title: str, hook: str, bible: str, video_dir: Path) -> dict[str, Path]:
+    """Build thumbnail-a/b.jpg. Best-effort per variant: art failure falls back
+    to the legacy card, and a variant that still fails is skipped. Never raises."""
+    built: dict[str, Path] = {}
+    for suffix, layout, mood in _THUMBNAIL_VARIANTS:
+        output = video_dir / f"thumbnail-{suffix}.jpg"
+        try:
+            try:
+                art = video_dir / f"thumbnail-{suffix}-art.png"
+                await _generate_gemini_thumbnail_art(
+                    prompt=build_thumbnail_art_prompt(title=title, hook=hook, bible=bible, mood=mood),
+                    destination=art,
+                )
+                background: Path | None = art
+            except Exception as exc:  # noqa: BLE001 — one bad variant must not kill the other
+                log.warning("thumbnail_art_failed", variant=suffix, error=str(exc))
+                background = None
+            await _compose_thumbnail(layout=layout, title=title, background=background, output=output)
+            built[suffix] = output
+        except Exception as exc:  # noqa: BLE001 — thumbnails never block the draft
+            log.warning("thumbnail_variant_failed", variant=suffix, error=str(exc))
+    if not built:
+        log.warning("thumbnail_generation_failed", reason="no variant built")
+    return built
 
 async def get_youtube_analytics(video_ids: list[str]) -> dict:
     """
