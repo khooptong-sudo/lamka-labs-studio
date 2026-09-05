@@ -81,8 +81,10 @@ from unittest.mock import AsyncMock, MagicMock, patch
 @patch("app.youtube._generate_frame_audio")
 @patch("app.youtube._build_frames")
 @patch("app.youtube.subprocess.run")
+@patch("app.youtube.fact_check_script", AsyncMock(return_value={"verdict": "PASS", "violations": []}))
+@patch("app.youtube._research_packet", return_value="packet")
 async def test_generation_writes_upload_txt_and_records_metadata(
-    mock_run, mock_frames, mock_audio, mock_script, mock_record, mock_fetch, tmp_path
+    mock_packet, mock_run, mock_frames, mock_audio, mock_script, mock_record, mock_fetch, tmp_path
 ):
     from app import youtube
 
@@ -90,8 +92,10 @@ async def test_generation_writes_upload_txt_and_records_metadata(
     mock_fetch.return_value = {"headline": "Test Story"}
     mock_script.return_value = (
         "---\ntitle: Real Title\ndescription: A real SEO description.\npreset: adult_male\n---\n\n"
-        "# Scene 1\nVoiceover: A\n\n# Scene 2\nVoiceover: B\n\n"
-        "# Scene 3\nVoiceover: C\n\n# Scene 4\nVoiceover: D\n"
+        "# Scene 1 — The hook\nVoiceover: \"City budgets hide one line that explains every pothole.\"\nScene: A street cracking.\n\n"
+        "# Scene 2 — The mechanism\nVoiceover: \"The maintenance fund is raided each spring for festivals.\"\nScene: Coins moved between jars.\n\n"
+        "# Scene 3 — Why it matters\nVoiceover: \"That is why your street floods while the parade gets louder.\"\nScene: Flood beside a parade.\n\n"
+        "# Scene 4 — The takeaway\nVoiceover: \"Read the maintenance line first and budgets finally make sense.\"\nScene: A magnifier on one line.\n"
     )
     mock_record.return_value = uuid.uuid4()
     mock_run.return_value = MagicMock(stdout="mocked")
@@ -121,8 +125,10 @@ async def test_generation_writes_upload_txt_and_records_metadata(
 @patch("app.youtube._generate_frame_audio")
 @patch("app.youtube._build_frames")
 @patch("app.youtube.subprocess.run")
+@patch("app.youtube.fact_check_script", AsyncMock(return_value={"verdict": "PASS", "violations": []}))
+@patch("app.youtube._research_packet", return_value="packet")
 async def test_bad_metadata_aborts_before_render(
-    mock_run, mock_frames, mock_audio, mock_script, mock_record, mock_fetch, tmp_path
+    mock_packet, mock_run, mock_frames, mock_audio, mock_script, mock_record, mock_fetch, tmp_path
 ):
     """Empty description must abort before the render subprocess runs.
 
@@ -135,8 +141,10 @@ async def test_bad_metadata_aborts_before_render(
     mock_fetch.return_value = {"headline": "Test Story"}
     mock_script.return_value = (
         "---\ntitle: Real Title\npreset: adult_male\n---\n\n"
-        "# Scene 1\nVoiceover: A\n\n# Scene 2\nVoiceover: B\n\n"
-        "# Scene 3\nVoiceover: C\n\n# Scene 4\nVoiceover: D\n"
+        "# Scene 1 — The hook\nVoiceover: \"City budgets hide one line that explains every pothole.\"\nScene: A street cracking.\n\n"
+        "# Scene 2 — The mechanism\nVoiceover: \"The maintenance fund is raided each spring for festivals.\"\nScene: Coins moved between jars.\n\n"
+        "# Scene 3 — Why it matters\nVoiceover: \"That is why your street floods while the parade gets louder.\"\nScene: Flood beside a parade.\n\n"
+        "# Scene 4 — The takeaway\nVoiceover: \"Read the maintenance line first and budgets finally make sense.\"\nScene: A magnifier on one line.\n"
     )
     mock_run.return_value = MagicMock(stdout="mocked")
     mock_audio.return_value = []

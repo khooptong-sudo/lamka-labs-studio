@@ -151,7 +151,7 @@ def test_good_board_passes():
 
 
 def test_too_few_scenes_fails():
-    two = "\n\n".join(GOOD_BOARD.split("\n\n")[:5])
+    two = "\n\n".join(GOOD_BOARD.split("\n\n")[:4])
     violations = script_quality.validate_script_structure(two)
     assert any("4-8 scenes" in v for v in violations)
 
@@ -733,6 +733,15 @@ Expected: PASS. If any other generated-path test trips the validator, give its b
 git add worker/app/youtube.py worker/app/config.py worker/tests/test_youtube.py worker/tests/test_generation_resilience.py worker/tests/test_upload_metadata.py
 git commit -m "Wire script contract and fact-check gates into video pipeline"
 ```
+
+**Review amendments (applied during implementation, authoritative over the blocks above):**
+- `test_get_llm_config_defaults_when_no_row` (`test_llm_router.py`) now asserts the
+  `fact_check` default route alongside `story_score` — entailed by Step 3c.
+- BLOCK/FLAG gate tests patch `app.youtube.audit_log` with a bare
+  `@patch("app.youtube.audit_log")` (auto-`AsyncMock`, asserted with the exact
+  action string). Rationale: `audit_log` hits the real DB pool, and
+  `@patch(target, new)` does *not* inject the mock — bare `@patch` does.
+  Production needs no change: this path always runs with a live DB.
 
 ---
 

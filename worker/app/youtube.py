@@ -11,12 +11,14 @@ from typing import Any
 import structlog
 
 from app import db
+from app.audit import audit_log
 from app.channels import BASE_COMPLIANCE_RULES, Channel
 from app.scene3d.backend import (
     MIN_VERIFIED_FRAMES,
     build_3d_frames,
     build_cinematic_frames,
 )
+from app.script_quality import fact_check_script, validate_script_structure
 from app.settings import get_settings
 from app.storyboard import (
     Frame,
@@ -159,24 +161,57 @@ async def generate_youtube_video(
             # model. A pasted, editor-reviewed board is intentionally left
             # untouched, just as before.
             script_content = _append_research_sources(script_content, story)
+            structure_violations = validate_script_structure(script_content)
+            if structure_violations:
+                log.error(
+                    "youtube_generation_aborted",
+                    reason="script_contract_failed",
+                    story_id=str(story_id),
+                    violations=structure_violations,
+                )
+                return None
+            await _stage(job_id, "fact_check")
+            drafter = os.environ.get("SCENE_MODEL_PROVIDER", "gemini").lower()
+            evidence_packet = _research_packet(story)
+            try:
+                verdict = await fact_check_script(
+                    script=script_content,
+                    evidence_packet=evidence_packet,
+                    exclude=(drafter,),
+                )
+            except Exception as e:
+                log.error(
+                    "youtube_generation_aborted",
+                    reason="fact_check_failed",
+                    story_id=str(story_id),
+                    error=str(e),
+                )
+                return None
+            if verdict.get("verdict") == "BLOCK":
+                await audit_log(
+                    actor="worker",
+                    action="script_fact_check_blocked",
+                    entity=str(story_id),
+                    entity_type="story",
+                    after={"violations": verdict.get("violations", [])},
+                )
+                log.error("youtube_generation_aborted", reason="fact_check_blocked", story_id=str(story_id))
+                return None
+            if verdict.get("verdict") == "FLAG":
+                await audit_log(
+                    actor="worker",
+                    action="script_fact_check_flagged",
+                    entity=str(story_id),
+                    entity_type="story",
+                    after={"violations": verdict.get("violations", [])},
+                )
+                log.warning("script_fact_check_flagged", story_id=str(story_id))
         except Exception as e:
             log.error("youtube_generation_aborted", reason="script_generation_failed", error=str(e))
             return None
 
     script_content = _apply_cinematic_controls(script_content, cinematic_controls)
 
-    blocked_terms = _blocked_storyboard_terms(script_content, channel)
-    if blocked_terms:
-        # A paste field is not an exemption from the channel's immutable safety
-        # floor. Reject before TTS or image generation can turn a prohibited
-        # call-to-action into a polished, publishable video.
-        log.error(
-            "youtube_generation_aborted",
-            reason="storyboard_contains_blocklisted_term",
-            story_id=str(story_id),
-            terms=blocked_terms,
-        )
-        return None
     storyboard_path = video_dir / "STORYBOARD.md"
     storyboard_path.write_text(script_content, encoding="utf-8")
 
@@ -567,10 +602,10 @@ Voiceover: "Welcome to today's topic..."
 Scene: "A bright, clear visual metaphor for the idea..."
 {cinematic_direction}
 STRUCTURE CONTRACT (the validator enforces this; a board that breaks it is discarded):
-- 4-8 scenes, each a new visual beat. Heading form: `# Scene N ΓÇö <chapter>` with a
+- 4-8 scenes, each a new visual beat. Heading form: `# Scene N — <chapter>` with a
   unique, non-empty chapter title per scene.
 - Scene 1 Voiceover opens with the hook as its first sentence: at most 25 words,
-  naming the concrete stake. Never open with "What if I told youΓÇª".
+  naming the concrete stake. Never open with "What if I told you…".
 - Restate the stake for the viewer roughly every third scene.
 - The final scene closes the story (a takeaway or verdict), never a trailing fact.
 """

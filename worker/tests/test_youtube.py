@@ -28,10 +28,10 @@ FINANCE = Channel(
 # behaviour under test.
 SCRIPT_4_SCENES = (
     "---\ntitle: Test\ndescription: A test description.\npreset: daisy-days\n---\n\n"
-    "# Scene 1\nVoiceover: A\n\n"
-    "# Scene 2\nVoiceover: B\n\n"
-    "# Scene 3\nVoiceover: C\n\n"
-    "# Scene 4\nVoiceover: D\n"
+    "# Scene 1 — The hook\nVoiceover: \"City budgets hide one line that explains every pothole.\"\nScene: A street cracking.\n\n"
+    "# Scene 2 — The mechanism\nVoiceover: \"The maintenance fund is raided each spring for festivals.\"\nScene: Coins moved between jars.\n\n"
+    "# Scene 3 — Why it matters\nVoiceover: \"That is why your street floods while the parade gets louder.\"\nScene: Flood beside a parade.\n\n"
+    "# Scene 4 — The takeaway\nVoiceover: \"Read the maintenance line first and budgets finally make sense.\"\nScene: A magnifier on one line.\n"
 )
 
 
@@ -75,8 +75,10 @@ def test_absent_cinematic_controls_leave_storyboard_unchanged():
 @patch("app.youtube._build_frames")
 @patch("app.youtube.subprocess.run")
 @patch("app.youtube._generate_thumbnail")
+@patch("app.youtube.fact_check_script", AsyncMock(return_value={"verdict": "PASS", "violations": []}))
+@patch("app.youtube._research_packet", return_value="packet")
 async def test_generate_youtube_video_manual(
-    mock_thumb, mock_run, mock_frames, mock_audio, mock_script, mock_record, mock_fetch, tmp_path
+    mock_packet, mock_thumb, mock_run, mock_frames, mock_audio, mock_script, mock_record, mock_fetch, tmp_path
 ):
     story_id = uuid.uuid4()
     mock_fetch.return_value = {"headline": "Test Story"}
@@ -113,8 +115,10 @@ async def test_generate_youtube_video_manual(
 @patch("app.youtube._build_frames")
 @patch("app.youtube.subprocess.run")
 @patch("app.youtube._generate_thumbnail")
+@patch("app.youtube.fact_check_script", AsyncMock(return_value={"verdict": "PASS", "violations": []}))
+@patch("app.youtube._research_packet", return_value="packet")
 async def test_generate_youtube_video_auto_preference_is_still_pending(
-    mock_thumb, mock_run, mock_frames, mock_audio, mock_script, mock_record, mock_fetch, tmp_path
+    mock_packet, mock_thumb, mock_run, mock_frames, mock_audio, mock_script, mock_record, mock_fetch, tmp_path
 ):
     """`upload_preference` no longer selects a publish behaviour.
 
@@ -152,8 +156,10 @@ async def test_generate_youtube_video_auto_preference_is_still_pending(
 # and fire a live request at whatever the local one talks to.
 @patch("app.youtube._build_frames")
 @patch("app.youtube.subprocess.run")
+@patch("app.youtube.fact_check_script", AsyncMock(return_value={"verdict": "PASS", "violations": []}))
+@patch("app.youtube._research_packet", return_value="packet")
 async def test_generation_aborts_when_most_frames_are_placeholders(
-    mock_run, mock_frames, mock_audio, mock_script, mock_record, mock_fetch, tmp_path
+    mock_packet, mock_run, mock_frames, mock_audio, mock_script, mock_record, mock_fetch, tmp_path
 ):
     """Placeholder cards render and pass validation, so nothing downstream would
     notice the video is mostly fallback. It must never reach YouTube."""
@@ -185,8 +191,10 @@ async def test_generation_aborts_when_most_frames_are_placeholders(
 @patch("app.youtube._generate_frame_audio")
 @patch("app.youtube._build_frames")
 @patch("app.youtube.subprocess.run")
+@patch("app.youtube.fact_check_script", AsyncMock(return_value={"verdict": "PASS", "violations": []}))
+@patch("app.youtube._research_packet", return_value="packet")
 async def test_generation_aborts_when_most_frames_are_silent(
-    mock_run, mock_frames, mock_audio, mock_script, mock_record, mock_fetch, tmp_path
+    mock_packet, mock_run, mock_frames, mock_audio, mock_script, mock_record, mock_fetch, tmp_path
 ):
     """Silence renders and validates exactly like narration, so a mute explainer
     passes every downstream check. It must never reach YouTube."""
@@ -219,8 +227,10 @@ async def test_generation_aborts_when_most_frames_are_silent(
 @patch("app.youtube._generate_script_for_story")
 @patch("app.youtube._generate_frame_audio")
 @patch("app.youtube._build_frames")
+@patch("app.youtube.fact_check_script", AsyncMock(return_value={"verdict": "PASS", "violations": []}))
+@patch("app.youtube._research_packet", return_value="packet")
 async def test_generation_aborts_when_script_generation_fails(
-    mock_frames, mock_audio, mock_script, mock_record, mock_fetch, tmp_path
+    mock_packet, mock_frames, mock_audio, mock_script, mock_record, mock_fetch, tmp_path
 ):
     """A failed script must not become a video. This was observed live: Gemini
     returned 503, the caller substituted a one-scene stub, and the pipeline
@@ -248,8 +258,10 @@ async def test_generation_aborts_when_script_generation_fails(
 @patch("app.youtube._generate_script_for_story")
 @patch("app.youtube._generate_frame_audio")
 @patch("app.youtube._build_frames")
+@patch("app.youtube.fact_check_script", AsyncMock(return_value={"verdict": "PASS", "violations": []}))
+@patch("app.youtube._research_packet", return_value="packet")
 async def test_generation_aborts_when_script_is_too_short(
-    mock_frames, mock_audio, mock_script, mock_record, mock_fetch, tmp_path
+    mock_packet, mock_frames, mock_audio, mock_script, mock_record, mock_fetch, tmp_path
 ):
     """The placeholder and silence guards are ratios, so a one-frame script
     scores perfectly on both. Length has to be checked on its own."""
@@ -491,7 +503,10 @@ async def test_pasted_storyboard_cannot_bypass_channel_blocklist(
 @patch("app.youtube._generate_frame_audio")
 @patch("app.youtube._build_frames")
 @patch("app.youtube.subprocess.run")
+@patch("app.youtube.fact_check_script", AsyncMock(return_value={"verdict": "PASS", "violations": []}))
+@patch("app.youtube._research_packet", return_value="packet")
 async def test_generation_aborts_below_min_verified_frames(
+    mock_packet,
     mock_run,
     mock_frames,
     mock_audio,
@@ -506,8 +521,10 @@ async def test_generation_aborts_below_min_verified_frames(
     mock_channels.return_value = FINANCE
     mock_script.return_value = (
         "---\ntitle: T\ndescription: A test film\nformat: 1920x1080\npacing: story\n---\n"
-        "# Scene 1\nVoiceover: a\n# Scene 2\nVoiceover: b\n"
-        "# Scene 3\nVoiceover: c\n# Scene 4\nVoiceover: d\n"
+        "# Scene 1 — The hook\nVoiceover: City budgets hide one line that explains every pothole.\n"
+        "# Scene 2 — The mechanism\nVoiceover: The maintenance fund is raided each spring for festivals.\n"
+        "# Scene 3 — Why it matters\nVoiceover: That is why your street floods while the parade gets louder.\n"
+        "# Scene 4 — The takeaway\nVoiceover: Read the maintenance line first and budgets finally make sense.\n"
     )
     mock_audio.return_value = []
     # Two of four shots never passed the gate: only two verified remain.
@@ -531,3 +548,121 @@ def test_script_prompt_carries_the_hook_and_chapter_contract():
     assert "4" in source and "8 scenes" in source
     assert "chapter" in source.lower()
     assert "What if I told you" in source
+
+
+GOOD_CONTRACT_BOARD = (
+    "---\ntitle: Test\ndescription: A test description.\npreset: adult_male\n---\n\n"
+    "# Scene 1 — The hook\nVoiceover: \"City budgets hide one line that explains every pothole.\"\nScene: A street cracking.\n\n"
+    "# Scene 2 — The mechanism\nVoiceover: \"The maintenance fund is raided each spring for festivals.\"\nScene: Coins moved between jars.\n\n"
+    "# Scene 3 — Why it matters\nVoiceover: \"That is why your street floods while the parade gets louder.\"\nScene: Flood beside a parade.\n\n"
+    "# Scene 4 — The takeaway\nVoiceover: \"Read the maintenance line first and budgets finally make sense.\"\nScene: A magnifier on one line.\n"
+)
+
+SHORT_BOARD = (
+    "---\ntitle: Test\ndescription: A test description.\n---\n\n"
+    "# Scene 1\nVoiceover: A\n\n# Scene 2\nVoiceover: B\n"
+)
+
+
+@pytest.mark.asyncio
+@patch("app.channels.resolve", AsyncMock(return_value=FINANCE))
+@patch("app.youtube._fetch_story_details")
+@patch("app.youtube._record_youtube_draft")
+@patch("app.youtube._generate_script_for_story")
+@patch("app.youtube.fact_check_script")
+@patch("app.youtube._generate_frame_audio")
+@patch("app.youtube._build_frames")
+@patch("app.youtube.subprocess.run")
+@patch("app.youtube._generate_thumbnail")
+@patch("app.youtube._research_packet", return_value="SOURCE 1\nPublisher: T\nPublished: d\nTitle: t\nURL: u\nArticle excerpt: e")
+async def test_structurally_invalid_board_aborts_before_audio(
+    mock_packet, mock_thumb, mock_run, mock_frames, mock_audio, mock_fact, mock_script, mock_record, mock_fetch, tmp_path
+):
+    story_id = uuid.uuid4()
+    mock_fetch.return_value = {"headline": "Test Story"}
+    mock_script.return_value = SHORT_BOARD
+    with patch("app.youtube.VIDEOS_DIR", tmp_path):
+        assert await generate_youtube_video(story_id=story_id, channel_id="financial-channel") is None
+    mock_fact.assert_not_called()
+    mock_audio.assert_not_called()
+
+
+@pytest.mark.asyncio
+@patch("app.channels.resolve", AsyncMock(return_value=FINANCE))
+@patch("app.youtube._fetch_story_details")
+@patch("app.youtube._record_youtube_draft")
+@patch("app.youtube._generate_script_for_story")
+@patch("app.youtube.fact_check_script")
+@patch("app.youtube._generate_frame_audio")
+@patch("app.youtube._build_frames")
+@patch("app.youtube.subprocess.run")
+@patch("app.youtube._generate_thumbnail")
+@patch("app.youtube._research_packet", return_value="SOURCE 1\nPublisher: T\nPublished: d\nTitle: t\nURL: u\nArticle excerpt: e")
+@patch("app.youtube.audit_log")
+async def test_fact_check_block_aborts_before_audio(
+    mock_audit, mock_packet, mock_thumb, mock_run, mock_frames, mock_audio, mock_fact, mock_script, mock_record, mock_fetch, tmp_path
+):
+    story_id = uuid.uuid4()
+    mock_fetch.return_value = {"headline": "Test Story"}
+    mock_script.return_value = GOOD_CONTRACT_BOARD
+    mock_fact.return_value = {"verdict": "BLOCK", "violations": [{"quote": "x", "reason": "y"}]}
+    with patch("app.youtube.VIDEOS_DIR", tmp_path):
+        assert await generate_youtube_video(story_id=story_id, channel_id="financial-channel") is None
+    mock_audio.assert_not_called()
+    mock_record.assert_not_called()
+    mock_audit.assert_awaited_once()
+    assert mock_audit.await_args.kwargs["action"] == "script_fact_check_blocked"
+
+
+@pytest.mark.asyncio
+@patch("app.channels.resolve", AsyncMock(return_value=FINANCE))
+@patch("app.youtube._fetch_story_details")
+@patch("app.youtube._record_youtube_draft")
+@patch("app.youtube._generate_script_for_story")
+@patch("app.youtube.fact_check_script")
+@patch("app.youtube._generate_frame_audio")
+@patch("app.youtube._build_frames")
+@patch("app.youtube.subprocess.run")
+@patch("app.youtube._generate_thumbnail")
+@patch("app.youtube._research_packet", return_value="SOURCE 1\nPublisher: T\nPublished: d\nTitle: t\nURL: u\nArticle excerpt: e")
+@patch("app.youtube.audit_log")
+async def test_fact_check_flag_continues_to_render(
+    mock_audit, mock_packet, mock_thumb, mock_run, mock_frames, mock_audio, mock_fact, mock_script, mock_record, mock_fetch, tmp_path
+):
+    story_id = uuid.uuid4()
+    draft_id = uuid.uuid4()
+    mock_fetch.return_value = {"headline": "Test Story"}
+    mock_script.return_value = GOOD_CONTRACT_BOARD
+    mock_fact.return_value = {"verdict": "FLAG", "violations": []}
+    mock_audio.return_value = []
+    mock_frames.return_value = []
+    mock_record.return_value = draft_id
+    mock_run.return_value = MagicMock(stdout="Mocked hyperframes output")
+    with patch("app.youtube.VIDEOS_DIR", tmp_path):
+        assert await generate_youtube_video(story_id=story_id, channel_id="financial-channel") == draft_id
+    mock_audit.assert_awaited_once()
+    assert mock_audit.await_args.kwargs["action"] == "script_fact_check_flagged"
+
+
+@pytest.mark.asyncio
+@patch("app.channels.resolve", AsyncMock(return_value=FINANCE))
+@patch("app.youtube._fetch_story_details")
+@patch("app.youtube._record_youtube_draft")
+@patch("app.youtube._generate_script_for_story")
+@patch("app.youtube.fact_check_script")
+@patch("app.youtube._generate_frame_audio")
+@patch("app.youtube._build_frames")
+@patch("app.youtube.subprocess.run")
+@patch("app.youtube._generate_thumbnail")
+@patch("app.youtube._research_packet", return_value="SOURCE 1\nPublisher: T\nPublished: d\nTitle: t\nURL: u\nArticle excerpt: e")
+async def test_fact_check_exhaustion_aborts_loudly(
+    mock_packet, mock_thumb, mock_run, mock_frames, mock_audio, mock_fact, mock_script, mock_record, mock_fetch, tmp_path
+):
+    from app.llm.router import RouterError
+    story_id = uuid.uuid4()
+    mock_fetch.return_value = {"headline": "Test Story"}
+    mock_script.return_value = GOOD_CONTRACT_BOARD
+    mock_fact.side_effect = RouterError("no available provider for task 'fact_check'")
+    with patch("app.youtube.VIDEOS_DIR", tmp_path):
+        assert await generate_youtube_video(story_id=story_id, channel_id="financial-channel") is None
+    mock_audio.assert_not_called()
