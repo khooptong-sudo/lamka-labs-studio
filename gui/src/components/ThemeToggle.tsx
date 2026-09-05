@@ -13,19 +13,19 @@ export function ThemeToggle() {
   }, []);
 
   if (!mounted) {
-    return <div className="w-10 h-10 rounded-xl" />;
+    return <div className="h-11 w-11 rounded-[10px] border border-[var(--border)]" />;
   }
 
   return (
     <button
       onClick={() => setTheme(theme === "light" ? "dark" : "light")}
-      className="p-2 rounded-xl hover:bg-foreground/10 dark:hover:bg-foreground/5 transition-colors flex items-center justify-center border border-foreground/5 bg-foreground/5"
+      className="premium-hover flex h-11 w-11 items-center justify-center rounded-[10px] border border-[var(--border)] bg-transparent text-[var(--muted)] hover:border-[var(--muted)] hover:text-[var(--foreground)]"
       aria-label="Toggle theme"
     >
       {theme === "light" ? (
-        <Sun className="h-5 w-5 text-amber-500" />
+        <Sun className="h-5 w-5" aria-hidden="true" />
       ) : (
-        <Moon className="h-5 w-5 text-blue-400" />
+        <Moon className="h-5 w-5" aria-hidden="true" />
       )}
     </button>
   );

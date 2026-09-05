@@ -1,54 +1,57 @@
 @import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
 
 :root {
-  --background: #edf1f4;
-  --foreground: #10151b;
-  --card: #ffffff;
-  --card-foreground: #10151b;
-  --primary: #d84f45;
-  --primary-foreground: #ffffff;
-  --secondary: #e4e9ed;
-  --secondary-foreground: #26313c;
-  --accent: #d84f45;
-  --accent-foreground: #ffffff;
-  --destructive: #c43e3e;
-  --border: #cdd5dc;
-  --input: #c4ced6;
-  --ring: #d84f45;
-  --muted: #607080;
-  --surface-deck: #f6f8f9;
-  --surface-raised: #ffffff;
-  --surface-recessed: #e3e9ed;
-  --sidebar: #e7ecef;
-  --sidebar-active: #d9e1e7;
-  --success: #23875a;
-  --warning: #b87816;
-  --radius: 0.7rem;
+  --background: #FAFAF7;
+  --foreground: #17191D;
+  --card: #FFFFFF;
+  --card-foreground: #17191D;
+  --primary: #D84F45;
+  --primary-foreground: #FFFFFF;
+  --secondary: #F0EEE9;
+  --secondary-foreground: #17191D;
+  --accent: #D84F45;
+  --accent-foreground: #FFFFFF;
+  --destructive: #C43E3E;
+  --border: #E4E2DC;
+  --input: #E4E2DC;
+  --ring: #D84F45;
+  --muted: #5D646E;
+  --surface-deck: #FFFFFF;
+  --surface-raised: #FFFFFF;
+  --surface-recessed: #F0EEE9;
+  --sidebar: #FFFFFF;
+  --sidebar-active: #F0EEE9;
+  --success: #23875A;
+  --warning: #B87816;
+  --radius: 0.65rem;
+  --shadow-overlay: 0 12px 32px rgb(23 25 29 / 0.16);
 }
 
 .dark {
-  --background: #0d1218;
-  --foreground: #e8eef3;
-  --card: #171e27;
-  --card-foreground: #e8eef3;
-  --primary: #ff6259;
-  --primary-foreground: #11161c;
-  --secondary: #202a35;
-  --secondary-foreground: #dce4eb;
-  --accent: #ff6259;
-  --accent-foreground: #11161c;
-  --destructive: #ff6d68;
-  --border: #2b3743;
-  --input: #344352;
-  --ring: #ff6259;
-  --muted: #8d9aa8;
+  --background: #0D1218;
+  --foreground: #E8EEF3;
+  --card: #121922;
+  --card-foreground: #E8EEF3;
+  --primary: #FF6259;
+  --primary-foreground: #11161C;
+  --secondary: #18212B;
+  --secondary-foreground: #E8EEF3;
+  --accent: #FF6259;
+  --accent-foreground: #11161C;
+  --destructive: #FF6D68;
+  --border: #242F3A;
+  --input: #242F3A;
+  --ring: #FF6259;
+  --muted: #8D9AA8;
   --surface-deck: #121922;
-  --surface-raised: #18212b;
-  --surface-recessed: #0a1016;
-  --sidebar: #0a1016;
-  --sidebar-active: #17212b;
-  --success: #58b982;
-  --warning: #d9a24d;
+  --surface-raised: #18212B;
+  --surface-recessed: #0A1016;
+  --sidebar: #0A1016;
+  --sidebar-active: #17212B;
+  --success: #58B982;
+  --warning: #D9A24D;
+  --shadow-overlay: 0 12px 32px rgb(0 0 0 / 0.5);
 }
 
 @theme inline {
@@ -63,7 +66,7 @@
   --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-foreground);
   --color-border: var(--border);
-  --font-sans: "Segoe UI Variable", "Segoe UI", system-ui, sans-serif;
+  --font-sans: var(--font-inter), "Segoe UI Variable", "Segoe UI", system-ui, sans-serif;
   --font-mono: "Cascadia Mono", "SFMono-Regular", Consolas, monospace;
 }
 
@@ -109,10 +112,8 @@ textarea {
 
 .studio-main {
   min-height: 100dvh;
-  margin-left: 216px;
-  background:
-    radial-gradient(circle at 60% -20%, color-mix(in srgb, var(--primary) 5%, transparent), transparent 34rem),
-    var(--background);
+  margin-left: 192px;
+  background: var(--background);
 }
 
 .studio-sidebar {
@@ -120,7 +121,7 @@ textarea {
   inset: 0 auto 0 0;
   z-index: 40;
   display: flex;
-  width: 216px;
+  width: 192px;
   flex-direction: column;
   border-right: 1px solid var(--border);
   background: var(--sidebar);
@@ -135,18 +136,11 @@ textarea {
   border-bottom: 1px solid var(--border);
 }
 
-.studio-brand-mark {
-  display: grid;
-  width: 36px;
-  height: 36px;
-  place-items: center;
-  border: 1px solid color-mix(in srgb, var(--primary) 46%, var(--border));
-  border-radius: 10px;
-  color: var(--primary);
-  font-family: var(--font-mono);
-  font-size: 12px;
-  font-weight: 750;
-  letter-spacing: -0.04em;
+.studio-brand-logo {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+  flex-shrink: 0;
 }
 
 .studio-brand h1,
@@ -155,8 +149,9 @@ textarea {
 }
 
 .studio-brand h1 {
+  font-family: var(--font-inter), "Segoe UI Variable", "Segoe UI", system-ui, sans-serif;
   font-size: 13px;
-  font-weight: 760;
+  font-weight: 700;
   letter-spacing: 0.02em;
 }
 
@@ -173,7 +168,7 @@ textarea {
   flex: 1;
   flex-direction: column;
   gap: 4px;
-  padding: 18px 12px;
+  padding: 14px 10px;
 }
 
 .studio-nav-link {
@@ -213,9 +208,9 @@ textarea {
 
 .studio-nav-link-active::before {
   position: absolute;
-  inset: 9px auto 9px -12px;
-  width: 3px;
-  border-radius: 0 3px 3px 0;
+  inset: 9px auto 9px -10px;
+  width: 2px;
+  border-radius: 0 2px 2px 0;
   background: var(--primary);
   content: "";
 }
@@ -277,11 +272,7 @@ textarea {
 }
 
 .premium-hover {
-  transition: transform 160ms ease, background-color 160ms ease;
-}
-
-.premium-hover:hover {
-  transform: translateY(-1px);
+  transition: background-color 150ms ease, border-color 150ms ease;
 }
 
 @media (prefers-reduced-motion: reduce) {

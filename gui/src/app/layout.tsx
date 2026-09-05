@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Fredoka, Nunito } from "next/font/google";
+import { Fredoka, Inter, Nunito } from "next/font/google";
 import "./globals.css";
 
 import { Sidebar } from "@/components/Sidebar";
@@ -19,6 +19,12 @@ const posterBody = Nunito({
   display: "swap",
 });
 
+const inter = Inter({
+  subsets: ["latin"],
+  variable: "--font-inter",
+  display: "swap",
+});
+
 export const metadata: Metadata = {
   title: "Lamka Labs Studio",
   description: "Research-to-video production cockpit",
@@ -33,7 +39,7 @@ export default function RootLayout({
     <html
       lang="en"
       suppressHydrationWarning
-      className={`h-full antialiased ${posterDisplay.variable} ${posterBody.variable}`}
+      className={`h-full antialiased ${posterDisplay.variable} ${posterBody.variable} ${inter.variable}`}
     >
       <body className="min-h-[100dvh]">
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem disableTransitionOnChange>
