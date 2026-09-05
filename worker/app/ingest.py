@@ -45,6 +45,18 @@ def _is_fresh_news_item(item, *, fresh_news_hours: int) -> bool:
     return item.published_at >= newest_allowed_age
 
 
+def _is_fresh_for_kind(item, *, fresh_hours: int, kind: str) -> bool:
+    """Recency gate with a reddit carve-out.
+
+    Reddit quality is votes + a 7-day settling floor, not recency: a 48h gate
+    would drop every collected post. created_at stays fresh so clustering
+    still bounds the set; skip only the published-date gate.
+    """
+    if kind == "reddit":
+        return True
+    return _is_fresh_news_item(item, fresh_news_hours=fresh_hours)
+
+
 async def run_for_source(source_row: SourceRow) -> dict[str, Any]:
     """Run one poll cycle for a single source. Returns a small summary dict.
     Never raises — failures are logged + recorded in audit_log + reflected in
@@ -137,7 +149,8 @@ async def run_for_source(source_row: SourceRow) -> dict[str, Any]:
                     error=str(exc),
                 )
 
-        if not _is_fresh_news_item(normalized, fresh_hours=cfg.fresh_news_hours):
+        if not _is_fresh_for_kind(normalized, fresh_hours=cfg.fresh_news_hours,
+                                  kind=source_row.kind):
             summary["stale"] += 1
             continue
 

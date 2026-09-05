@@ -56,6 +56,27 @@ class TestFreshNewsGate:
         assert _is_fresh_news_item(item, fresh_news_hours=48) is False
 
 
+class TestFreshForKind:
+    def _old_item(self):
+        return NormalizedItem.build(
+            source_id="s",
+            title="Old",
+            url="https://example.com/old",
+            published_at=datetime.now(timezone.utc) - timedelta(days=10),
+            full_text="body",
+        )
+
+    def test_reddit_skips_the_recency_gate(self):
+        from app.ingest import _is_fresh_for_kind
+
+        assert _is_fresh_for_kind(self._old_item(), fresh_hours=48, kind="reddit") is True
+
+    def test_rss_keeps_the_recency_gate(self):
+        from app.ingest import _is_fresh_for_kind
+
+        assert _is_fresh_for_kind(self._old_item(), fresh_hours=48, kind="rss") is False
+
+
 class TestHashStability:
     def test_same_input_same_hash(self):
         a = NormalizedItem.build(

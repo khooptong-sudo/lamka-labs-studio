@@ -263,6 +263,13 @@ git commit -m "Add read-only Reddit source kind with floors and gates"
 
 ### Task 2: Rights table + story-build gate + credit
 
+Review amendment (implemented): reddit items bypass the 48h ingest gate via
+`_is_fresh_for_kind` (votes + 7-day floor is the quality signal, not recency)
+and the shared fresh-window predicate admits stories with a granted reddit
+item (strictly additive OR branch — finance behavior byte-identical, proven
+by the untouched inbox-ordering suite). Without both, weekly-top posts could
+never become stories. Migration 014 also widens `sources.kind` for `reddit`.
+
 **Files:**
 - Modify: `supabase/migrations/013_reddit_rights.sql` (new), story-build filter (wherever items join into stories — check `ideation.py`/cluster write path first), `worker/app/youtube.py` (`_append_research_sources` reddit author line)
 - Test: `worker/tests/test_reddit_rights.py` (new; pure state machine + filter tests with fakes)

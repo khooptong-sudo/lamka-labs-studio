@@ -565,6 +565,16 @@ FRESH_WINDOW_PREDICATE = """
                            AND i.published_at >= now() - make_interval(hours := %s)
                            AND NOT (i.warnings @> '["date_missing"]'::jsonb)
                     )
+                    OR EXISTS (
+                        SELECT 1
+                          FROM story_items si
+                          JOIN items i ON i.id = si.item_id
+                          JOIN sources src ON src.id = i.source_id
+                          JOIN reddit_rights r ON r.post_url = i.url
+                         WHERE si.story_id = s.id
+                           AND src.kind = 'reddit'
+                           AND r.state = 'granted'
+                    )
 """
 
 

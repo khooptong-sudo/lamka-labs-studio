@@ -63,3 +63,66 @@ def test_credit_line_names_author_and_sub():
 
     assert credit_suffix("sleuth", "UnresolvedMysteries") == " (u/sleuth on r/UnresolvedMysteries)"
     assert credit_suffix("", "X") == ""
+
+
+@pytest.mark.integration
+async def test_inbox_admits_granted_but_hides_candidate_reddit_stories(db):
+    """The FRESH_WINDOW_PREDICATE reddit branch: old posts surface only when granted."""
+    from datetime import datetime, timedelta, timezone
+
+    from app.db import _fetchval, get_pending_stories
+
+    async with db.connection() as conn:
+        source_id = await _fetchval(
+            conn,
+            "INSERT INTO sources (kind, url, name, market, active, poll_minutes) "
+            "VALUES ('reddit', 'https://www.reddit.com/r/UnresolvedMysteries/', 'TEST_reddit', 'US', true, 60) "
+            "RETURNING id",
+        )
+        old = datetime.now(timezone.utc) - timedelta(days=10)
+        granted_story = await _fetchval(
+            conn, "INSERT INTO stories (headline, status) VALUES (%s, 'inbox') RETURNING id",
+            "Granted mystery",
+        )
+        candidate_story = await _fetchval(
+            conn, "INSERT INTO stories (headline, status) VALUES (%s, 'inbox') RETURNING id",
+            "Candidate mystery",
+        )
+        granted_item = await _fetchval(
+            conn,
+            "INSERT INTO items (source_id, title, url, published_at, hash, warnings) "
+            "VALUES (%s, %s, %s, %s, %s, %s::jsonb) RETURNING id",
+            source_id, "Granted post", "https://www.reddit.com/r/x/comments/g/",
+            old, "ghash", "[]",
+        )
+        candidate_item = await _fetchval(
+            conn,
+            "INSERT INTO items (source_id, title, url, published_at, hash, warnings) "
+            "VALUES (%s, %s, %s, %s, %s, %s::jsonb) RETURNING id",
+            source_id, "Candidate post", "https://www.reddit.com/r/x/comments/c/",
+            old, "chash", "[]",
+        )
+        await conn.execute(
+            "INSERT INTO story_items (story_id, item_id) VALUES (%s, %s)",
+            (granted_story, granted_item),
+        )
+        await conn.execute(
+            "INSERT INTO story_items (story_id, item_id) VALUES (%s, %s)",
+            (candidate_story, candidate_item),
+        )
+        await conn.execute(
+            "INSERT INTO reddit_rights (post_id, author, subreddit, post_url, state) "
+            "VALUES (%s, %s, %s, %s, %s)",
+            ("g", "sleuth", "UnresolvedMysteries",
+             "https://www.reddit.com/r/x/comments/g/", "granted"),
+        )
+        await conn.execute(
+            "INSERT INTO reddit_rights (post_id, author, subreddit, post_url, state) "
+            "VALUES (%s, %s, %s, %s, %s)",
+            ("c", "sleuth", "UnresolvedMysteries",
+             "https://www.reddit.com/r/x/comments/c/", "candidate"),
+        )
+
+    visible = {str(s["id"]) for s in await get_pending_stories(fresh_hours=48)}
+    assert str(granted_story) in visible
+    assert str(candidate_story) not in visible
