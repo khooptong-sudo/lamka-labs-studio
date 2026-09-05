@@ -566,6 +566,13 @@ A clean, minimal, yet highly descriptive cartoonized explainer video.
 Voiceover: "Welcome to today's topic..."
 Scene: "A bright, clear visual metaphor for the idea..."
 {cinematic_direction}
+STRUCTURE CONTRACT (the validator enforces this; a board that breaks it is discarded):
+- 4-8 scenes, each a new visual beat. Heading form: `# Scene N ΓÇö <chapter>` with a
+  unique, non-empty chapter title per scene.
+- Scene 1 Voiceover opens with the hook as its first sentence: at most 25 words,
+  naming the concrete stake. Never open with "What if I told youΓÇª".
+- Restate the stake for the viewer roughly every third scene.
+- The final scene closes the story (a takeaway or verdict), never a trailing fact.
 """
 
     user_prompt = f"""Write a video script for this selected story.

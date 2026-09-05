@@ -521,3 +521,13 @@ async def test_generation_aborts_below_min_verified_frames(
 
     assert result is None
     mock_record.assert_not_called()
+
+
+def test_script_prompt_carries_the_hook_and_chapter_contract():
+    import inspect
+    from app import youtube
+    source = inspect.getsource(youtube._generate_script_for_story)
+    assert "hook" in source.lower()
+    assert "4" in source and "8 scenes" in source
+    assert "chapter" in source.lower()
+    assert "What if I told you" in source
