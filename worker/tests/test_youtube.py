@@ -482,7 +482,7 @@ async def test_pasted_storyboard_cannot_bypass_channel_blocklist(
     mock_audio, mock_fetch, tmp_path
 ):
     mock_fetch.return_value = {"headline": "Existing source story"}
-    unsafe = SCRIPT_4_SCENES.replace("Voiceover: A", "Voiceover: Buy this stock now")
+    unsafe = SCRIPT_4_SCENES.replace("City budgets hide one line", "Buy this stock now")
 
     with patch("app.youtube.VIDEOS_DIR", tmp_path):
         draft_id = await generate_youtube_video(
