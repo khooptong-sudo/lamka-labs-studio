@@ -163,6 +163,7 @@ already exists must add the route once, or every fact-check fails loud with
 | 86 | History/science feeds verified live before adding | feeds | 7 feeds pass (NASA, Quanta, ScienceDaily, Phys.org, Ars science, BBC History, JSTOR, History.com-news); Smithsonian/history.com-root fail (404/empty). Migration 012, same 48h gate. Mystery stays manual + Reddit (separate spec). |
 | 87 | Overnight autopilot renders pre-approved picks; mornings start with review | autopilot | Flag column (status untouched), day-gated job, Short-only v1, failure retries tomorrow. Publishing still manual. |
 | 88 | Reddit sourcing behind granted-only rights + approved PMs | reddit | New source kind with floors; rights table gates evidence; 5/day caps, dry-run default, kill switch; credit in narration + packet. Granted posts bypass recency gates (votes, not recency, are the signal). PRAW declared and installed with the change. |
+| 89 | Views tilt future scores; video IDs linked per draft | retention | Reused metrics table, no migration. Clamped multipliers, 3-video minimums, 90-day window. Manual link step (manual publishing has no callback). |
 
 ---
 
