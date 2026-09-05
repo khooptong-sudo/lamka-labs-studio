@@ -212,6 +212,19 @@ async def generate_youtube_video(
 
     script_content = _apply_cinematic_controls(script_content, cinematic_controls)
 
+    blocked_terms = _blocked_storyboard_terms(script_content, channel)
+    if blocked_terms:
+        # A paste field is not an exemption from the channel's immutable safety
+        # floor. Reject before TTS or image generation can turn a prohibited
+        # call-to-action into a polished, publishable video.
+        log.error(
+            "youtube_generation_aborted",
+            reason="storyboard_contains_blocklisted_term",
+            story_id=str(story_id),
+            terms=blocked_terms,
+        )
+        return None
+
     storyboard_path = video_dir / "STORYBOARD.md"
     storyboard_path.write_text(script_content, encoding="utf-8")
 
