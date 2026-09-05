@@ -162,6 +162,7 @@ already exists must add the route once, or every fact-check fails loud with
 | 85 | GUI `/api/*` rewrite follows NEXT_PUBLIC_WORKER_URL | gui-deploy | The rewrite hardcoded `127.0.0.1:8000`, so every client-side `/api/*` call 500s on the VPS launcher (direct fetches use the env URL and keep working — stories load, channels/drafts/jobs fail). Local default stays 8000 (run_worker.py default); VPS env points at :8002. |
 | 86 | History/science feeds verified live before adding | feeds | 7 feeds pass (NASA, Quanta, ScienceDaily, Phys.org, Ars science, BBC History, JSTOR, History.com-news); Smithsonian/history.com-root fail (404/empty). Migration 012, same 48h gate. Mystery stays manual + Reddit (separate spec). |
 | 87 | Overnight autopilot renders pre-approved picks; mornings start with review | autopilot | Flag column (status untouched), day-gated job, Short-only v1, failure retries tomorrow. Publishing still manual. |
+| 88 | Reddit sourcing behind granted-only rights + approved PMs | reddit | New source kind with floors; rights table gates evidence; 5/day caps, dry-run default, kill switch; credit in narration + packet. Granted posts bypass recency gates (votes, not recency, are the signal). PRAW declared and installed with the change. |
 
 ---
 
