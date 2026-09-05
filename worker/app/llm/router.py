@@ -31,7 +31,7 @@ def _backoff(attempt: int) -> float:
     return BACKOFF_BASE_SECONDS * attempt
 
 
-async def _resolve(task: str) -> list[str]:
+async def _resolve(task: str, exclude: tuple[str, ...] = ()) -> list[str]:
     """Ordered, usable provider names for a task. Empty means unroutable."""
     cfg = await get_llm_config()
     route = cfg.routing.get(task)
@@ -41,8 +41,8 @@ async def _resolve(task: str) -> list[str]:
         raise RouterError(f"route for task {task!r} is not a mapping: {route!r}")
     have = providers.available()
     named = [route.get("primary"), route.get("fallback")]
-    chain = [name for name in named if name and name in have]
-    skipped = [name for name in named if name and name not in have]
+    chain = [name for name in named if name and name in have and name not in exclude]
+    skipped = [name for name in named if name and (name not in have or name in exclude)]
     if skipped:
         log.info("llm_routing_decision", task=task, chain=chain, skipped=skipped)
     else:
@@ -57,6 +57,7 @@ async def complete_json(
     user: str,
     spec: contract.FieldSpec,
     max_attempts: int = DEFAULT_MAX_ATTEMPTS,
+    exclude: tuple[str, ...] = (),
 ) -> dict:
     """Run `task` until a provider returns a payload satisfying `spec`.
 
@@ -64,9 +65,9 @@ async def complete_json(
     returns a default, a stub, or a partially-populated dict (decision #41,
     generalized from script generation to every LLM call in the worker).
     """
-    chain = await _resolve(task)
+    chain = await _resolve(task, exclude)
     if not chain:
-        raise RouterError(f"no available provider for task {task!r}")
+        raise RouterError(f"no available provider for task {task!r} after excluding {list(exclude)}")
 
     last_error: Exception | None = None
 

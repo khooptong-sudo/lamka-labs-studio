@@ -51,7 +51,7 @@ async def test_exclude_skips_the_named_provider(routed, monkeypatch):
 
 
 async def test_exclude_everything_raises_loudly(routed):
-    with pytest.raises(RouterError, match="excluded"):
+    with pytest.raises(router.RouterError, match="exclud"):
         await router.complete_json(
             "demo", system="s", user="u", spec=SPEC, exclude=("gemini", "deepseek"),
         )

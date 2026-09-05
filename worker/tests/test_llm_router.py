@@ -274,3 +274,26 @@ async def test_get_llm_config_defaults_when_no_row(monkeypatch):
         assert cfg.score_batch_max == 25
     finally:
         config.clear_config_cache()
+
+
+async def test_exclude_skips_the_named_provider(routed, monkeypatch):
+    primary = _provider_returning('{"verdict": "yes"}')
+    fallback = _provider_returning('{"verdict": "no"}')
+    monkeypatch.setitem(
+        providers.PROVIDERS, "gemini",
+        providers.Provider("gemini", "GEMINI_API_KEY", primary),
+    )
+    monkeypatch.setitem(
+        providers.PROVIDERS, "deepseek",
+        providers.Provider("deepseek", "DEEPSEEK_API_KEY", fallback),
+    )
+    result = await router.complete_json("demo", system="s", user="u", spec=SPEC, exclude=("gemini",))
+    assert result == {"verdict": "no"}
+    assert len(primary.calls) == 0
+
+
+async def test_exclude_everything_raises_loudly(routed):
+    with pytest.raises(router.RouterError, match="exclud"):
+        await router.complete_json(
+            "demo", system="s", user="u", spec=SPEC, exclude=("gemini", "deepseek"),
+        )
