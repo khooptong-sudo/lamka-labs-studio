@@ -13,6 +13,7 @@ import asyncio
 import base64
 import json
 import os
+import re
 import shutil
 import time
 import uuid
@@ -263,9 +264,36 @@ Do not imitate a named studio, franchise, or living artist. The result must be s
 and young adults."""
 
 
-def render_cinematic_frame(slug: str, duration: float, image_src: str, motion_index: int = 1) -> str:
+_MOTION_INTENT = re.compile(r"^\s*-\s*Frame-to-motion intent:\s*(.+?)\s*$", re.IGNORECASE | re.MULTILINE)
+
+
+def motion_intent_of(direction: str) -> str:
+    """First `- Frame-to-motion intent:` line in the direction bible, else ""."""
+    match = _MOTION_INTENT.search(direction or "")
+    return match.group(1).strip() if match else ""
+
+
+def motion_style(intent: str) -> tuple[str, float]:
+    """Map an intent line to (gsap ease, camera-scale boost). Unknown falls back."""
+    lowered = (intent or "").lower()
+    if "subject" in lowered:
+        return ("power1.inOut", 0.0)
+    if "energetic" in lowered or "bold" in lowered or "dynamic" in lowered:
+        return ("power3.out", 0.01)
+    if "gentle" in lowered or "soft" in lowered or "calm" in lowered or "slow" in lowered:
+        return ("sine.inOut", -0.01)
+    return ("power1.inOut", 0.0)
+
+
+def render_cinematic_frame(
+    slug: str, duration: float, image_src: str, motion_index: int = 1,
+    motion_ease: str = "power1.inOut", motion_boost: float = 0.0,
+) -> str:
     """Render a generated keyframe with free, deterministic 2.5D motion."""
-    camera_paths = ((-18, -14, 1.115), (16, -10, 1.13), (-12, 15, 1.12), (18, 12, 1.125))
+    camera_paths = (
+        (-18, -14, 1.115), (16, -10, 1.13), (-12, 15, 1.12), (18, 12, 1.125),
+        (-10, 16, 1.14), (14, 14, 1.11), (-16, 8, 1.135), (10, -16, 1.12),
+    )
     pan_x, pan_y, camera_scale = camera_paths[(motion_index - 1) % len(camera_paths)]
     return f"""<!doctype html>
 <html lang=\"en\">
@@ -295,7 +323,7 @@ def render_cinematic_frame(slug: str, duration: float, image_src: str, motion_in
         window.__timelines = window.__timelines || {{}};
         const tl = gsap.timeline({{ paused: true }});
         tl.fromTo(\"#{slug}-backdrop\", {{ scale: 1.18, x: {pan_x * -0.35}, y: {pan_y * -0.35} }}, {{ scale: 1.28, x: {pan_x * 0.5}, y: {pan_y * 0.5}, duration: {duration}, ease: \"none\" }}, 0);
-        tl.fromTo(\"#{slug}-image\", {{ scale: 1.025, x: 0, y: 0 }}, {{ scale: {camera_scale}, x: {pan_x}, y: {pan_y}, duration: {duration}, ease: \"power1.inOut\" }}, 0);
+        tl.fromTo(\"#{slug}-image\", {{ scale: 1.025, x: 0, y: 0 }}, {{ scale: {camera_scale + motion_boost}, x: {pan_x}, y: {pan_y}, duration: {duration}, ease: \"{motion_ease}\" }}, 0);
         tl.fromTo(\"#{slug}-atmosphere\", {{ scale: .96, x: {pan_x * -0.2}, y: {pan_y * -0.15}, opacity: .08 }}, {{ scale: 1.08, x: {pan_x * 0.25}, y: {pan_y * 0.2}, opacity: .38, duration: {duration}, ease: \"sine.inOut\" }}, 0);
         tl.fromTo(\"#{slug}-light-pass\", {{ xPercent: -20, opacity: 0 }}, {{ xPercent: 20, opacity: .42, duration: {duration * 0.72}, ease: \"sine.inOut\" }}, {duration * 0.12});
         window.__timelines[\"{slug}\"] = tl;
@@ -466,12 +494,13 @@ async def build_cinematic_frames(
     selected = require_cinematic_image_provider(provider)
 
     total_frames = len(board.frames)
+    ease, boost = motion_style(motion_intent_of(board.direction))
     for completed, frame in enumerate(board.frames, start=1):
         image_src = f"assets/cinematic/{frame.slug}.png"
         image_path = video_dir / image_src
         await _generate_cinematic_image(cinematic_image_prompt(board, frame), image_path, selected)
         (frames_dir / f"{frame.slug}.html").write_text(
-            render_cinematic_frame(frame.slug, frame.duration, image_src, completed),
+            render_cinematic_frame(frame.slug, frame.duration, image_src, completed, ease, boost),
             encoding="utf-8",
         )
         if on_frame_complete:

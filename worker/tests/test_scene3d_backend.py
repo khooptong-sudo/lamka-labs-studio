@@ -348,3 +348,48 @@ def test_gemini_helper_raises_with_no_image_part():
     response = SimpleNamespace(candidates=[SimpleNamespace(content=SimpleNamespace(parts=[]))])
     with pytest.raises(RuntimeError, match="no image data"):
         extract_gemini_image_bytes(response)
+
+
+def test_motion_intent_parses_the_controls_line():
+    from app.scene3d.backend import motion_intent_of
+
+    direction = "## Cinematography controls\n- Shot scale: wide\n- Frame-to-motion intent: subject-led parallax\n- Lens: 50mm"
+    assert motion_intent_of(direction) == "subject-led parallax"
+    assert motion_intent_of("no controls here") == ""
+    assert motion_intent_of("") == ""
+
+
+def test_motion_style_maps_intent_families():
+    from app.scene3d.backend import motion_style
+
+    assert motion_style("subject-led parallax") == ("power1.inOut", 0.0)
+    assert motion_style("Bold energetic push")[0] == "power3.out"
+    assert motion_style("soft calm drift")[0] == "sine.inOut"
+    assert motion_style("something unknown") == ("power1.inOut", 0.0)
+    assert motion_style("") == ("power1.inOut", 0.0)
+
+
+def test_render_honors_motion_ease_and_boost():
+    from app.scene3d.backend import render_cinematic_frame
+
+    html = render_cinematic_frame("s1", 5.0, "assets/cinematic/s1.png", 1, motion_ease="power3.out", motion_boost=0.01)
+    assert 'ease: "power3.out"' in html
+    assert "1.125" in html  # 1.115 base scale + 0.01 boost
+
+
+def test_render_defaults_reproduce_the_old_output():
+    from app.scene3d.backend import render_cinematic_frame
+
+    html = render_cinematic_frame("s1", 5.0, "assets/cinematic/s1.png", 1)
+    assert 'ease: "power1.inOut"' in html
+    assert "1.115" in html
+
+
+def test_camera_cycle_covers_eight_paths():
+    from app.scene3d.backend import render_cinematic_frame
+
+    fifth = render_cinematic_frame("s1", 5.0, "img.png", 5)
+    first = render_cinematic_frame("s1", 5.0, "img.png", 1)
+    assert fifth != first
+    ninth = render_cinematic_frame("s1", 5.0, "img.png", 9)
+    assert "1.115" in ninth  # index 9 wraps back to path 1
