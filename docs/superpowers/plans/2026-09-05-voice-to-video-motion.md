@@ -567,7 +567,7 @@ async def youtube_job_with_voice(
     storyboard: str | None = Form(None),
     image_provider: str | None = Form(None),
     voice_key: str | None = Form(None),
-    clips: list[UploadFile] = File(...),
+    clips: list[UploadFile] | None = File(None),
 ) -> dict:
     """Voice-to-video: owner narration in, everything else like /youtube/jobs.
 

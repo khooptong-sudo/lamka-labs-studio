@@ -9,6 +9,7 @@ description = "Fin-Content Engine worker — ingest, dedup, embed, cluster."
 requires-python = ">=3.11"
 dependencies = [
     "fastapi>=0.110",
+    "python-multipart>=0.0.9",
     "uvicorn[standard]>=0.29",
     "apscheduler>=3.10",
     "psycopg[binary,pool]>=3.1",
