@@ -31,21 +31,18 @@ log = structlog.get_logger()
 
 SHOT_RETRIES = int(os.environ.get("SHOT_RETRIES", "2"))
 MIN_VERIFIED_FRAMES = int(os.environ.get("MIN_VERIFIED_FRAMES", "3"))
-OPENAI_IMAGE_TIMEOUT_SECONDS = float(os.environ.get("OPENAI_IMAGE_TIMEOUT_SECONDS", "120"))
 
 # Image-led shorts deliberately live beside the code-generated Three.js films:
 # both produce the same verified sub-composition artifact, but their visual
 # strengths are different. The image path is for character-led, cinematic
 # vertical storytelling; the DSL path remains the no-character landscape film.
-CINEMATIC_IMAGE_MODEL = os.environ.get("CINEMATIC_IMAGE_MODEL", "gpt-image-2")
-CINEMATIC_IMAGE_SIZE = os.environ.get("CINEMATIC_IMAGE_SIZE", "1024x1536")
-CINEMATIC_IMAGE_QUALITY = os.environ.get("CINEMATIC_IMAGE_QUALITY", "high")
-IMAGE_PROVIDERS = ("openai", "comfyui")
+GEMINI_IMAGE_MODEL = os.environ.get("GEMINI_IMAGE_MODEL", "gemini-2.5-flash-image")
+IMAGE_PROVIDERS = ("gemini", "comfyui")
 
 
 def normalize_cinematic_image_provider(provider: str | None = None) -> str:
     """Validate a per-run image provider without ever silently downgrading it."""
-    selected = (provider or os.environ.get("CINEMATIC_IMAGE_PROVIDER", "openai")).strip().lower()
+    selected = (provider or os.environ.get("CINEMATIC_IMAGE_PROVIDER", "gemini")).strip().lower()
     if selected not in IMAGE_PROVIDERS:
         raise ValueError(f"unknown cinematic image provider {selected!r}; expected one of {IMAGE_PROVIDERS}")
     return selected
@@ -60,10 +57,10 @@ def cinematic_image_provider_statuses() -> list[dict[str, str | bool]]:
     )
     return [
         {
-            "id": "openai",
-            "label": "OpenAI Cinematic",
-            "detail": "GPT Image cinematic keyframes · uses API credits",
-            "configured": bool(os.environ.get("OPENAI_API_KEY", "").strip()),
+            "id": "gemini",
+            "label": "Gemini Cinematic",
+            "detail": "Gemini image keyframes · uses API credits",
+            "configured": bool(os.environ.get("GEMINI_API_KEY", "").strip()),
         },
         {
             "id": "comfyui",
@@ -84,7 +81,7 @@ def require_cinematic_image_provider(provider: str | None = None) -> str:
             "ComfyUI is not ready. Set COMFYUI_BASE_URL plus COMFYUI_CHECKPOINT_NAME "
             "(or COMFYUI_WORKFLOW_PATH) in worker/.env, then restart the worker."
         )
-    raise RuntimeError("OPENAI_API_KEY is required for OpenAI Cinematic Shorts; add it to worker/.env")
+    raise RuntimeError("GEMINI_API_KEY is required for Gemini Cinematic Shorts; add it to worker/.env")
 
 ASSETS = Path(__file__).resolve().parent / "assets"
 
@@ -309,31 +306,33 @@ def render_cinematic_frame(slug: str, duration: float, image_src: str, motion_in
 """
 
 
-async def _generate_openai_cinematic_image(prompt: str, destination: Path) -> None:
-    """Generate one final-quality keyframe from the existing OpenAI path."""
-    api_key = os.environ["OPENAI_API_KEY"]
+async def _generate_gemini_cinematic_image(prompt: str, destination: Path) -> None:
+    """Generate one final-quality keyframe with a Gemini image model."""
+    from google import genai
+    from google.genai import types
+
+    client = genai.Client(api_key=os.environ["GEMINI_API_KEY"])
 
     def call():
-        from openai import OpenAI
-
-        client = OpenAI(
-            api_key=api_key,
-            timeout=OPENAI_IMAGE_TIMEOUT_SECONDS,
-            max_retries=0,
-        )
-        return client.images.generate(
-            model=CINEMATIC_IMAGE_MODEL,
-            prompt=prompt,
-            size=CINEMATIC_IMAGE_SIZE,
-            quality=CINEMATIC_IMAGE_QUALITY,
-            output_format="png",
+        return client.models.generate_content(
+            model=GEMINI_IMAGE_MODEL,
+            contents=[prompt],
+            config=types.GenerateContentConfig(response_modalities=["IMAGE"]),
         )
 
-    result = await asyncio.to_thread(call)
-    encoded = result.data[0].b64_json if result.data else None
+    response = await asyncio.to_thread(call)
+    encoded: bytes | None = None
+    candidates = getattr(response, "candidates", None) or []
+    if candidates:
+        for part in getattr(candidates[0].content, "parts", None) or []:
+            inline = getattr(part, "inline_data", None)
+            if inline is not None and str(getattr(inline, "mime_type", "")).startswith("image/"):
+                data = inline.data
+                encoded = data if isinstance(data, bytes) else base64.b64decode(data)
+                break
     if not encoded:
         raise RuntimeError("cinematic image provider returned no image data")
-    destination.write_bytes(base64.b64decode(encoded))
+    destination.write_bytes(encoded)
 
 
 def _replace_comfy_tokens(value, replacements: dict[str, str | int | float]):
@@ -441,8 +440,8 @@ async def _generate_comfyui_cinematic_image(prompt: str, destination: Path) -> N
 async def _generate_cinematic_image(prompt: str, destination: Path, provider: str | None = None) -> None:
     """Generate one keyframe through the explicitly selected image provider."""
     selected = require_cinematic_image_provider(provider)
-    if selected == "openai":
-        await _generate_openai_cinematic_image(prompt, destination)
+    if selected == "gemini":
+        await _generate_gemini_cinematic_image(prompt, destination)
         return
     await _generate_comfyui_cinematic_image(prompt, destination)
 
@@ -477,5 +476,5 @@ async def build_cinematic_frames(
         if on_frame_complete:
             await on_frame_complete(completed, total_frames)
 
-    log.info("cinematic_frames_built", frames=len(board.frames), provider=selected, model=CINEMATIC_IMAGE_MODEL)
+    log.info("cinematic_frames_built", frames=len(board.frames), provider=selected, model=GEMINI_IMAGE_MODEL)
     return []

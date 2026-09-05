@@ -40,7 +40,7 @@ type Story = {
 };
 
 type ImageProvider = {
-  id: "openai" | "comfyui";
+  id: "gemini" | "comfyui";
   label: string;
   detail: string;
   configured: boolean;
@@ -437,7 +437,7 @@ export default function FilmsPage() {
           <div className="rounded-lg border border-[color-mix(in_srgb,var(--warning)_35%,var(--border))] bg-[color-mix(in_srgb,var(--warning)_8%,transparent)] px-4 py-3 text-sm text-[var(--warning)]">
             {imageProvider === "comfyui"
               ? "Start ComfyUI and configure its URL and checkpoint, then restart the worker."
-              : "Set a funded OpenAI API key, then restart the worker."}
+              : "Set a funded Gemini API key (GEMINI_API_KEY), then restart the worker."}
           </div>
         )}
 

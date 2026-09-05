@@ -226,6 +226,71 @@ def test_comfyui_provider_requires_a_server_and_workflow(monkeypatch):
         require_cinematic_image_provider("comfyui")
 
 
+def test_gemini_provider_requires_an_api_key(monkeypatch):
+    from app.scene3d.backend import require_cinematic_image_provider
+
+    monkeypatch.delenv("GEMINI_API_KEY", raising=False)
+
+    with pytest.raises(RuntimeError, match="GEMINI_API_KEY"):
+        require_cinematic_image_provider("gemini")
+
+
+def test_unknown_image_provider_is_rejected():
+    from app.scene3d.backend import require_cinematic_image_provider
+
+    with pytest.raises(ValueError, match="unknown cinematic image provider"):
+        require_cinematic_image_provider("openai")
+
+
+@pytest.mark.asyncio
+async def test_gemini_image_saves_returned_bytes(tmp_path, monkeypatch):
+    from types import SimpleNamespace
+
+    from app.scene3d import backend
+
+    part = SimpleNamespace(inline_data=SimpleNamespace(mime_type="image/png", data=b"png"))
+    response = SimpleNamespace(candidates=[SimpleNamespace(content=SimpleNamespace(parts=[part]))])
+
+    class FakeModels:
+        def generate_content(self, **kwargs):
+            assert kwargs["model"] == backend.GEMINI_IMAGE_MODEL
+            assert kwargs["contents"] == ["a prompt"]
+            return response
+
+    class FakeClient:
+        def __init__(self, **kwargs):
+            assert kwargs["api_key"] == "k"
+        models = FakeModels()
+
+    monkeypatch.setenv("GEMINI_API_KEY", "k")
+    monkeypatch.setattr("google.genai.Client", lambda **kwargs: FakeClient(**kwargs))
+
+    destination = tmp_path / "frame.png"
+    await backend._generate_gemini_cinematic_image("a prompt", destination)
+    assert destination.read_bytes() == b"png"
+
+
+@pytest.mark.asyncio
+async def test_gemini_image_with_no_image_part_raises(tmp_path, monkeypatch):
+    from types import SimpleNamespace
+
+    from app.scene3d import backend
+
+    response = SimpleNamespace(candidates=[SimpleNamespace(content=SimpleNamespace(parts=[]))])
+
+    class FakeClient:
+        models = SimpleNamespace(generate_content=lambda **kwargs: response)
+
+        def __init__(self, **kwargs):
+            pass
+
+    monkeypatch.setenv("GEMINI_API_KEY", "k")
+    monkeypatch.setattr("google.genai.Client", lambda **kwargs: FakeClient(**kwargs))
+
+    with pytest.raises(RuntimeError, match="no image data"):
+        await backend._generate_gemini_cinematic_image("a prompt", tmp_path / "frame.png")
+
+
 @pytest.mark.asyncio
 async def test_cinematic_backend_writes_one_image_and_composition_per_scene(tmp_path):
     from app.scene3d.backend import build_cinematic_frames
@@ -234,7 +299,7 @@ async def test_cinematic_backend_writes_one_image_and_composition_per_scene(tmp_
         destination.write_bytes(b"png")
 
     with (
-        patch("app.scene3d.backend.require_cinematic_image_provider", return_value="openai"),
+        patch("app.scene3d.backend.require_cinematic_image_provider", return_value="gemini"),
         patch(
             "app.scene3d.backend._generate_cinematic_image",
             new=AsyncMock(side_effect=make_image),
