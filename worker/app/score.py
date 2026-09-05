@@ -187,6 +187,20 @@ async def write_score(story_id: uuid.UUID, result: dict) -> bool:
         return cursor.rowcount > 0
 
 
+async def _safe_multipliers() -> dict[str, float]:
+    """Fetch the retention multipliers once per batch. Fails open to {}
+    (every archetype scores at neutral 1.0) when the analytics side is
+    unreachable: scoring must never fail because stats are unavailable —
+    the tilt is advisory, the score is not."""
+    try:
+        from app import video_stats
+
+        return await video_stats.multipliers_for_batch()
+    except Exception as exc:  # noqa: BLE001
+        log.warning("score_multipliers_unavailable", error=str(exc))
+        return {}
+
+
 async def score_new_job() -> None:
     """Score a bounded batch of unscored Inbox stories."""
     llm_cfg = await get_llm_config()
@@ -195,6 +209,8 @@ async def score_new_job() -> None:
     stories = await fetch_unscored(llm_cfg.score_batch_max, ingest_cfg.fresh_news_hours)
     if not stories:
         return
+
+    multiplier_map = await _safe_multipliers()
 
     scored = 0
     failed = 0
@@ -218,6 +234,15 @@ async def score_new_job() -> None:
                 after={"error": str(exc)},
             )
             continue
+
+        # Retention loop: tilt the model score toward what actually gets
+        # watched. Keyed by archetype ONLY — vertical splits are too thin at
+        # this volume to clear the 3-video minimum, so they would all read
+        # neutral anyway (recorded decision; revisit when the catalog grows).
+        # The write + audit path below is exactly as before: no new columns,
+        # the multiplied score is what lands in `stories.score`.
+        mult = multiplier_map.get(result["content_archetype"], 1.0)
+        result = {**result, "score": round(result["score"] * mult)}
 
         if await write_score(story["id"], result):
             scored += 1

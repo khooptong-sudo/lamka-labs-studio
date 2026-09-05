@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { Loader2, PlayCircle, Video, FileText, PlaySquare, Download } from "lucide-react";
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import { linkDraftVideo } from "@/lib/api";
 
 function CopyField({ label, value }: { label: string; value: string }) {
   const [copyState, setCopyState] = useState<"idle" | "copied" | "unavailable">("idle");
@@ -127,6 +128,25 @@ function DraftCard({ draft }: { draft: any }) {
 
   const [picked, setPicked] = useState<"a" | "b" | null>(draftBody.thumbnail_picked ?? null);
   const [savingPick, setSavingPick] = useState<"a" | "b" | null>(null);
+
+  const [videoInput, setVideoInput] = useState("");
+  const [linkedVideo, setLinkedVideo] = useState<string | null>(draftBody.youtube_video_id ?? null);
+  const [savingVideo, setSavingVideo] = useState(false);
+  const [videoError, setVideoError] = useState<string | null>(null);
+
+  async function saveVideoLink() {
+    setSavingVideo(true);
+    setVideoError(null);
+    try {
+      const id = await linkDraftVideo(draft.id, videoInput.trim());
+      setLinkedVideo(id);
+      setVideoInput("");
+    } catch (e) {
+      setVideoError(e instanceof Error ? e.message : "Video link failed");
+    } finally {
+      setSavingVideo(false);
+    }
+  }
 
   async function pickThumbnail(variant: "a" | "b") {
     setSavingPick(variant);
@@ -272,8 +292,37 @@ function DraftCard({ draft }: { draft: any }) {
               </div>
             </div>
 
-            {/* Download Assets */}
-            <div className="flex gap-4">
+            {/* Link uploaded video */}
+            <div className="field-well p-6">
+              <h3 className="mb-1 text-xs font-semibold text-[var(--muted)] uppercase tracking-[0.2em]">
+                Link uploaded video
+              </h3>
+              <p className="mb-3 text-[13px] text-[var(--muted)]">
+                After publishing manually, paste the watch URL or video ID so views tilt future scores.
+              </p>
+              {linkedVideo && (
+                <p className="mb-3 break-all font-mono text-sm text-foreground/80">{linkedVideo}</p>
+              )}
+              <div className="flex gap-2">
+                <input
+                  value={videoInput}
+                  onChange={(e) => setVideoInput(e.target.value)}
+                  placeholder="https://youtube.com/watch?v=… or 11-char ID"
+                  spellCheck={false}
+                  className="w-full rounded-lg border border-border bg-[var(--surface-recessed)] px-4 py-2 font-mono text-sm placeholder:text-[var(--muted)]"
+                />
+                <button
+                  onClick={saveVideoLink}
+                  disabled={savingVideo || !videoInput.trim()}
+                  className="flex-shrink-0 rounded-lg border border-border px-4 py-2 text-sm font-semibold transition-colors hover:bg-foreground/[0.035] disabled:opacity-40"
+                >
+                  {savingVideo ? "Saving..." : "Save"}
+                </button>
+              </div>
+              {videoError && <p className="mt-2 text-sm text-red-400">{videoError}</p>}
+            </div>
+
+            {/* Download Assets */}            <div className="flex gap-4">
               <a href={storyboardUrl} target="_blank" rel="noreferrer" className="flex flex-1 items-center justify-between rounded-[var(--radius)] border border-border bg-[var(--surface-recessed)] p-4 font-semibold tracking-wide transition-colors hover:bg-foreground/[0.035]">
                 <span className="flex items-center"><FileText className="mr-3 h-5 w-5 text-[var(--muted)]" /> Download Script</span>
                 <Download className="h-5 w-5 text-[var(--muted)]" />

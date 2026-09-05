@@ -7,6 +7,7 @@ import { WORKER_URL } from "@/lib/api";
 export default async function Home() {
   let stories = [];
   let analytics = {};
+  let summary: { by_archetype: any[]; top_videos: any[] } | null = null;
 
   try {
     const res = await fetch(`${WORKER_URL}/stories`, { cache: "no-store" });
@@ -16,6 +17,10 @@ export default async function Home() {
     const analyticsRes = await fetch(`${WORKER_URL}/youtube/analytics`, { cache: "no-store" });
     if (analyticsRes.ok) {
       analytics = await analyticsRes.json();
+    }
+    const summaryRes = await fetch(`${WORKER_URL}/analytics/summary`, { cache: "no-store" });
+    if (summaryRes.ok) {
+      summary = await summaryRes.json();
     }
   } catch (error) {
     console.error("Failed to fetch data from backend:", error);
@@ -56,6 +61,38 @@ export default async function Home() {
             </div>
           </div>
         ))}
+      </div>
+
+      {/* What's working */}
+      <div className="overflow-hidden rounded-[var(--radius)] border border-border bg-[var(--surface-deck)]">
+        <div className="flex items-center justify-between border-b border-border px-6 py-5">
+          <h2 className="text-[17px] font-semibold tracking-tight">What&apos;s working <span className="ml-2 font-normal text-[var(--muted)]">Last 90 days</span></h2>
+        </div>
+        {!summary || (summary.by_archetype.length === 0 && summary.top_videos.length === 0) ? (
+          <p className="px-6 py-8 text-center text-sm text-[var(--muted)]">analytics unavailable</p>
+        ) : (
+          <div className="space-y-6 p-6">
+            <div className="flex flex-wrap gap-2">
+              {summary.by_archetype.map((row: any) => (
+                <span key={row.archetype} className="chip">
+                  <span className="font-semibold">{row.archetype}</span>
+                  <span className="font-mono">{Number(row.total_views).toLocaleString()} views</span>
+                  <span className="font-mono">×{row.multiplier}</span>
+                </span>
+              ))}
+            </div>
+            {summary.top_videos.length > 0 && (
+              <div className="divide-y divide-border rounded-[var(--radius)] border border-border">
+                {summary.top_videos.map((video: any) => (
+                  <div key={video.draft_id} className="flex items-center justify-between gap-4 px-4 py-3">
+                    <span className="truncate text-sm font-medium">{video.headline || video.video_id || "Untitled"}</span>
+                    <span className="flex-shrink-0 font-mono text-xs text-[var(--muted)]">{Number(video.views).toLocaleString()} views</span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Inbox Feed */}

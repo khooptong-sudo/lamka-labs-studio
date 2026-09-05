@@ -188,3 +188,48 @@ export async function decideReddit(
   }
   return res.json();
 }
+
+export async function linkDraftVideo(draftId: string, videoId: string): Promise<string> {
+  const res = await fetch(`${WORKER_URL}/drafts/${draftId}/video`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ video_id: videoId }),
+  });
+  if (!res.ok) {
+    const payload = await res.json().catch(() => ({}));
+    throw new Error(payload.detail || `Video link failed: ${res.status}`);
+  }
+  const data = await res.json();
+  return data.youtube_video_id;
+}
+
+export type ArchetypeSummary = {
+  archetype: string;
+  videos: number;
+  total_views: number;
+  avg_views: number;
+  multiplier: number;
+};
+
+export type TopVideo = {
+  draft_id: string;
+  video_id: string | null;
+  headline: string | null;
+  archetype: string | null;
+  views: number;
+};
+
+export type AnalyticsSummary = {
+  by_archetype: ArchetypeSummary[];
+  top_videos: TopVideo[];
+};
+
+export async function fetchAnalyticsSummary(): Promise<AnalyticsSummary | null> {
+  try {
+    const res = await fetch(`${WORKER_URL}/analytics/summary`, { cache: "no-store" });
+    if (!res.ok) return null;
+    return res.json();
+  } catch {
+    return null;
+  }
+}

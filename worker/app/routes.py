@@ -565,6 +565,52 @@ async def set_draft_thumbnail(draft_id: str, req: DraftThumbnailRequest) -> dict
     return {"id": str(did), "thumbnail_picked": req.picked}
 
 
+class DraftVideoRequest(BaseModel):
+    video_id: str = Field(min_length=1, max_length=200)
+
+
+@router.patch("/drafts/{draft_id}/video")
+async def set_draft_video(draft_id: str, req: DraftVideoRequest) -> dict:
+    """Link the manually uploaded YouTube video to a draft.
+
+    Accepts a full watch/shorts URL or a bare 11-char id; validates shape
+    with `extract_video_id` (400 on garbage) and stores the NORMALIZED id
+    into the draft body jsonb — never the raw URL variant. Read back via
+    GET /drafts; the drafts GUI link field calls this. An unknown draft
+    is a 404.
+    """
+    from app.db import set_draft_video_id
+    from app.video_stats import extract_video_id
+
+    try:
+        did = uuid.UUID(draft_id)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="invalid draft_id (must be a uuid)")
+
+    normalized = extract_video_id(req.video_id)
+    if normalized is None:
+        raise HTTPException(status_code=400, detail="invalid video id or URL")
+
+    updated = await set_draft_video_id(did, normalized)
+    if not updated:
+        raise HTTPException(status_code=404, detail="draft not found")
+    return {"id": str(did), "youtube_video_id": normalized}
+
+
+@router.get("/analytics/summary")
+async def analytics_summary() -> dict:
+    """Per-archetype totals + top 5 videos by views. Pure read of
+    metrics+drafts+stories for the Research "what's working" band.
+    Missing creds or no data render as empty lists, never an error —
+    the band shows "analytics unavailable"."""
+    from app.video_stats import get_analytics_summary
+
+    try:
+        return await get_analytics_summary()
+    except Exception as exc:
+        return {"by_archetype": [], "top_videos": [], "error": str(exc)}
+
+
 @router.get("/youtube/analytics")
 async def youtube_analytics_endpoint() -> dict:
     """Fetch analytics for all published videos."""
