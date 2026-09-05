@@ -107,6 +107,7 @@ class XPublishRequest(BaseModel):
 class XRewriteRequest(BaseModel):
     story_id: str
     tone: str | None = Field(default=None, max_length=200)
+    length: str = Field(default="short", max_length=10)
 
 
 class XReplyRequest(BaseModel):
@@ -711,7 +712,7 @@ async def x_rewrite(req: XRewriteRequest) -> dict:
         raise HTTPException(status_code=400, detail="invalid story_id (must be a uuid)") from exc
 
     try:
-        post = await rewrite_story_to_post(story_id=sid, tone=req.tone)
+        post = await rewrite_story_to_post(story_id=sid, tone=req.tone, length=req.length)
     except RewriteError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
     except Exception as exc:

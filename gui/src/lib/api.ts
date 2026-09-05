@@ -25,11 +25,11 @@ export async function fetchXStories(): Promise<Story[]> {
   return res.json();
 }
 
-export async function rewriteStoryToPost(storyId: string, tone?: string | null): Promise<string> {
+export async function rewriteStoryToPost(storyId: string, tone?: string | null, length?: "short" | "long"): Promise<string> {
   const res = await fetch(`${WORKER_URL}/x/rewrite`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ story_id: storyId, tone: tone || null }),
+    body: JSON.stringify({ story_id: storyId, tone: tone || null, length: length || "short" }),
   });
   if (!res.ok) {
     const payload = await res.json().catch(() => ({}));

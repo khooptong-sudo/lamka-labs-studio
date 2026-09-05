@@ -69,7 +69,18 @@ def test_x_rewrite_returns_post():
 
     assert resp.status_code == 200
     assert resp.json() == {"post": "Markets digest the Fed pause."}
-    mock_rewrite.assert_awaited_once_with(story_id=uuid.UUID(story_id), tone="concise")
+    mock_rewrite.assert_awaited_once_with(story_id=uuid.UUID(story_id), tone="concise", length="short")
+
+
+def test_x_rewrite_passes_length_through():
+    story_id = str(uuid.uuid4())
+    with patch(
+        "app.x.rewrite.rewrite_story_to_post", AsyncMock(return_value="Long read.")
+    ) as mock_rewrite:
+        resp = client.post("/x/rewrite", json={"story_id": story_id, "length": "long"})
+
+    assert resp.status_code == 200
+    mock_rewrite.assert_awaited_once_with(story_id=uuid.UUID(story_id), tone=None, length="long")
 
 
 def test_x_rewrite_rejects_invalid_story_id():
@@ -131,7 +142,7 @@ def test_x_reply_rejects_empty_comment():
 # ---------------------------------------------------------------------------
 
 @pytest.mark.asyncio
-async def test_rewrite_story_to_post_compliance_blocks_advice(monkeypatch):
+async def test_rewrite_story_to_post_allows_advice_when_guardrails_disabled(monkeypatch):
     from app.x import rewrite
 
     async def fake_fetch(_story_id):
@@ -144,8 +155,9 @@ async def test_rewrite_story_to_post_compliance_blocks_advice(monkeypatch):
     monkeypatch.setattr(rewrite, "_llm_call", fake_llm)
     monkeypatch.setenv("DEEPSEEK_API_KEY", "test-key")
 
-    with pytest.raises(rewrite.RewriteError, match="blocked term"):
-        await rewrite.rewrite_story_to_post(uuid.uuid4())
+    # Guardrails are currently disabled, so previously-blocked terms pass through.
+    result = await rewrite.rewrite_story_to_post(uuid.uuid4())
+    assert result == "You should buy this stock now."
 
 
 @pytest.mark.asyncio
@@ -178,3 +190,54 @@ async def test_suggest_reply_enforces_max_length(monkeypatch):
 
     with pytest.raises(rewrite.RewriteError, match="max is 280"):
         await rewrite.suggest_reply("What do you think?")
+
+
+@pytest.mark.asyncio
+async def test_rewrite_long_uses_the_essay_prompt(monkeypatch):
+    from app.x import rewrite
+
+    seen = {}
+
+    async def fake_fetch(_story_id):
+        return {"headline": "Fed pause", "items": []}
+
+    async def fake_llm(system, user):
+        seen["system"] = system
+        return "Hook line.\n\nA fuller paragraph of explanation here.\n\nWhat do you make of it?"
+
+    monkeypatch.setattr(rewrite, "_fetch_story_with_items", fake_fetch)
+    monkeypatch.setattr(rewrite, "_llm_call", fake_llm)
+
+    result = await rewrite.rewrite_story_to_post(uuid.uuid4(), length="long")
+    assert "essay" in seen["system"].lower()
+    assert result.startswith("Hook line.")
+
+
+@pytest.mark.asyncio
+async def test_rewrite_long_enforces_its_own_cap(monkeypatch):
+    from app.x import rewrite
+
+    async def fake_fetch(_story_id):
+        return {"headline": "Fed pause", "items": []}
+
+    async def fake_llm(_system, _user):
+        return "x" * 4001
+
+    monkeypatch.setattr(rewrite, "_fetch_story_with_items", fake_fetch)
+    monkeypatch.setattr(rewrite, "_llm_call", fake_llm)
+
+    with pytest.raises(rewrite.RewriteError, match="max is 4000"):
+        await rewrite.rewrite_story_to_post(uuid.uuid4(), length="long")
+
+
+@pytest.mark.asyncio
+async def test_rewrite_rejects_an_unknown_length(monkeypatch):
+    from app.x import rewrite
+
+    async def fake_fetch(_story_id):
+        return {"headline": "Fed pause", "items": []}
+
+    monkeypatch.setattr(rewrite, "_fetch_story_with_items", fake_fetch)
+
+    with pytest.raises(rewrite.RewriteError, match="unknown post length"):
+        await rewrite.rewrite_story_to_post(uuid.uuid4(), length="thread")

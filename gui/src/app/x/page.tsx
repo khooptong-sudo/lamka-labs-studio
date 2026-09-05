@@ -38,6 +38,7 @@ export default function XPage() {
   const [post, setPost] = useState("");
   const [rewriting, setRewriting] = useState(false);
   const [tone, setTone] = useState("");
+  const [postLength, setPostLength] = useState<"short" | "long">("short");
   const [copiedPost, setCopiedPost] = useState(false);
 
   // Poster state
@@ -75,7 +76,7 @@ export default function XPage() {
     setRewriting(true);
     setError(null);
     try {
-      const text = await rewriteStoryToPost(selected.id, tone || null);
+      const text = await rewriteStoryToPost(selected.id, tone || null, postLength);
       setPost(text);
       setPostContext(text);
     } catch (err: any) {
@@ -274,6 +275,34 @@ export default function XPage() {
 
                 <div>
                   <label className="mb-2 block text-xs font-semibold uppercase tracking-[0.2em] text-[var(--muted)]">
+                    Length
+                  </label>
+                  <div className="mb-5 flex flex-wrap gap-1 rounded-[var(--radius)] border border-border bg-[var(--surface-recessed)] p-1" role="group" aria-label="Post length">
+                    {([
+                      { label: "Short · under 280", value: "short" },
+                      { label: "Long · essay", value: "long" },
+                    ] as const).map((option) => {
+                      const active = postLength === option.value;
+                      return (
+                        <button
+                          key={option.value}
+                          onClick={() => setPostLength(option.value)}
+                          aria-pressed={active}
+                          className={`min-h-9 rounded-[calc(var(--radius)-4px)] border px-3 py-1.5 text-xs font-medium transition-colors ${
+                            active
+                              ? "border-border bg-[var(--surface-deck)] text-foreground"
+                              : "border-transparent text-[var(--muted)] hover:bg-foreground/[0.035] hover:text-foreground"
+                          }`}
+                        >
+                          {option.label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                <div>
+                  <label className="mb-2 block text-xs font-semibold uppercase tracking-[0.2em] text-[var(--muted)]">
                     Tone
                   </label>
                   <div className="mb-3 flex flex-wrap gap-1 rounded-[var(--radius)] border border-border bg-[var(--surface-recessed)] p-1" role="group" aria-label="Tone presets">
@@ -310,7 +339,9 @@ export default function XPage() {
                       <span className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--muted)]">
                         Draft post
                       </span>
-                      <span className="font-mono text-xs text-[var(--muted)]">{post.length}/280</span>
+                      <span className="font-mono text-xs text-[var(--muted)]">
+                        {postLength === "short" ? `${post.length}/280` : `${post.length} / 4000`}
+                      </span>
                     </div>
                     <p className="text-foreground whitespace-pre-wrap leading-relaxed">{post}</p>
                     <button
