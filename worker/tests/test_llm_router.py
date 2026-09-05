@@ -273,6 +273,7 @@ async def test_get_llm_config_defaults_when_no_row(monkeypatch):
         assert cfg.routing == {
             "story_score": {"primary": "kimi", "fallback": "openai"},
             "fact_check": {"primary": "deepseek", "fallback": "openai"},
+            "documentary_outline": {"primary": "gemini", "fallback": "openai"},
         }
         assert cfg.score_batch_max == 25
     finally:

@@ -64,6 +64,9 @@ PACING_PROFILES: dict[str, Pacing] = {
     # far longer than an explainer card without going dead — and cutting on
     # every clause would destroy the sense of a continuous place.
     "story": Pacing(floor=4.0, soft_ceiling=20.0, lead_in=0.4, tail=0.8),
+    # Long-form documentaries: narration-led like explainer, with room to
+    # breathe like story — an act holds one idea across 7-9 scenes.
+    "documentary": Pacing(floor=3.0, soft_ceiling=16.0, lead_in=0.3, tail=0.6),
 }
 
 DEFAULT_PACING = "explainer"

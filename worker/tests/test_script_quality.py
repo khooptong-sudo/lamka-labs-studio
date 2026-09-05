@@ -113,3 +113,41 @@ async def test_fact_check_router_exhaustion_raises(monkeypatch):
         await script_quality.fact_check_script(
             script="board", evidence_packet="packet", exclude=("gemini",)
         )
+
+
+def test_validator_accepts_scaled_bounds():
+    from app.script_quality import validate_script_structure
+
+    board = (
+        "---\ntitle: T\ndescription: D\n---\n\n"
+        + "\n\n".join(
+            f"# Scene {i} — Ch{i}\nVoiceover: \"This is a sufficiently long closing-style narration line number {i}.\""
+            for i in range(1, 22)
+        )
+    )
+    assert validate_script_structure(board, min_scenes=21, max_scenes=36) == []
+
+
+def test_validator_scaled_bounds_reject_short_boards():
+    from app.script_quality import validate_script_structure
+
+    board = (
+        "---\ntitle: T\ndescription: D\n---\n\n"
+        "# Scene 1 — A\nVoiceover: \"A sufficiently long opening hook line here.\"\n\n"
+        "# Scene 2 — B\nVoiceover: \"A sufficiently long closing line here too.\""
+    )
+    assert any("21-36" in v for v in validate_script_structure(board, min_scenes=21, max_scenes=36))
+
+
+def test_validator_hook_and_closing_are_optional_per_act():
+    from app.script_quality import validate_script_structure
+
+    board = (
+        "---\ntitle: T\ndescription: D\n---\n\n"
+        + "\n\n".join(
+            f"# Scene {i} — Ch{i}\nVoiceover: \"A fine middle-act narration line number {i} here.\""
+            for i in range(1, 8)
+        )
+    )
+    assert validate_script_structure(board, min_scenes=7, max_scenes=9,
+                                     require_hook=False, require_closing=False) == []

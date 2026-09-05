@@ -57,7 +57,7 @@ SCRIPT_MAX_ATTEMPTS = int(os.environ.get("SCRIPT_MAX_ATTEMPTS", "4"))
 HYPERFRAMES_TIMEOUT_SECONDS = float(os.environ.get("HYPERFRAMES_TIMEOUT_SECONDS", "1200"))
 
 MAX_VOICE_CLIP_BYTES = 8 * 1024 * 1024
-MAX_VOICE_CLIPS = 12
+MAX_VOICE_CLIPS = 40
 
 
 def is_mp3_bytes(data: bytes) -> bool:
@@ -532,7 +532,7 @@ def _blocked_storyboard_terms(storyboard: str, channel: Channel) -> list[str]:
         if re.search(rf"(?<!\\w){re.escape(term)}(?!\\w)", storyboard, re.IGNORECASE)
     ]
 
-def _research_items(story: dict) -> list[dict]:
+def _research_items(story: dict, max_sources: int = MAX_RESEARCH_SOURCES) -> list[dict]:
     """Return a small, clean, bounded evidence set for one selected story."""
     items: list[dict] = []
     seen_urls: set[str] = set()
@@ -551,22 +551,15 @@ def _research_items(story: dict) -> list[dict]:
                 "excerpt": text[:MAX_RESEARCH_EXCERPT_CHARS],
             }
         )
-        if len(items) >= MAX_RESEARCH_SOURCES:
+        if len(items) >= max_sources:
             break
     return items
 
 
-def _research_packet(story: dict) -> str:
-    """Serialize linked articles as evidence, never as unbounded web context."""
-    entries = _research_items(story)
-    if not entries:
-        raise RuntimeError(
-            "This story has no linked research sources. Select a sourced inbox story "
-            "or paste a reviewed storyboard before generating a finance video."
-        )
-
+def _render_packet(items: list[dict]) -> str:
+    """Serialize evidence items as SOURCE blocks, never as unbounded web context."""
     blocks: list[str] = []
-    for number, item in enumerate(entries, start=1):
+    for number, item in enumerate(items, start=1):
         published = item["published_at"]
         date = published.isoformat() if hasattr(published, "isoformat") else str(published or "Unknown date")
         excerpt = item["excerpt"] or "No article text was captured; use only the title and source attribution."
@@ -579,6 +572,17 @@ def _research_packet(story: dict) -> str:
             f"Article excerpt: {excerpt}"
         )
     return "\n\n".join(blocks)
+
+
+def _research_packet(story: dict) -> str:
+    """Serialize linked articles as evidence, never as unbounded web context."""
+    entries = _research_items(story)
+    if not entries:
+        raise RuntimeError(
+            "This story has no linked research sources. Select a sourced inbox story "
+            "or paste a reviewed storyboard before generating a finance video."
+        )
+    return _render_packet(entries)
 
 
 def _append_research_sources(storyboard: str, story: dict) -> str:

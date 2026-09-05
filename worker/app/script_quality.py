@@ -17,6 +17,10 @@ from app.storyboard import parse_storyboard
 
 MIN_GENERATED_SCENES = 4
 MAX_GENERATED_SCENES = 8
+MIN_DOC_SCENES = 21
+MAX_DOC_SCENES = 36
+MIN_ACT_SCENES = 7
+MAX_ACT_SCENES = 9
 MAX_HOOK_WORDS = 25
 MIN_CLOSING_WORDS = 5
 
@@ -30,31 +34,39 @@ def _first_sentence(text: str) -> str:
     return (text[: match.start()] if match else text).strip().strip("\"'")
 
 
-def validate_script_structure(script_text: str) -> list[str]:
+def validate_script_structure(
+    script_text: str,
+    *,
+    min_scenes: int = MIN_GENERATED_SCENES,
+    max_scenes: int = MAX_GENERATED_SCENES,
+    require_hook: bool = True,
+    require_closing: bool = True,
+) -> list[str]:
     """Return human-readable violations. Empty means the board meets the contract."""
     violations: list[str] = []
     board = parse_storyboard(script_text)
     frames = board.frames
 
-    if not (MIN_GENERATED_SCENES <= len(frames) <= MAX_GENERATED_SCENES):
+    if not (min_scenes <= len(frames) <= max_scenes):
         violations.append(
-            f"expected {MIN_GENERATED_SCENES}-{MAX_GENERATED_SCENES} scenes, found {len(frames)}"
+            f"expected {min_scenes}-{max_scenes} scenes, found {len(frames)}"
         )
         return violations
 
-    hook = _first_sentence(frames[0].voiceover or "")
-    words = hook.split()
-    if not words:
-        violations.append("scene 1 has no hook: opening voiceover is empty")
-    else:
-        if len(words) > MAX_HOOK_WORDS:
-            violations.append(
-                f"hook is {len(words)} words, over the {MAX_HOOK_WORDS}-word limit"
-            )
-        lowered = hook.lower()
-        for opener in BANNED_HOOK_OPENERS:
-            if lowered.startswith(opener):
-                violations.append(f"hook uses banned question-bait opener {opener!r}")
+    if require_hook:
+        hook = _first_sentence(frames[0].voiceover or "")
+        words = hook.split()
+        if not words:
+            violations.append("scene 1 has no hook: opening voiceover is empty")
+        else:
+            if len(words) > MAX_HOOK_WORDS:
+                violations.append(
+                    f"hook is {len(words)} words, over the {MAX_HOOK_WORDS}-word limit"
+                )
+            lowered = hook.lower()
+            for opener in BANNED_HOOK_OPENERS:
+                if lowered.startswith(opener):
+                    violations.append(f"hook uses banned question-bait opener {opener!r}")
 
     seen_titles: set[str] = set()
     for frame in frames:
@@ -67,7 +79,7 @@ def validate_script_structure(script_text: str) -> list[str]:
             seen_titles.add(title.lower())
 
     closing_words = (frames[-1].voiceover or "").split()
-    if len(closing_words) < MIN_CLOSING_WORDS:
+    if require_closing and len(closing_words) < MIN_CLOSING_WORDS:
         violations.append("final scene has no closing beat: voiceover is too short to close on")
 
     return violations

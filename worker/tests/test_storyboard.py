@@ -297,3 +297,26 @@ def test_landscape_pacing_is_story():
     )
     # format alone doesn't choose pacing; frontmatter must say "pacing: story"
     assert resolve_pacing(None, board) is PACING_PROFILES["explainer"]  # default
+
+
+# ---------------------------------------------------------------------------
+# Documentary pacing profile (long-form, narration-led)
+# ---------------------------------------------------------------------------
+
+def test_documentary_pacing_resolves():
+    from app.storyboard import resolve_pacing
+
+    pacing = resolve_pacing("documentary")
+    assert (pacing.floor, pacing.soft_ceiling, pacing.lead_in, pacing.tail) == (3.0, 16.0, 0.3, 0.6)
+
+
+def test_research_items_default_cap_unchanged():
+    from app import youtube
+
+    story = {"items": [
+        {"title": f"T{i}", "url": f"https://x/{i}", "source_name": "S",
+         "published_at": None, "full_text": "body text here"}
+        for i in range(10)
+    ]}
+    assert len(youtube._research_items(story)) == 4
+    assert len(youtube._research_items(story, max_sources=12)) == 10

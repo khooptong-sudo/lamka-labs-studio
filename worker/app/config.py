@@ -76,6 +76,7 @@ class LLMConfig:
         default_factory=lambda: {
             "story_score": {"primary": "kimi", "fallback": "openai"},
             "fact_check": {"primary": "deepseek", "fallback": "openai"},
+            "documentary_outline": {"primary": "gemini", "fallback": "openai"},
         }
     )
     score_batch_max: int = 25
