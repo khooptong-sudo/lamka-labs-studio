@@ -495,7 +495,7 @@ Expected: PASS (DB-backed tests need local Postgres; without it they error — p
 - [ ] **Step 3: Record and push**
 
 ```
-| 88 | Overnight autopilot renders pre-approved picks; mornings start with review | autopilot | Flag column (status untouched), day-gated job, Short-only v1, failure retries tomorrow. Publishing still manual. |
+| 87 | Overnight autopilot renders pre-approved picks; mornings start with review | autopilot | Flag column (status untouched), day-gated job, Short-only v1, failure retries tomorrow. Publishing still manual. |
 ```
 
 ```bash

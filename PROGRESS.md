@@ -161,6 +161,7 @@ already exists must add the route once, or every fact-check fails loud with
 | 84 | VPS deploy is backup + chown + reset, and declared deps must also be installed | deploy | `/opt/fce/current` is a symlink to `releases/initial`; tar without `-h` backs up the link, not the tree. The tree had root-owned files (reset fails as `fce`) and half-applied session state — backup to `/opt/fce-backup-<date>.tgz`, chown, reset, clean. And: declaring `python-multipart` in pyproject while the VPS venv lacks it crash-loops the whole worker at route registration (FastAPI raises, not 422s) — install into the deploy venv in the same change. |
 | 85 | GUI `/api/*` rewrite follows NEXT_PUBLIC_WORKER_URL | gui-deploy | The rewrite hardcoded `127.0.0.1:8000`, so every client-side `/api/*` call 500s on the VPS launcher (direct fetches use the env URL and keep working — stories load, channels/drafts/jobs fail). Local default stays 8000 (run_worker.py default); VPS env points at :8002. |
 | 86 | History/science feeds verified live before adding | feeds | 7 feeds pass (NASA, Quanta, ScienceDaily, Phys.org, Ars science, BBC History, JSTOR, History.com-news); Smithsonian/history.com-root fail (404/empty). Migration 012, same 48h gate. Mystery stays manual + Reddit (separate spec). |
+| 87 | Overnight autopilot renders pre-approved picks; mornings start with review | autopilot | Flag column (status untouched), day-gated job, Short-only v1, failure retries tomorrow. Publishing still manual. |
 
 ---
 
