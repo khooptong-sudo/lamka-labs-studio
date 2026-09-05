@@ -154,6 +154,7 @@ already exists must add the route once, or every fact-check fails loud with
 | 77 | Publish packet carries A-B thumbnails + validated tags; thumbnails best-effort, tags fail-loud | piece-2 | Model paints backgrounds only, title stays in template overlay; per-variant fallback, never blocks the draft. Tags: frontmatter → draft body jsonb → upload.txt, no migration. Tag matching mirrors the committed storyboard rule and stays local — `channels.find_blocked_terms` exists only in uncommitted work. |
 | 78 | Voice-to-video via ordered per-scene clips; motion from intent over 8 paths | piece-3 | Clips land on synthesis paths so probing/timing run untouched; mismatch/unprobed/oversize abort loud, no silence under owner audio. `POST /youtube/jobs/with-voice` stages files before the job starts (needs `python-multipart`, now declared). Intent line selects ease family, unknown falls back; first 4 camera paths byte-identical. API-first; no GUI upload yet. |
 | 79 | GPU slot + cancel + render timeout + named stages | piece-4 | One in-process semaphore around Ollama/ComfyUI/render; cloud paths overlap. DELETE cancels live runs. Render bounded at 20 min default. fact_check/thumbnails join STAGES + GUI mirror. No scheduler rewrite. |
+| 80 | History/science/mystery channels seeded merge-only; both routes proven per channel | piece-5 | Built-ins in code, merge adds missing ids only. Shared taxonomy untouched. Manual-first; feeds are a follow-up. GUI already dynamic. |
 
 ---
 
