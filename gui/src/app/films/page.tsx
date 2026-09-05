@@ -82,6 +82,7 @@ export default function FilmsPage() {
   const [imageProviders, setImageProviders] = useState<ImageProvider[]>([]);
   const [imageProvider, setImageProvider] = useState<ImageProvider["id"]>("comfyui");
   const [voiceKey, setVoiceKey] = useState<VoiceKey>("adult_female");
+  const [voiceClips, setVoiceClips] = useState<File[]>([]);
   const [storyboard, setStoryboard] = useState("");
   const [cinematicControls, setCinematicControls] = useState(DEFAULT_CINEMATIC_CONTROLS);
   const [jobId, setJobId] = useState("");
@@ -179,7 +180,23 @@ export default function FilmsPage() {
         ]);
       }
 
-      const res = await fetch("/api/youtube/jobs", {
+      // Voice clips ride multipart to /youtube/jobs/with-voice in list order
+      // (scene order). No clips: the existing JSON /youtube/jobs path unchanged.
+      // with-voice has no cinematic_controls field, so that JSON-only option
+      // is intentionally omitted from the multipart branch.
+      const res = voiceClips.length > 0
+        ? await (async () => {
+            const form = new FormData();
+            form.append("story_id", activeStoryId);
+            form.append("channel_id", channelId);
+            form.append("mode", mode);
+            if (board) form.append("storyboard", board);
+            if (mode === "short") form.append("image_provider", imageProvider);
+            form.append("voice_key", voiceKey);
+            for (const clip of voiceClips) form.append("clips", clip, clip.name);
+            return fetch("/api/youtube/jobs/with-voice", { method: "POST", body: form });
+          })()
+        : await fetch("/api/youtube/jobs", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -373,6 +390,77 @@ export default function FilmsPage() {
                     );
                   })}
                 </div>
+              </fieldset>
+
+              <fieldset className="space-y-2 md:col-span-2">
+                <legend className="mb-2 text-xs font-medium text-[var(--muted)]">Voice clips (optional)</legend>
+                <p className="text-xs leading-5 text-[var(--muted)]">
+                  Owner narration, one clip per scene in list order. With clips the run posts multipart to with-voice; otherwise the standard JSON job path is used.
+                </p>
+                <input
+                  type="file"
+                  accept="audio/*"
+                  multiple
+                  disabled={busy}
+                  onChange={(event) => {
+                    const picked = Array.from(event.target.files ?? []);
+                    if (picked.length > 0) setVoiceClips((current) => [...current, ...picked]);
+                    event.target.value = "";
+                  }}
+                  className="block w-full text-xs text-[var(--muted)] file:mr-3 file:rounded-lg file:border file:border-border file:bg-secondary file:px-3 file:py-2 file:text-xs file:font-medium file:text-foreground"
+                />
+                {voiceClips.length > 0 && (
+                  <ol className="space-y-1">
+                    {voiceClips.map((clip, index) => (
+                      <li
+                        key={`${clip.name}-${clip.size}-${clip.lastModified}-${index}`}
+                        className="flex min-h-11 items-center gap-2 rounded-lg border border-border bg-[var(--surface-recessed)] px-2 py-1.5 text-sm"
+                      >
+                        <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-primary/10 font-mono text-[11px] font-semibold text-primary">
+                          {index + 1}
+                        </span>
+                        <span className="min-w-0 flex-1 truncate" title={clip.name}>{clip.name}</span>
+                        <button
+                          type="button"
+                          disabled={busy || index === 0}
+                          aria-label={`Move ${clip.name} earlier`}
+                          onClick={() => setVoiceClips((current) => {
+                            if (index === 0) return current;
+                            const next = [...current];
+                            [next[index - 1], next[index]] = [next[index], next[index - 1]];
+                            return next;
+                          })}
+                          className="rounded-md px-2 py-1 text-xs text-[var(--muted)] hover:bg-foreground/[0.06] disabled:opacity-40"
+                        >
+                          ↑
+                        </button>
+                        <button
+                          type="button"
+                          disabled={busy || index === voiceClips.length - 1}
+                          aria-label={`Move ${clip.name} later`}
+                          onClick={() => setVoiceClips((current) => {
+                            if (index >= current.length - 1) return current;
+                            const next = [...current];
+                            [next[index], next[index + 1]] = [next[index + 1], next[index]];
+                            return next;
+                          })}
+                          className="rounded-md px-2 py-1 text-xs text-[var(--muted)] hover:bg-foreground/[0.06] disabled:opacity-40"
+                        >
+                          ↓
+                        </button>
+                        <button
+                          type="button"
+                          disabled={busy}
+                          aria-label={`Remove ${clip.name}`}
+                          onClick={() => setVoiceClips((current) => current.filter((_, i) => i !== index))}
+                          className="rounded-md px-2 py-1 text-xs text-[var(--destructive)] hover:bg-foreground/[0.06] disabled:opacity-40"
+                        >
+                          ✕
+                        </button>
+                      </li>
+                    ))}
+                  </ol>
+                )}
               </fieldset>
 
               {mode === "short" && (
