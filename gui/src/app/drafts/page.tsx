@@ -125,6 +125,27 @@ function DraftCard({ draft }: { draft: any }) {
   const audioUrl = `/api/videos/story-${draft.story_id}/audio.mp3`;
   const storyboardUrl = `/api/videos/story-${draft.story_id}/STORYBOARD.md`;
 
+  const [picked, setPicked] = useState<"a" | "b" | null>(draftBody.thumbnail_picked ?? null);
+  const [savingPick, setSavingPick] = useState<"a" | "b" | null>(null);
+
+  async function pickThumbnail(variant: "a" | "b") {
+    setSavingPick(variant);
+    try {
+      const res = await fetch(`/api/drafts/${draft.id}/thumbnail`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ picked: variant }),
+      });
+      if (!res.ok) throw new Error(`Thumbnail pick failed: ${res.status}`);
+      const data = await res.json();
+      setPicked(data.thumbnail_picked ?? variant);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setSavingPick(null);
+    }
+  }
+
   return (
     <div className="overflow-hidden rounded-[var(--radius)] border border-border bg-[var(--surface-deck)]">
       {/* Card Header */}
@@ -216,6 +237,39 @@ function DraftCard({ draft }: { draft: any }) {
               <audio controls className="h-12 w-full rounded-lg" src={audioUrl}>
                 Your browser does not support the audio element.
               </audio>
+            </div>
+
+            {/* Thumbnails */}
+            <div className="field-well p-6">
+              <h3 className="mb-4 text-xs font-semibold text-[var(--muted)] uppercase tracking-[0.2em]">
+                Thumbnail Choice
+              </h3>
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                {(["a", "b"] as const).map((variant) => (
+                  <div key={variant}>
+                    <img
+                      src={`/api/videos/story-${draft.story_id}/thumbnail-${variant}.jpg`}
+                      alt={`Thumbnail ${variant.toUpperCase()}`}
+                      loading="lazy"
+                      className={`aspect-video w-full rounded-lg border object-cover ${
+                        picked === variant ? "border-primary ring-2 ring-primary/40" : "border-border"
+                      }`}
+                    />
+                    <button
+                      onClick={() => pickThumbnail(variant)}
+                      disabled={savingPick !== null}
+                      aria-pressed={picked === variant}
+                      className={`mt-2 w-full rounded-lg border px-4 py-2 text-sm font-semibold transition-colors disabled:opacity-40 ${
+                        picked === variant
+                          ? "border-primary bg-primary/10 text-primary"
+                          : "border-border hover:bg-foreground/[0.035]"
+                      }`}
+                    >
+                      {savingPick === variant ? "Saving..." : `Uploaded ${variant.toUpperCase()}`}
+                    </button>
+                  </div>
+                ))}
+              </div>
             </div>
 
             {/* Download Assets */}

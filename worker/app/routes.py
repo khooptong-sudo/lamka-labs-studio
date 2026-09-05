@@ -18,6 +18,7 @@ import os
 import re
 import uuid
 from pathlib import Path
+from typing import Literal
 
 import httpx
 from fastapi import APIRouter, File, Form, HTTPException, Request, UploadFile
@@ -519,6 +520,31 @@ async def get_drafts() -> list[dict]:
     """Fetch all drafts."""
     from app.db import get_drafts
     return await get_drafts()
+
+
+class DraftThumbnailRequest(BaseModel):
+    picked: Literal["a", "b"] | None = None
+
+
+@router.patch("/drafts/{draft_id}/thumbnail")
+async def set_draft_thumbnail(draft_id: str, req: DraftThumbnailRequest) -> dict:
+    """Record which rendered thumbnail was uploaded for a draft.
+
+    Persists `thumbnail_picked` ("a", "b", or null) into the draft body
+    jsonb. Read back via GET /drafts; the drafts GUI picker calls this.
+    An unknown value is a 422 (pydantic), an unknown draft is a 404.
+    """
+    from app.db import set_draft_thumbnail_picked
+
+    try:
+        did = uuid.UUID(draft_id)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="invalid draft_id (must be a uuid)")
+
+    updated = await set_draft_thumbnail_picked(did, req.picked)
+    if not updated:
+        raise HTTPException(status_code=404, detail="draft not found")
+    return {"id": str(did), "thumbnail_picked": req.picked}
 
 
 @router.get("/youtube/analytics")

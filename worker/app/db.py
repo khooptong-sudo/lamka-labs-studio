@@ -742,6 +742,29 @@ async def update_draft_published(
         )
 
 
+async def set_draft_thumbnail_picked(
+    draft_id: uuid.UUID,
+    picked: str | None,
+) -> bool:
+    """Record which rendered thumbnail was uploaded ("a", "b", or None).
+
+    Merges `thumbnail_picked` into the draft body jsonb (no schema change;
+    a missing key reads back as None). Returns False when no draft has
+    that id, so the route can 404."""
+    pool = await get_pool()
+    async with pool.connection() as conn:
+        async with conn.cursor() as cur:
+            await cur.execute(
+                """
+                UPDATE drafts
+                SET body = body || jsonb_build_object('thumbnail_picked', %s::text)
+                WHERE id = %s
+                """,
+                (picked, draft_id),
+            )
+            return cur.rowcount == 1
+
+
 async def create_draft(
     story_id: uuid.UUID,
     *,
