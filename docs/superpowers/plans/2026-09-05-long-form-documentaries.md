@@ -656,43 +656,9 @@ git commit -m "Add documentary act planning, scripting and merge"
 
 - [ ] **Step 1: Write the failing tests**
 
-```python
-@pytest.mark.asyncio
-async def test_documentary_branch_aborts_when_an_act_fails(tmp_path, monkeypatch):
-    from app import documentary
-    from app.youtube import generate_youtube_video
-
-    acts = [
-        documentary.ActPlan(title="A", hook="h", beats=["b"] * 7, sources=[0]),
-        documentary.ActPlan(title="B", hook="h", beats=["b"] * 7, sources=[0]),
-        documentary.ActPlan(title="C", hook="h", beats=["b"] * 7, sources=[0]),
-    ]
-    monkeypatch.setattr(
-        documentary, "plan_outline",
-        AsyncMock(return_value=documentary.DocumentaryOutline(title="Doc", acts=acts)),
-    )
-
-    calls = {"n": 0}
-
-    async def fake_act(**kwargs):
-        calls["n"] += 1
-        if calls["n"] == 2:
-            raise RuntimeError("act provider down")
-        return (
-            "---\ntitle: Doc\ndescription: D\npreset: adult_male\n---\n\n"
-            "# Scene 1 — X\nVoiceover: \"A sufficiently long narration line here.\"\nScene: art.\n"
-        )
-
-    monkeypatch.setattr(documentary, "generate_act", fake_act)
-    # ... pipeline mocks per the gate-test pattern (resolve FINANCE-like,
-    # fetch {"headline": "T", "items": []}, record, audio [], frames [],
-    # run, thumb {}, research packet, VIDEOS_DIR) ...
-    # assert await generate_youtube_video(..., documentary=True, storyboard_override=None?) is None
-```
-
-File header additions for the new tests: `import uuid` top-level, plus
+File header for the new tests: `import uuid` top-level, plus
 `from unittest.mock import AsyncMock, MagicMock, patch` and
-`from app.channels import Channel`. (The pure tests above use local imports;
+`from app.channels import Channel`. (The Task 2 pure tests use local imports;
 the pipeline tests below use these top-level ones.)
 
 ```python
@@ -727,14 +693,14 @@ def _doc_acts():
 @patch("app.youtube._fetch_story_details")
 @patch("app.youtube._record_youtube_draft")
 @patch("app.youtube._generate_script_for_story", AsyncMock(side_effect=AssertionError("shorts path must not run")))
-@patch("app.youtube._generate_frame_audio", AsyncMock(return_value=[]))
-@patch("app.youtube._build_frames", AsyncMock(return_value=[]))
+@patch("app.youtube.fact_check_script")
+@patch("app.youtube._generate_frame_audio")
+@patch("app.youtube._build_frames")
 @patch("app.youtube.subprocess.run")
-@patch("app.youtube.build_thumbnail_variants", AsyncMock(return_value={}))
-@patch("app.youtube.fact_check_script", AsyncMock(return_value={"verdict": "PASS", "violations": []}))
+@patch("app.youtube.build_thumbnail_variants")
 @patch("app.youtube._research_packet", return_value="packet")
 async def test_documentary_branch_aborts_when_an_act_fails(
-    mock_packet, mock_fact, mock_thumb, mock_run, mock_frames, mock_audio, mock_record, mock_fetch, tmp_path, monkeypatch
+    mock_packet, mock_thumb, mock_run, mock_frames, mock_audio, mock_record, mock_fetch, tmp_path, monkeypatch
 ):
     from app import documentary
     from app.youtube import generate_youtube_video
@@ -755,6 +721,7 @@ async def test_documentary_branch_aborts_when_an_act_fails(
     mock_fetch.return_value = {"headline": "T", "items": [
         {"title": "T0", "url": "https://x/0", "source_name": "S", "published_at": None, "full_text": "body"},
     ]}
+    mock_fact.return_value = {"verdict": "PASS", "violations": []}
     with patch("app.youtube.VIDEOS_DIR", tmp_path):
         assert await generate_youtube_video(
             story_id=uuid.uuid4(), channel_id="financial-channel",
@@ -769,11 +736,11 @@ async def test_documentary_branch_aborts_when_an_act_fails(
 @patch("app.youtube._fetch_story_details")
 @patch("app.youtube._record_youtube_draft")
 @patch("app.youtube._generate_script_for_story", AsyncMock(side_effect=AssertionError("shorts path must not run")))
-@patch("app.youtube._generate_frame_audio", AsyncMock(return_value=[]))
-@patch("app.youtube._build_frames", AsyncMock(return_value=[]))
+@patch("app.youtube.fact_check_script")
+@patch("app.youtube._generate_frame_audio")
+@patch("app.youtube._build_frames")
 @patch("app.youtube.subprocess.run")
-@patch("app.youtube.build_thumbnail_variants", AsyncMock(return_value={}))
-@patch("app.youtube.fact_check_script", AsyncMock(return_value={"verdict": "PASS", "violations": []}))
+@patch("app.youtube.build_thumbnail_variants")
 @patch("app.youtube._research_packet", return_value="packet")
 async def test_documentary_happy_path_merges_and_records(
     mock_packet, mock_fact, mock_thumb, mock_run, mock_frames, mock_audio, mock_record, mock_fetch, tmp_path, monkeypatch
@@ -794,6 +761,10 @@ async def test_documentary_happy_path_merges_and_records(
     mock_fetch.return_value = {"headline": "T", "items": [
         {"title": "T0", "url": "https://x/0", "source_name": "S", "published_at": None, "full_text": "body"},
     ]}
+    mock_fact.return_value = {"verdict": "PASS", "violations": []}
+    mock_audio.return_value = []
+    mock_frames.return_value = []
+    mock_thumb.return_value = {}
     mock_record.return_value = uuid.uuid4()
     mock_run.return_value = MagicMock(stdout="mocked")
     with patch("app.youtube.VIDEOS_DIR", tmp_path):
@@ -810,36 +781,6 @@ async def test_documentary_happy_path_merges_and_records(
 
 @pytest.mark.asyncio
 @patch("app.channels.resolve", AsyncMock(return_value=DOC_FINANCE))
-@patch("app.youtube._fetch_story_details",
-       AsyncMock(return_value={"headline": "T", "items": []}))
-async def test_documentary_needs_evidence_or_brief(mock_fetch, tmp_path):
-    from app.youtube import generate_youtube_video
-
-    with patch("app.youtube.VIDEOS_DIR", tmp_path):
-        assert await generate_youtube_video(
-            story_id=uuid.uuid4(), channel_id="financial-channel", documentary=True,
-        ) is None
-```
-
-Decorator/parameter audit (bottom-up, `new=` never injects): `fact_check_script`
-(new) and `_generate_script_for_story` (new) and `resolve` (new) take no
-parameters; the rest map `research_packet`→mock_packet, `fact`→mock_fact
-(absent in abort test? no — present in both: order is
-research_packet, fact, thumb, run, frames, audio, record, fetch, then
-`tmp_path`, then `monkeypatch` fixture). In the abort test the parameter list
-is `(mock_packet, mock_fact, mock_thumb, mock_run, mock_frames, mock_audio,
-mock_record, mock_fetch, tmp_path, monkeypatch)` — bottom-up: research→packet,
-fact→fact, thumb→thumb, run→run, frames→frames, audio→audio, record→record,
-fetch→fetch, resolve skipped ✓, tmp_path + monkeypatch are fixtures ✓.
-The `needs_evidence` test: decorators resolve(new) + fetch(new) only, params
-`(mock_fetch, tmp_path)` — WAIT, both supply `new=`, so NEITHER injects; the
-params would be unfillable. Fix: `mock_fetch` must come from a bare patch.
-Use `@patch("app.youtube._fetch_story_details")` (bare → injects) with
-`mock_fetch.return_value = ...` set in the body:
-
-```python
-@pytest.mark.asyncio
-@patch("app.channels.resolve", AsyncMock(return_value=DOC_FINANCE))
 @patch("app.youtube._fetch_story_details")
 async def test_documentary_needs_evidence_or_brief(mock_fetch, tmp_path):
     from app.youtube import generate_youtube_video
@@ -851,7 +792,8 @@ async def test_documentary_needs_evidence_or_brief(mock_fetch, tmp_path):
         ) is None
 ```
 
-USE THIS CORRECTED FORM (bare fetch patch, return set in body).
+(`resolve` supplies `new=`, so it injects nothing; bare `fetch` injects
+`mock_fetch`. Same rule as everywhere: `new=` never injects.)
 
 Mode test (append to `test_routes_modes.py`):
 
