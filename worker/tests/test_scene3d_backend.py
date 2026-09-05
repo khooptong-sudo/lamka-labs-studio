@@ -311,3 +311,40 @@ async def test_cinematic_backend_writes_one_image_and_composition_per_scene(tmp_
     assert generate.await_count == 3
     assert (tmp_path / "assets" / "cinematic" / "f01-s1.png").exists()
     assert (tmp_path / "compositions" / "frames" / "f03-s3.html").exists()
+
+
+@pytest.mark.asyncio
+async def test_gemini_helper_decodes_base64_string_data():
+    from types import SimpleNamespace
+
+    from app.scene3d.backend import extract_gemini_image_bytes
+    import base64
+
+    part = SimpleNamespace(
+        inline_data=SimpleNamespace(mime_type="image/png", data=base64.b64encode(b"png").decode())
+    )
+    response = SimpleNamespace(candidates=[SimpleNamespace(content=SimpleNamespace(parts=[part]))])
+    assert extract_gemini_image_bytes(response) == b"png"
+
+
+def test_gemini_helper_skips_non_image_parts():
+    from types import SimpleNamespace
+
+    from app.scene3d.backend import extract_gemini_image_bytes
+
+    text = SimpleNamespace(text="hello")
+    img = SimpleNamespace(inline_data=SimpleNamespace(mime_type="image/jpeg", data=b"jpg"))
+    response = SimpleNamespace(candidates=[SimpleNamespace(content=SimpleNamespace(parts=[text, img]))])
+    assert extract_gemini_image_bytes(response) == b"jpg"
+
+
+def test_gemini_helper_raises_with_no_image_part():
+    from types import SimpleNamespace
+
+    import pytest
+
+    from app.scene3d.backend import extract_gemini_image_bytes
+
+    response = SimpleNamespace(candidates=[SimpleNamespace(content=SimpleNamespace(parts=[]))])
+    with pytest.raises(RuntimeError, match="no image data"):
+        extract_gemini_image_bytes(response)

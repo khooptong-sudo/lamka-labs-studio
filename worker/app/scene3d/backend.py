@@ -306,6 +306,18 @@ def render_cinematic_frame(slug: str, duration: float, image_src: str, motion_in
 """
 
 
+def extract_gemini_image_bytes(response: object) -> bytes:
+    """Return the first image part's bytes from a generate_content response."""
+    candidates = getattr(response, "candidates", None) or []
+    if candidates:
+        for part in getattr(candidates[0].content, "parts", None) or []:
+            inline = getattr(part, "inline_data", None)
+            if inline is not None and str(getattr(inline, "mime_type", "")).startswith("image/"):
+                data = inline.data
+                return data if isinstance(data, bytes) else base64.b64decode(data)
+    raise RuntimeError("cinematic image provider returned no image data")
+
+
 async def _generate_gemini_cinematic_image(prompt: str, destination: Path) -> None:
     """Generate one final-quality keyframe with a Gemini image model."""
     from google import genai
@@ -321,18 +333,7 @@ async def _generate_gemini_cinematic_image(prompt: str, destination: Path) -> No
         )
 
     response = await asyncio.to_thread(call)
-    encoded: bytes | None = None
-    candidates = getattr(response, "candidates", None) or []
-    if candidates:
-        for part in getattr(candidates[0].content, "parts", None) or []:
-            inline = getattr(part, "inline_data", None)
-            if inline is not None and str(getattr(inline, "mime_type", "")).startswith("image/"):
-                data = inline.data
-                encoded = data if isinstance(data, bytes) else base64.b64decode(data)
-                break
-    if not encoded:
-        raise RuntimeError("cinematic image provider returned no image data")
-    destination.write_bytes(encoded)
+    destination.write_bytes(extract_gemini_image_bytes(response))
 
 
 def _replace_comfy_tokens(value, replacements: dict[str, str | int | float]):
