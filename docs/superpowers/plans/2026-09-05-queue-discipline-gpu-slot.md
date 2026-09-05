@@ -484,41 +484,10 @@ test file; duplicating this contract in a second file is clutter.
 - Consumes: existing `_stage(job_id, ...)` calls.
 - Produces: `STAGES = ["queued", "script", "fact_check", "narration", "world", "shots", "render", "thumbnails", "done"]`.
 
-- [ ] **Step 1: Write the failing tests**
+- [ ] **Step 2: Run to verify it fails**
 
-```python
-"""Stage vocabulary is a contract between worker and GUI bar."""
-
-import pytest
-
-
-def test_stages_name_every_emitted_stage_in_order():
-    from app.jobs import STAGES
-
-    assert STAGES == [
-        "queued", "script", "fact_check", "narration", "world",
-        "shots", "render", "thumbnails", "done",
-    ]
-
-
-async def test_set_stage_rejects_an_unknown_stage_without_touching_the_db(monkeypatch):
-    from unittest.mock import AsyncMock
-
-    from app import jobs
-
-    get_pool = AsyncMock(side_effect=AssertionError("DB must not be touched"))
-    monkeypatch.setattr(jobs, "get_pool", get_pool)
-    with pytest.raises(ValueError, match="unknown stage"):
-        await jobs.set_stage(__import__("uuid").uuid4(), "nope")
-    get_pool.assert_not_called()
-```
-
-Normalize `__import__("uuid")` to top-level `import uuid` when writing the file.
-
-- [ ] **Step 2: Run to verify they fail**
-
-Run: `cd worker; ..\.venv\Scripts\python.exe -m pytest tests/test_jobs_stages.py -q`
-Expected: FAIL (STAGES lacks the names; first assert fails)
+Run: `cd worker; ..\.venv\Scripts\python.exe -m pytest tests/test_jobs.py -q`
+Expected: FAIL (STAGES lacks the names)
 
 - [ ] **Step 3: Implement**
 
@@ -535,7 +504,7 @@ with labels `fact_check: "fact check"` and `thumbnails: "thumbnails"` added to
 
 - [ ] **Step 4: Run green + typecheck**
 
-Run: `cd worker; ..\.venv\Scripts\python.exe -m pytest tests/test_jobs_stages.py -q`
+Run: `cd worker; ..\.venv\Scripts\python.exe -m pytest tests/test_jobs.py -q`
 Expected: PASS. Then: `cd gui; npx tsc --noEmit` — must be clean (the
 `Record<typeof STAGES[number], string>` type fails the build on label drift,
 which is the mirror's regression test).
@@ -543,7 +512,7 @@ which is the mirror's regression test).
 - [ ] **Step 5: Commit**
 
 ```bash
-git add worker/app/jobs.py worker/app/youtube.py gui/src/components/FilmProgress.tsx worker/tests/test_jobs_stages.py
+git add worker/app/jobs.py worker/app/youtube.py gui/src/components/FilmProgress.tsx worker/tests/test_jobs.py
 git commit -m "Name fact-check and thumbnail stages end to end"
 ```
 
@@ -556,7 +525,7 @@ git commit -m "Name fact-check and thumbnail stages end to end"
 
 - [ ] **Step 1: Run the affected suites**
 
-Run: `cd worker; ..\.venv\Scripts\python.exe -m pytest tests/test_gpu_queue.py tests/test_routes_jobs.py tests/test_jobs_stages.py tests/test_youtube.py tests/test_generation_resilience.py tests/test_scene3d_backend.py tests/test_routes_voice.py tests/test_routes_channel.py tests/test_script_quality.py -q`
+Run: `cd worker; ..\.venv\Scripts\python.exe -m pytest tests/test_gpu_queue.py tests/test_routes_jobs.py tests/test_jobs.py tests/test_youtube.py tests/test_generation_resilience.py tests/test_scene3d_backend.py tests/test_routes_voice.py tests/test_routes_channel.py tests/test_script_quality.py -q`
 Expected: PASS (DB-backed tests need local Postgres; without it they error — pre-existing, unrelated)
 
 - [ ] **Step 2: Record the decision in PROGRESS.md**
