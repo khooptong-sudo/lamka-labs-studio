@@ -819,4 +819,56 @@ async def x_poster_from_text(req: PosterFromTextRequest) -> dict:
         raise HTTPException(status_code=502, detail=str(exc)) from exc
 
 
+class RedditApproveRequest(BaseModel):
+    post_url: str = Field(min_length=1, max_length=2000)
+    pm_text: str = Field(min_length=1, max_length=4000)
+
+
+class RedditDecideRequest(BaseModel):
+    post_url: str = Field(min_length=1, max_length=2000)
+    verdict: Literal["granted", "denied"]
+
+
+@router.get("/reddit/rights")
+async def reddit_rights_list(state: str = "candidate") -> list[dict]:
+    """Permission queue: rights rows by state (default candidates), oldest
+    first, with author/excerpt/url for the owner's review."""
+    from app import reddit_outreach
+
+    try:
+        return await reddit_outreach.list_rights(state)
+    except reddit_outreach.OutreachError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+
+@router.post("/reddit/approve")
+async def reddit_approve(req: RedditApproveRequest) -> dict:
+    """Owner approves one PM's exact text: candidate → pm_approved. The sender
+    job only ever sends pm_approved rows, so this is the human finger on the
+    trigger. Opted-out authors (denied) stay candidate — 400, never approved."""
+    from app import reddit_outreach
+
+    try:
+        return await reddit_outreach.approve_right(post_url=req.post_url, pm_text=req.pm_text)
+    except reddit_outreach.NotFoundError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    except reddit_outreach.OutreachError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+
+@router.post("/reddit/decide")
+async def reddit_decide(req: RedditDecideRequest) -> dict:
+    """Owner verdict after reading the actual reply: review → granted|denied.
+    A deny opts the author out across all their posts — future collects stay
+    candidate (enforced in the collect insert, not just here)."""
+    from app import reddit_outreach
+
+    try:
+        return await reddit_outreach.decide_right(post_url=req.post_url, verdict=req.verdict)
+    except reddit_outreach.NotFoundError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    except reddit_outreach.OutreachError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+
 __all__ = ["router"]

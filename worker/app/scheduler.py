@@ -64,6 +64,7 @@ async def build_job_specs() -> list[JobSpec]:
     from app.db import ping as db_ping
     from app.score import score_new_job
     from app.autopilot import autopilot_overnight_job
+    from app.reddit_outreach import reddit_outreach_job
 
     cfg = await get_ingest_config()
 
@@ -95,6 +96,9 @@ async def build_job_specs() -> list[JobSpec]:
     async def autopilot_overnight() -> None:
         await autopilot_overnight_job()
 
+    async def reddit_outreach() -> None:
+        await reddit_outreach_job()
+
     return [
         JobSpec(id="poll_rss", minutes=cfg.rss_poll_minutes, fn=poll_rss),
         JobSpec(id="poll_edgar", minutes=cfg.edgar_poll_minutes, fn=poll_edgar),
@@ -103,6 +107,7 @@ async def build_job_specs() -> list[JobSpec]:
         JobSpec(id="cluster_new", minutes=10, fn=cluster_job),
         JobSpec(id="score_new", minutes=10, fn=score_job),
         JobSpec(id="autopilot_overnight", minutes=30, fn=autopilot_overnight),
+        JobSpec(id="reddit_outreach", minutes=30, fn=reddit_outreach),
         JobSpec(id="embed_retry", minutes=30, fn=embed_retry_job),
         # db_health exempt from advisory lock — the probe must work when the DB
         # is degraded, exactly the condition a lock-acquire failure would mimic.

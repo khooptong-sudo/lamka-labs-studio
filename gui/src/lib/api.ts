@@ -121,3 +121,70 @@ export async function generatePosterFromText(
   }
   return res.json();
 }
+
+export type RedditRight = {
+  post_url: string;
+  author: string;
+  subreddit: string;
+  state: string;
+  pm_text: string;
+  created_at: string;
+  title?: string;
+  excerpt?: string;
+};
+
+/** Mirror of the worker's PM_TEMPLATE (worker/app/reddit_outreach.py) —
+ *  the default draft prefill. The worker stores the owner's edited text
+ *  verbatim and the sender transmits it exactly; this never sends anything. */
+export const REDDIT_PM_TEMPLATE =
+  "Hi u/{author} — I run an educational YouTube channel and your post " +
+  '"{title}" (r/{sub}) would make a strong segment. May I adapt it into ' +
+  "a narrated video with full on-screen credit to you and a link to your " +
+  "post? Reply YES and I'll send you the link when it's live, or NO and " +
+  "I'll never ask again. — Min";
+
+export function renderRedditPM(author: string, title: string, sub: string): string {
+  return REDDIT_PM_TEMPLATE.split("{author}").join(author)
+    .split("{title}").join(title)
+    .split("{sub}").join(sub);
+}
+
+export async function fetchRedditRights(state = "candidate"): Promise<RedditRight[]> {
+  const res = await fetch(`${WORKER_URL}/reddit/rights?state=${encodeURIComponent(state)}`, {
+    cache: "no-store",
+  });
+  if (!res.ok) {
+    const payload = await res.json().catch(() => ({}));
+    throw new Error(payload.detail || `Failed to fetch rights: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function approveRedditPM(postUrl: string, pmText: string): Promise<RedditRight> {
+  const res = await fetch(`${WORKER_URL}/reddit/approve`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ post_url: postUrl, pm_text: pmText }),
+  });
+  if (!res.ok) {
+    const payload = await res.json().catch(() => ({}));
+    throw new Error(payload.detail || `Approve failed: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function decideReddit(
+  postUrl: string,
+  verdict: "granted" | "denied",
+): Promise<RedditRight> {
+  const res = await fetch(`${WORKER_URL}/reddit/decide`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ post_url: postUrl, verdict }),
+  });
+  if (!res.ok) {
+    const payload = await res.json().catch(() => ({}));
+    throw new Error(payload.detail || `Decide failed: ${res.status}`);
+  }
+  return res.json();
+}

@@ -114,7 +114,30 @@ async def run_for_source(source_row: SourceRow) -> dict[str, Any]:
             )
             continue
 
-        if not _is_fresh_news_item(normalized, fresh_news_hours=cfg.fresh_news_hours):
+        if source_row.kind == "reddit":
+            # Collect insert: every collected post gets a candidate rights row
+            # (denied authors stay pinned at candidate — the opt-out). Ahead of
+            # the freshness gate on purpose: the PM queue tracks collected
+            # posts, not just storable items. Failure-isolated — rights
+            # bookkeeping must never break the poll.
+            try:
+                from app import reddit_outreach
+
+                meta = getattr(raw, "fetch_meta", None) or {}
+                await reddit_outreach.ensure_candidate_row(
+                    post_id=str(meta.get("post_id", "")),
+                    author=str(meta.get("author", "")),
+                    subreddit=str(meta.get("subreddit", "")),
+                    post_url=normalized.url,
+                )
+            except Exception as exc:  # noqa: BLE001
+                log.warning(
+                    "reddit_rights_ensure_failed",
+                    source=str(source_row.id),
+                    error=str(exc),
+                )
+
+        if not _is_fresh_news_item(normalized, fresh_hours=cfg.fresh_news_hours):
             summary["stale"] += 1
             continue
 

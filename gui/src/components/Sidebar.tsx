@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { BookOpen, Clapperboard, FileText, Film, Inbox, Settings } from "lucide-react";
+import { BookOpen, Clapperboard, FileText, Film, Inbox, MessageSquare, Settings } from "lucide-react";
 import { ThemeToggle } from "./ThemeToggle";
 
 function XIcon({ className }: { className?: string }) {
@@ -18,6 +18,7 @@ export function Sidebar() {
 
   const navItems = [
     { name: "Research", href: "/", icon: Inbox },
+    { name: "Reddit", href: "/reddit", icon: MessageSquare },
     { name: "Production", href: "/films", icon: Clapperboard },
     { name: "Cinema", href: "/cinema", icon: Film },
     { name: "Drafts", href: "/drafts", icon: FileText },
