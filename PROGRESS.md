@@ -158,6 +158,7 @@ already exists must add the route once, or every fact-check fails loud with
 | 81 | Long-form as acts on the cinematic path; per-act gates, merged render | long-form | Outline→acts→merge; 3-4×7-9 scenes (21-36). Same validator scaled, same fact-check per act. New mode + pacing, brief labeled owner-supplied. API-first. |
 | 82 | Editorial Dual Phase 1: tokens, shell, films, drafts | gui-redesign | Light porcelain + refined dark, Inter, hairline structure, frozen poster/export path. Verified by tsc + build + screenshots. |
 | 83 | Editorial Dual Phase 2: dashboard, X, cinema, settings, docs | gui-redesign | ClassNames/structure only; copy, state, and API contracts untouched. Verified by tsc + build + screenshots. Redesign complete. |
+| 84 | VPS deploy is backup + chown + reset, and declared deps must also be installed | deploy | `/opt/fce/current` is a symlink to `releases/initial`; tar without `-h` backs up the link, not the tree. The tree had root-owned files (reset fails as `fce`) and half-applied session state — backup to `/opt/fce-backup-<date>.tgz`, chown, reset, clean. And: declaring `python-multipart` in pyproject while the VPS venv lacks it crash-loops the whole worker at route registration (FastAPI raises, not 422s) — install into the deploy venv in the same change. |
 
 ---
 
