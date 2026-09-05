@@ -118,15 +118,15 @@ export default function SettingsPage() {
 
   return (
     <div className="space-y-6 max-w-5xl">
-      <header className="pb-4 border-b border-foreground/5 flex justify-between items-end">
+      <header className="flex items-end justify-between border-b border-border pb-5">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-foreground">Voice & Config</h1>
-          <p className="text-foreground/60 mt-1">Manage your channels' voice, prompts, and compliance settings.</p>
+          <h1 className="text-[27px] font-semibold leading-none tracking-[-0.025em]">Voice & Config</h1>
+          <p className="mt-1 text-sm text-[var(--muted)]">Manage your channels' voice, prompts, and compliance settings.</p>
         </div>
         <button
           onClick={handleSave}
           disabled={saving}
-          className="premium-hover flex items-center space-x-2 px-6 py-2 bg-primary/20 text-primary rounded-xl font-medium border border-primary/30"
+          className="btn-primary shrink-0"
         >
           {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
           <span>{saving ? "Saving..." : "Save Configuration"}</span>
@@ -135,16 +135,14 @@ export default function SettingsPage() {
 
       <div className="grid grid-cols-1 gap-6">
         {/* Channel Card */}
-        <div className="glass-panel p-6 rounded-2xl border-foreground/5 relative group">
-          <div className="absolute inset-0 border border-primary/0 group-hover:border-primary/20 rounded-2xl transition-colors duration-500 pointer-events-none"></div>
-
+        <div className="rounded-[var(--radius)] border border-border bg-[var(--surface-deck)] p-6">
           <div className="flex items-center space-x-3 mb-6">
-            <div className="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center text-primary">
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg border border-border bg-[var(--surface-recessed)] text-[var(--muted)]">
               <Mic className="w-5 h-5" />
             </div>
             <div>
               <h2 className="text-lg font-bold text-foreground">Channel</h2>
-              <p className="text-xs text-foreground/50">Select and tune the personality of the AI scriptwriter per channel.</p>
+              <p className="text-xs text-[var(--muted)]">Select and tune the personality of the AI scriptwriter per channel.</p>
             </div>
           </div>
 
@@ -154,7 +152,7 @@ export default function SettingsPage() {
               <select
                 value={selectedChannel}
                 onChange={(e) => handleChannelSwitch(e.target.value)}
-                className="w-full bg-black/40 border border-foreground/10 rounded-xl px-4 py-3 text-foreground focus:outline-none focus:border-primary/50 transition-colors"
+                className="field-well min-h-11 w-full px-3 py-2 text-sm focus:outline-none"
               >
                 {channels &&
                   Object.entries(channels).map(([key, c]) => (
@@ -170,23 +168,21 @@ export default function SettingsPage() {
               <textarea
                 value={prompt}
                 onChange={(e) => setPrompt(e.target.value)}
-                className="w-full h-32 bg-black/40 border border-foreground/10 rounded-xl p-4 text-foreground/90 font-mono text-sm leading-relaxed focus:outline-none focus:border-primary/50 transition-colors resize-none"
+                className="field-well h-32 w-full resize-none p-4 font-mono text-sm leading-relaxed focus:outline-none"
               />
             </div>
           </div>
         </div>
 
         {/* Compliance Card */}
-        <div className="glass-panel p-6 rounded-2xl border-foreground/5 relative group">
-          <div className="absolute inset-0 border border-destructive/0 group-hover:border-destructive/20 rounded-2xl transition-colors duration-500 pointer-events-none"></div>
-
+        <div className="rounded-[var(--radius)] border border-border bg-[var(--surface-deck)] p-6">
           <div className="flex items-center space-x-3 mb-6">
             <div className="w-10 h-10 rounded-lg bg-destructive/20 flex items-center justify-center text-destructive">
               <ShieldAlert className="w-5 h-5" />
             </div>
             <div>
               <h2 className="text-lg font-bold text-foreground">Compliance Guardrails</h2>
-              <p className="text-xs text-foreground/50">L1 Regex Blocklist Active</p>
+              <p className="text-xs text-[var(--muted)]">L1 Regex Blocklist Active</p>
             </div>
           </div>
 
@@ -225,9 +221,9 @@ export default function SettingsPage() {
                 value={newWord}
                 onChange={(e) => setNewWord(e.target.value)}
                 placeholder="Add new word to block..."
-                className="flex-1 bg-black/40 border border-foreground/10 rounded-xl px-4 py-2 text-sm text-foreground focus:outline-none focus:border-destructive/50 transition-colors"
+                className="field-well min-h-11 flex-1 px-3 py-2 text-sm focus:outline-none"
               />
-              <button type="submit" className="px-4 py-2 bg-foreground/5 hover:bg-foreground/10 border border-foreground/10 rounded-xl text-sm font-medium transition-colors">
+              <button type="submit" className="btn-ghost text-sm">
                 Add Word
               </button>
             </form>

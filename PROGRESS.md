@@ -157,6 +157,7 @@ already exists must add the route once, or every fact-check fails loud with
 | 80 | History/science/mystery channels seeded merge-only; both routes proven per channel | piece-5 | Built-ins in code, merge adds missing ids only. Shared taxonomy untouched. Manual-first; feeds are a follow-up. GUI already dynamic. |
 | 81 | Long-form as acts on the cinematic path; per-act gates, merged render | long-form | Outline→acts→merge; 3-4×7-9 scenes (21-36). Same validator scaled, same fact-check per act. New mode + pacing, brief labeled owner-supplied. API-first. |
 | 82 | Editorial Dual Phase 1: tokens, shell, films, drafts | gui-redesign | Light porcelain + refined dark, Inter, hairline structure, frozen poster/export path. Verified by tsc + build + screenshots. |
+| 83 | Editorial Dual Phase 2: dashboard, X, cinema, settings, docs | gui-redesign | ClassNames/structure only; copy, state, and API contracts untouched. Verified by tsc + build + screenshots. Redesign complete. |
 
 ---
 
