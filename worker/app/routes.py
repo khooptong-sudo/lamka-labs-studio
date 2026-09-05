@@ -14,11 +14,12 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import uuid
 from pathlib import Path
 
 import httpx
-from fastapi import APIRouter, HTTPException, Request
+from fastapi import APIRouter, File, Form, HTTPException, Request, UploadFile
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 
@@ -286,6 +287,112 @@ async def youtube_job_start(req: YouTubeJobRequest) -> dict:
             await fail_job(job_id, str(exc))
 
     # Held so the task is not garbage-collected mid-render.
+    task = asyncio.create_task(run())
+    _RUNNING_JOBS.add(task)
+    task.add_done_callback(_RUNNING_JOBS.discard)
+
+    return {"job_id": str(job_id)}
+
+
+@router.post("/youtube/jobs/with-voice")
+async def youtube_job_with_voice(
+    story_id: str = Form(...),
+    channel_id: str = Form(...),
+    upload_preference: str = Form("manual"),
+    mode: str | None = Form(None),
+    storyboard: str | None = Form(None),
+    image_provider: str | None = Form(None),
+    voice_key: str | None = Form(None),
+    clips: list[UploadFile] | None = File(None),
+) -> dict:
+    """Voice-to-video: owner narration in, everything else like /youtube/jobs.
+
+    Clips match scenes by upload order. Validation is synchronous (a bad
+    request fails here, never as a dead background job); files are staged to
+    disk before the job starts so run() holds paths, not request memory.
+    """
+    import asyncio
+
+    from app import channels
+    from app.channels import ChannelConfigError
+    from app.jobs import create_job, fail_job, finish_job
+    from app.youtube import MAX_VOICE_CLIP_BYTES, MAX_VOICE_CLIPS, VIDEOS_DIR, generate_youtube_video
+
+    try:
+        try:
+            sid = uuid.UUID(story_id)
+        except ValueError:
+            raise HTTPException(status_code=400, detail="invalid story_id (must be a uuid)")
+
+        try:
+            backend = backend_for_mode(mode)
+        except ValueError as exc:
+            raise HTTPException(status_code=400, detail=str(exc))
+
+        if backend == "cinematic":
+            from app.scene3d.backend import require_cinematic_image_provider
+
+            try:
+                require_cinematic_image_provider(image_provider)
+            except (RuntimeError, ValueError) as exc:
+                raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+        await channels.resolve(channel_id)
+        if voice_key:
+            from app.youtube import VOICE_MAP
+
+            if voice_key not in VOICE_MAP:
+                raise HTTPException(status_code=400, detail=f"unknown voice key {voice_key!r}")
+
+        if not clips:
+            raise HTTPException(status_code=400, detail="at least one voice clip is required")
+        if len(clips) > MAX_VOICE_CLIPS:
+            raise HTTPException(status_code=400, detail=f"at most {MAX_VOICE_CLIPS} clips")
+
+        payloads: list[tuple[str, bytes]] = []
+        for upload in clips:
+            raw = await upload.read(MAX_VOICE_CLIP_BYTES + 1)
+            if len(raw) > MAX_VOICE_CLIP_BYTES:
+                raise HTTPException(status_code=400, detail=f"clip {upload.filename!r} exceeds the size cap")
+            if not raw:
+                raise HTTPException(status_code=400, detail=f"clip {upload.filename!r} is empty")
+            suffix = Path(upload.filename or "").suffix.lower()
+            if not suffix or not re.match(r"^\.[a-z0-9]{1,5}$", suffix):
+                suffix = ".audio"
+            payloads.append((suffix, raw))
+
+        job_id = await create_job(kind=(mode or "short"), story_id=sid)
+        staging = VIDEOS_DIR / f"voice-upload-{job_id}"
+        staging.mkdir(parents=True, exist_ok=True)
+        clip_paths = []
+        for index, (suffix, raw) in enumerate(payloads, start=1):
+            path = staging / f"clip-{index:02d}{suffix}"
+            path.write_bytes(raw)
+            clip_paths.append(path)
+    except HTTPException:
+        raise
+    except ChannelConfigError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+    async def run() -> None:
+        try:
+            draft_id = await generate_youtube_video(
+                story_id=sid,
+                channel_id=channel_id,
+                upload_preference=upload_preference,
+                backend=backend,
+                job_id=job_id,
+                storyboard_override=storyboard,
+                image_provider=image_provider,
+                voice_clip_paths=clip_paths,
+            )
+            if draft_id is None:
+                await fail_job(job_id, "generation aborted by a quality guard; see worker logs")
+            else:
+                await finish_job(job_id, draft_id)
+        except Exception as exc:  # noqa: BLE001
+            await fail_job(job_id, str(exc))
+
     task = asyncio.create_task(run())
     _RUNNING_JOBS.add(task)
     task.add_done_callback(_RUNNING_JOBS.discard)
