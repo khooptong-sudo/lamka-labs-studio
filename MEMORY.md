@@ -274,6 +274,7 @@ docker exec desk-caddy-1 caddy reload --config /etc/caddy/Caddyfile
 
 ### Local dev on Windows
 23. **Windows excludes host ports 5427-5526 and 8000 from binding** (`netsh interface ipv4 show excludedportrange`), so `docker compose up -d db` (host 5432) and the worker default (8000) both fail and the Studio page shows ERR_CONNECTION_REFUSED. Local workaround, env-only, no repo changes: run fce-db via `docker run` on host port **15432** reusing the `fce_pgdata` volume, start the worker with `WORKER_PORT=8002` + `FCE_DATABASE_URL=postgresql://postgres:postgres@127.0.0.1:15432/fce`, and start the GUI with `NEXT_PUBLIC_WORKER_URL=http://127.0.0.1:8002`. (8001 is the embedder's documented port; 5433 sits inside the excluded range, so neither is a substitute. `START_LAMKA_LABS_STUDIO.bat` is patched for this: DB via `docker run` on 15432 reusing `fce_pgdata`, worker on 8002, GUI pointed at it.)
+24. **VPS has no GPU; local RTX 3070 is exposed via Cloudflare quick tunnel** (`cloudflared tunnel --url http://127.0.0.1:8188` → `https://<random>.trycloudflare.com`). VPS `COMFYUI_BASE_URL` points at the tunnel, so VPS renders hit the local GPU. Quick tunnels are ephemeral — after a reboot or `cloudflared` restart the URL changes; refresh with `powershell -ExecutionPolicy Bypass -File scripts/refresh-comfy-tunnel.ps1` (kills old tunnel, starts new one, patches `/opt/fce/.env` and restarts `fce-worker`). The tunnel process is detached via `wscript` so the `bash` tool's ChildProcess killer does not reap it.
 
 ---
 
