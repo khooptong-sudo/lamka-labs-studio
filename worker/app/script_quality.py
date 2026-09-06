@@ -118,7 +118,12 @@ Return ONE JSON object and nothing else. No markdown fence, no commentary.
 
 - PASS: every factual claim is supported by the packet.
 - FLAG: minor softening needed (vague attribution, loose paraphrase) but nothing invented; the human reviewer decides.
-- BLOCK: any invented date, price, number, quote, legal/tax conclusion, or a recommendation to buy/sell/hold/accumulate/book profit."""
+- BLOCK: any invented date, price, number, quote, legal/tax conclusion, or a recommendation to buy/sell/hold/accumulate/book profit.
+
+CRITICAL clarifications on FLAG vs BLOCK:
+- Paraphrasing "Aug. 4" as "August fourth" or "the fourth of August" is the SAME date expressed differently — this is PASS or FLAG, never BLOCK.
+- Restating a paper's conclusion in your own words (interpretive summary) is not an invention — this is PASS or FLAG, never BLOCK.
+- Only BLOCK when the script invents a fact that has NO equivalent anywhere in the packet. Minor wording looseness, editorializing, or paraphrase of real evidence is FLAG at most."""
 
 
 def build_fact_check_user(script: str, evidence_packet: str) -> str:

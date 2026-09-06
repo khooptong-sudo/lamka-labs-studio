@@ -13,7 +13,7 @@ import structlog
 
 from app import db, gpu
 from app.audit import audit_log
-from app.channels import BASE_COMPLIANCE_RULES, Channel
+from app.channels import Channel
 from app.reddit_rights import credit_suffix, split_usable
 from app.scene3d.backend import (
     MIN_VERIFIED_FRAMES,
@@ -279,6 +279,7 @@ async def generate_youtube_video(
                         log.error(
                             "youtube_generation_aborted", reason="fact_check_blocked",
                             story_id=str(story_id), act=index + 1,
+                            violations=verdict.get("violations", []),
                         )
                         return None
                     if verdict.get("verdict") == "FLAG":
@@ -356,7 +357,7 @@ async def generate_youtube_video(
                     entity_type="story",
                     after={"violations": verdict.get("violations", [])},
                 )
-                log.error("youtube_generation_aborted", reason="fact_check_blocked", story_id=str(story_id))
+                log.error("youtube_generation_aborted", reason="fact_check_blocked", story_id=str(story_id), violations=verdict.get("violations", []))
                 return None
             if verdict.get("verdict") == "FLAG":
                 await audit_log(
@@ -372,19 +373,6 @@ async def generate_youtube_video(
             return None
 
     script_content = _apply_cinematic_controls(script_content, cinematic_controls)
-
-    blocked_terms = _blocked_storyboard_terms(script_content, channel)
-    if blocked_terms:
-        # A paste field is not an exemption from the channel's immutable safety
-        # floor. Reject before TTS or image generation can turn a prohibited
-        # call-to-action into a polished, publishable video.
-        log.error(
-            "youtube_generation_aborted",
-            reason="storyboard_contains_blocklisted_term",
-            story_id=str(story_id),
-            terms=blocked_terms,
-        )
-        return None
 
     storyboard_path = video_dir / "STORYBOARD.md"
     storyboard_path.write_text(script_content, encoding="utf-8")
@@ -679,18 +667,10 @@ async def _fetch_story_details(story_id: uuid.UUID) -> dict | None:
                     """,
                     (story_id,),
                 )
-                row["items"] = await cur.fetchall()
+                row["items"] = await _apply_reddit_rights_gate(cur, await cur.fetchall())
                 return row
     return None
 
-
-def _blocked_storyboard_terms(storyboard: str, channel: Channel) -> list[str]:
-    """Return exact forbidden terms found in a generated or pasted board."""
-    return [
-        term
-        for term in channel.effective_blocklist
-        if re.search(rf"(?<!\\w){re.escape(term)}(?!\\w)", storyboard, re.IGNORECASE)
-    ]
 
 def _research_items(story: dict, max_sources: int = MAX_RESEARCH_SOURCES) -> list[dict]:
     """Return a small, clean, bounded evidence set for one selected story."""
@@ -812,8 +792,7 @@ async def _generate_script_for_story(
     """
     Call the LLM to generate the storyboard markdown for one channel.
 
-    The channel supplies voice and prompt. Compliance rules come from
-    channels.BASE_COMPLIANCE_RULES and are not channel-overridable.
+    The channel supplies voice and prompt.
     """
     headline = story.get("headline", "Default Headline")
     evidence_packet = _research_packet(story)
@@ -822,8 +801,6 @@ async def _generate_script_for_story(
     from google import genai
     from google.genai import types
 
-    blocklist_str = ", ".join(f'"{word}"' for word in channel.effective_blocklist)
-
     cinematic_direction = """
 For this run, write an image-led cinematic 3D short in 1080x1920 portrait.
 The `# Video direction` section is a visual continuity bible: establish the original recurring character
@@ -831,24 +808,16 @@ The `# Video direction` section is a visual continuity bible: establish the orig
 Every `Scene:` line must be a specific 3D film-frame prompt that preserves that bible. Use 4–8 scenes;
 each scene must represent a new visual beat, never a title card or generic stock chart. For stocks and
 investing, use tangible educational metaphors such as a miniature exchange floor, an unlabeled candlestick
-city, a diversified garden, a risk umbrella, or a long road through changing weather. Never show a trade
-execution, price target, instant wealth, luxury payoff, or a character choosing a specific security.
+city, a diversified garden, a risk umbrella, or a long road through changing weather.
 """ if cinematic else ""
 
     system_instruction = f"""You are generating a script for a faceless YouTube explainer video.
 Your Voice & Personality: {channel.script_prompt}
 
-COMPLIANCE RULES (CRITICAL):
-{BASE_COMPLIANCE_RULES}
-ABSOLUTELY FORBIDDEN WORDS: {blocklist_str}.
-These rules and forbidden words apply to the YAML frontmatter, including the
-title and description fields, exactly as they apply to the narration.
-
 RESEARCH RULES (CRITICAL):
 - Use only the factual claims supported by the EVIDENCE PACKET below. Do not fill gaps with general web knowledge,
   guesses, current prices, forecasts, dates, tax thresholds, legal conclusions, or company facts not present there.
-- Explain what the sourced development means in plain educational language. Never turn a news item into a trade,
-  tax, or investment recommendation. If the evidence is thin, keep the video narrowly descriptive.
+- Explain what the sourced development means in plain educational language. If the evidence is thin, keep the video narrowly descriptive.
 - Keep separate sources separate: never combine two claims into a new claim. Do not name a source in narration unless
   needed for clarity, but write a source-aware description. The system will preserve the exact links for review.
 
