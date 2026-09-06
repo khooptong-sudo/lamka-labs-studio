@@ -581,6 +581,16 @@ soak (P1-DEPLOY-SOAK-CHECKLIST.md steps 4a–4c) now runs against *this* box.
 
 ## Day-to-day operations (cheat sheet)
 
+**Video rendering requirements (added 2026-09-06):** the worker renders YouTube
+films via `npx hyperframes@0.8.30`, which needs **Node ≥ 22** (the box's apt
+Node is 20 — do NOT upgrade it system-wide, the trading desk uses it). Node 22
+lives at `/opt/node22`, and `/etc/systemd/system/fce-worker.service.d/node22.conf`
+puts it on the worker's PATH and sets `PRODUCER_ENABLE_CHUNKED_ENCODE=true` +
+`PRODUCER_CHUNK_SIZE_FRAMES=300` (without chunked encode the Chrome tab dies
+mid-render on this 8 GB box) and `HYPERFRAMES_TIMEOUT_SECONDS=3600` (a 49 s film
+takes ~21 min on 2 cores). If you ever recreate the unit file, recreate that
+drop-in too. Swap was also raised to 4 GB (`/swapfile`).
+
 **Update the worker code after a change:**
 ```bash
 git -C /opt/fce/current pull
