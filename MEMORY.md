@@ -153,6 +153,40 @@ by three cheap, tireless LLMs.
 - **VPS launcher:** `START_Lamka_Labs_Studio_VPS.bat` starts the GUI pointed at `http://160.250.204.73:8002` and opens `http://localhost:3000/x`.
 - **Vault/RAG updated:** three new atomic pages ingested; graph rebuilt with `--no-llm` because Anthropic credits are depleted.
 
+### Session-close update — 2026-09-06 (night): VPS render pipeline unblocked end-to-end
+
+- **The YouTube film jobs run on the VPS worker, not the local one.** The GUI launcher
+  sets `NEXT_PUBLIC_WORKER_URL=http://160.250.204.73:8002`; the local worker and local
+  `videos/` are only a dev convenience. Two rounds of "fix it locally, watch it fail
+  again" burned a session before `journalctl -u fce-worker` on the VPS was read. Rule:
+  when testing the film workflow, fix → commit → push → `git -C /opt/fce/current pull`
+  → `systemctl restart fce-worker`, then read the VPS journal.
+- **Root cause of "Stopped at render / youtube rendering failed": the VPS had Node 20;
+  hyperframes ≥ 0.8.27 requires Node ≥ 22.** `npx hyperframes` exited 1 instantly with
+  the version complaint on stderr, and the old worker code swallowed stderr. Fixed in
+  `worker/app/youtube.py` (commit `ebf50a8`): pinned `hyperframes@0.8.30` via
+  `HYPERFRAMES_VERSION`, `npx --yes` so a cold cache can't stall on the install prompt,
+  and the render failure now logs + raises with the last 20 stderr lines.
+- **VPS Node 22 is a side-install at `/opt/node22`, not a system upgrade** — the trading
+  desk's Prisma node service keeps Node 20. A systemd drop-in
+  (`fce-worker.service.d/node22.conf`) puts it on the worker's PATH and also sets
+  `PRODUCER_ENABLE_CHUNKED_ENCODE=true`, `PRODUCER_CHUNK_SIZE_FRAMES=300`,
+  `HYPERFRAMES_TIMEOUT_SECONDS=3600`. Without chunked encode the Chrome tab dies
+  mid-capture (`Target closed`, ~frame 465/1482) on the 8 GB box; with it, memory holds
+  ~2.9 GB used and a 49 s film renders in ~21 min. Swapfile raised 256 MB → 4 GB.
+  Full detail: `docs/P1-VPS-DEPLOY-RUNBOOK.md` cheat-sheet section.
+- **"Stopped at shots / no image data" was a transient Gemini blank.** The image
+  endpoint occasionally returns a response with no image part; the old code raised on
+  the first blank and killed the film. Fixed in `worker/app/scene3d/backend.py`: up to
+  4 attempts (`GEMINI_IMAGE_MAX_ATTEMPTS`) with backoff, and the error now carries
+  `finish_reasons`/`block_reason` so a real safety block is distinguishable from a
+  transient blank. 23 scene3d tests green incl. a new recover-from-blank test.
+- **Verified live on the VPS:** the failed story's film rendered manually as `fce`
+  with the worker's exact environment (26.4 MB, 49.4 s, 21m 27s); worker restarted with
+  the new env confirmed via `/proc/<pid>/environ`; `/health` green. A fresh GUI job
+  still needs to be re-run to produce the complete draft (thumbnails + registration)
+  — the render alone is not a draft.
+
 ---
 
 ## Non-negotiables (governs every phase)
