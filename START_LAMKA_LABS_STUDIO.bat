@@ -25,12 +25,21 @@ exit /b 1
 
 :docker_ready
 echo Starting the local Content database...
-docker compose -f "%ROOT%docker-compose.yml" up -d db
+rem Windows reserves host ports 5427-5526, so the compose file's 5432
+rem mapping cannot bind on this machine. Run the same image on 15432
+rem instead, reusing the compose volume; the worker is pointed at it below.
+docker ps --format "{{.Names}}" 2>nul | findstr /x "fce-db" >nul
+if not errorlevel 1 goto db_ready
+docker start fce-db >nul 2>nul
+if not errorlevel 1 goto db_ready
+docker run -d --name fce-db -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=postgres -e POSTGRES_DB=fce -p 127.0.0.1:15432:5432 -v fce_pgdata:/var/lib/postgresql/data pgvector/pgvector:pg16 >nul
 if errorlevel 1 (
   echo Could not start the local Content database.
   pause
   exit /b 1
 )
+
+:db_ready
 
 rem Local zero-credit cinematic keyframes. The worker inherits these 8 GB-safe
 rem defaults; the 1080x1920 final composition performs the cinematic 2.5D crop.
@@ -53,9 +62,14 @@ if exist "%COMFY_ROOT%\python_embeded\python.exe" (
 )
 
 :comfy_ready
+rem Port workaround part 2: 8000 is Windows-reserved, so the worker serves
+rem on 8002 and the DB (started above) listens on host port 15432.
+set "WORKER_PORT=8002"
+set "FCE_DATABASE_URL=postgresql://postgres:postgres@127.0.0.1:15432/fce"
 start "Lamka Labs Worker" /min /D "%ROOT%worker" "%ROOT%.venv\Scripts\python.exe" "run_worker.py"
 timeout /t 8 /nobreak >nul
 
+set "NEXT_PUBLIC_WORKER_URL=http://127.0.0.1:8002"
 start "Lamka Labs Studio" /min /D "%ROOT%gui" cmd.exe /d /c "npm.cmd run dev"
 timeout /t 5 /nobreak >nul
 
