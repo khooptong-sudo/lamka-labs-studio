@@ -41,6 +41,10 @@ MIN_VERIFIED_FRAMES = int(os.environ.get("MIN_VERIFIED_FRAMES", "3"))
 GEMINI_IMAGE_MODEL = os.environ.get("GEMINI_IMAGE_MODEL", "gemini-2.5-flash-image")
 IMAGE_PROVIDERS = ("gemini", "comfyui")
 
+# The image endpoint sometimes answers with an empty or text-only response
+# instead of an image. Those clear on their own; retry before failing the film.
+GEMINI_IMAGE_MAX_ATTEMPTS = int(os.environ.get("GEMINI_IMAGE_MAX_ATTEMPTS", "4"))
+
 
 def normalize_cinematic_image_provider(provider: str | None = None) -> str:
     """Validate a per-run image provider without ever silently downgrading it."""
@@ -344,7 +348,13 @@ def extract_gemini_image_bytes(response: object) -> bytes:
             if inline is not None and str(getattr(inline, "mime_type", "")).startswith("image/"):
                 data = inline.data
                 return data if isinstance(data, bytes) else base64.b64decode(data)
-    raise RuntimeError("cinematic image provider returned no image data")
+    finish_reasons = [str(getattr(c, "finish_reason", "")) for c in candidates]
+    feedback = getattr(response, "prompt_feedback", None)
+    block_reason = getattr(feedback, "block_reason", None) if feedback is not None else None
+    raise RuntimeError(
+        "cinematic image provider returned no image data "
+        f"(finish_reasons={finish_reasons or 'none'}, block_reason={block_reason or 'none'})"
+    )
 
 
 async def _generate_gemini_cinematic_image(prompt: str, destination: Path) -> None:
@@ -361,8 +371,20 @@ async def _generate_gemini_cinematic_image(prompt: str, destination: Path) -> No
             config=types.GenerateContentConfig(response_modalities=["IMAGE"]),
         )
 
-    response = await asyncio.to_thread(call)
-    destination.write_bytes(extract_gemini_image_bytes(response))
+    last_error: Exception | None = None
+    for attempt in range(1, GEMINI_IMAGE_MAX_ATTEMPTS + 1):
+        try:
+            response = await asyncio.to_thread(call)
+            destination.write_bytes(extract_gemini_image_bytes(response))
+            return
+        except Exception as exc:
+            last_error = exc
+            log.warning("cinematic_image_retry", attempt=attempt, error=str(exc)[:200])
+            if attempt < GEMINI_IMAGE_MAX_ATTEMPTS:
+                await asyncio.sleep(min(2 ** attempt, 15))
+    raise RuntimeError(
+        f"gemini image generation failed after {GEMINI_IMAGE_MAX_ATTEMPTS} attempts: {last_error}"
+    )
 
 
 def _replace_comfy_tokens(value, replacements: dict[str, str | int | float]):

@@ -64,6 +64,12 @@ SCRIPT_MAX_ATTEMPTS = int(os.environ.get("SCRIPT_MAX_ATTEMPTS", "4"))
 # and fail the job loud on expiry (default 20 minutes).
 HYPERFRAMES_TIMEOUT_SECONDS = float(os.environ.get("HYPERFRAMES_TIMEOUT_SECONDS", "1200"))
 
+# A bare `npx hyperframes` re-resolves the newest release on every render and
+# downloads it if the cache is cold, so a fresh publish (or a failed download)
+# breaks rendering with no code change. Pin the version and let npx take the
+# install prompt non-interactively.
+HYPERFRAMES_VERSION = os.environ.get("HYPERFRAMES_VERSION", "0.8.30")
+
 MAX_VOICE_CLIP_BYTES = 8 * 1024 * 1024
 MAX_VOICE_CLIPS = 40
 
@@ -531,7 +537,14 @@ async def generate_youtube_video(
     try:
         def run_hyperframes():
             return subprocess.run(
-                [npx_cmd, "hyperframes", "render", "--output", "renders/video.mp4"],
+                [
+                    npx_cmd,
+                    "--yes",
+                    f"hyperframes@{HYPERFRAMES_VERSION}",
+                    "render",
+                    "--output",
+                    "renders/video.mp4",
+                ],
                 cwd=str(video_dir),
                 capture_output=True,
                 check=True,
@@ -545,8 +558,14 @@ async def generate_youtube_video(
         log.error("youtube_rendering_failed", reason="timeout", timeout_seconds=e.timeout)
         raise Exception("youtube rendering timed out")
     except subprocess.CalledProcessError as e:
-        log.error("youtube_rendering_failed", returncode=e.returncode)
-        raise Exception("youtube rendering failed")
+        raw = e.stderr or e.stdout or b""
+        text = raw.decode("utf-8", errors="replace") if isinstance(raw, bytes) else str(raw)
+        tail = "\n".join(text.strip().splitlines()[-20:])
+        log.error("youtube_rendering_failed", returncode=e.returncode, stderr=tail)
+        detail = f"youtube rendering failed (exit {e.returncode})"
+        if tail:
+            detail = f"{detail}: {tail}"
+        raise Exception(detail)
     except Exception as e:
         log.error("youtube_rendering_error", error=str(e))
         raise
