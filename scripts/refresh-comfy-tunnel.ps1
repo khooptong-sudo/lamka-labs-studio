@@ -47,7 +47,7 @@ grep -q '^COMFYUI_IMAGE_WIDTH=' /opt/fce/.env || echo 'COMFYUI_IMAGE_WIDTH=576' 
 grep -q '^COMFYUI_IMAGE_HEIGHT=' /opt/fce/.env || echo 'COMFYUI_IMAGE_HEIGHT=896' >> /opt/fce/.env
 grep -q '^COMFYUI_STEPS=' /opt/fce/.env || echo 'COMFYUI_STEPS=15' >> /opt/fce/.env
 grep -q '^COMFYUI_CFG=' /opt/fce/.env || echo 'COMFYUI_CFG=6.0' >> /opt/fce/.env
-grep -q '^COMFYUI_TIMEOUT_SECONDS=' /opt/fce/.env || echo 'COMFYUI_TIMEOUT_SECONDS=300' >> /opt/fce/.env
+grep -q '^COMFYUI_TIMEOUT_SECONDS=' /opt/fce/.env || echo 'COMFYUI_TIMEOUT_SECONDS=900' >> /opt/fce/.env
 cat /opt/fce/.env | grep COMFYUI
 systemctl restart fce-worker
 sleep 8
