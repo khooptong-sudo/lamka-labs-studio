@@ -595,6 +595,13 @@ async def _build_cinematic_frames_inner(
     ease, boost = motion_style(motion_intent_of(board.direction))
     for frame in board.frames:
         image_path = assets_dir / f"{frame.slug}.png"
+        if image_path.exists():
+            # A retried build reuses keyframes that already generated; only
+            # the images a failed run never wrote are regenerated. This also
+            # keeps render-stage retries working while the image provider is
+            # temporarily down, mirroring the motion path's clip reuse.
+            log.info("cinematic_image_reused", slug=frame.slug)
+            continue
         await _generate_cinematic_image(cinematic_image_prompt(board, frame), image_path, selected)
 
     async def animate_one(frame) -> None:

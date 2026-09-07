@@ -380,3 +380,9 @@ docker exec desk-caddy-1 caddy reload --config /etc/caddy/Caddyfile
 2. Auto-queue is manual/assistant-driven; no scheduled top-scored queueing exists.
 3. Motion clip generation progress still blind at shots stage (carried over).
 4. Pool starvation can recur under load: 18 conns vs 30-min pile-up is better but not provably sufficient — watch for `PoolTimeout` in the journal.
+
+### Session note — 2026-09-07 (later): "No stories again" was a launcher race, not a recurrence
+
+- Symptom identical to the starvation bug (empty Inbox), cause completely different: **both `.bat` launchers had been run, and both start the GUI on port 3000.** The local launcher won the race, so the browser talked to the *local* worker — whose `fce_pgdata` volume was recreated on 2026-09-06 and holds **0 items / 1 story**. Empty local DB + 48h freshness window = "no stories", while the VPS (1,880 stories, ingest ticking every 10 min) was perfectly healthy. **First diagnostic step for any "no stories" report: check which worker URL the GUI on port 3000 actually inlined** (`curl localhost:3000/_next/static/chunks/app/page.js | grep 160.250`), then read that worker's `/stats`.
+- **Fix applied:** `START_Lamka_Labs_Studio_VPS.bat` now serves on **port 3100** (`npm run dev -- --port 3100`, browser opens `localhost:3100/x`); the local launcher keeps 3000. The two can no longer collide. Also killed a stuck duplicate `next dev` (waiting on the port prompt, listening on nothing) and a second orphan `run_worker.py` with no listener.
+- Rule: the local DB is a scratch/dev database. If the Inbox matters, the GUI must point at the VPS worker.

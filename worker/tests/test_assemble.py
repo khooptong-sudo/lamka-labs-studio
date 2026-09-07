@@ -177,7 +177,8 @@ async def test_assemble_raises_with_stderr_tail(tmp_path):
 
 
 # ---------------------------------------------------------------------------
-# End-to-end dispatch: motion builds skip HyperFrames, off builds keep it
+# End-to-end dispatch: all cinematic builds assemble with ffmpeg; only an
+# explicit SHORT_RENDERER=hyperframes sends motion-off builds to HyperFrames
 # ---------------------------------------------------------------------------
 
 
@@ -240,9 +241,43 @@ async def test_motion_build_assembles_with_ffmpeg_not_hyperframes(tmp_path):
 
 
 @pytest.mark.asyncio
-async def test_off_build_keeps_hyperframes_path(tmp_path):
+async def test_off_build_renders_kenburns_with_ffmpeg(tmp_path):
     from app import youtube
 
+    mocks = [p.start() for p in _DISPATCH_PATCHES]
+    try:
+        mock_fetch, mock_record, mock_script, mock_audio, mock_frames, mock_run = mocks[:6]
+        _arrange((mock_run, mock_frames, mock_audio, mock_script, mock_record, mock_fetch))
+
+        assemble = AsyncMock(return_value=tmp_path / "renders" / "video.mp4")
+        with (
+            patch("app.youtube.VIDEOS_DIR", tmp_path),
+            patch("app.channels.resolve", AsyncMock(return_value=FINANCE)),
+            patch("app.scene3d.kenburns.assemble_kenburns_video", assemble),
+        ):
+            draft_id = await youtube.generate_youtube_video(
+                story_id=uuid.uuid4(),
+                channel_id="finance",
+                upload_preference="manual",
+                backend="cinematic",
+                motion=None,
+            )
+
+        assert draft_id is not None
+        assemble.assert_awaited_once()
+        for call in mock_run.call_args_list:
+            argv = call.args[0] if call.args else []
+            assert not any("hyperframes" in str(part) for part in argv)
+    finally:
+        for p in reversed(_DISPATCH_PATCHES):
+            p.stop()
+
+
+@pytest.mark.asyncio
+async def test_off_build_keeps_hyperframes_path(tmp_path, monkeypatch):
+    from app import youtube
+
+    monkeypatch.setenv("SHORT_RENDERER", "hyperframes")
     mocks = [p.start() for p in _DISPATCH_PATCHES]
     try:
         mock_fetch, mock_record, mock_script, mock_audio, mock_frames, mock_run = mocks[:6]
@@ -252,7 +287,7 @@ async def test_off_build_keeps_hyperframes_path(tmp_path):
         with (
             patch("app.youtube.VIDEOS_DIR", tmp_path),
             patch("app.channels.resolve", AsyncMock(return_value=FINANCE)),
-            patch("app.scene3d.assemble.assemble_motion_video", assemble),
+            patch("app.scene3d.kenburns.assemble_kenburns_video", assemble),
         ):
             draft_id = await youtube.generate_youtube_video(
                 story_id=uuid.uuid4(),

@@ -7,12 +7,14 @@ rem This only starts the GUI; the worker runs remotely at 160.250.204.73:8002.
 set "ROOT=%~dp0"
 set "NEXT_PUBLIC_WORKER_URL=http://160.250.204.73:8002"
 
-start "Lamka Labs Studio (VPS)" /min /D "%ROOT%gui" cmd.exe /d /c "set NEXT_PUBLIC_WORKER_URL=%NEXT_PUBLIC_WORKER_URL% && npm.cmd run dev"
+rem Port 3100 (not 3000) so this can run alongside the local launcher
+rem without a first-come race on the GUI port.
+start "Lamka Labs Studio (VPS)" /min /D "%ROOT%gui" cmd.exe /d /c "set NEXT_PUBLIC_WORKER_URL=%NEXT_PUBLIC_WORKER_URL% && npm.cmd run dev -- --port 3100"
 timeout /t 5 /nobreak >nul
 
 rem Standalone window: app mode has no tabs or address bar, so the Studio
 rem feels like its own program. Falls back to the default browser.
-set "STUDIO_URL=http://localhost:3000/x"
+set "STUDIO_URL=http://localhost:3100/x"
 if exist "%ProgramFiles%\Google\Chrome\Application\chrome.exe" goto :studio_chrome
 set "STUDIO_EDGE=%ProgramFiles(x86)%\Microsoft\Edge\Application\msedge.exe"
 if exist "%STUDIO_EDGE%" goto :studio_edge

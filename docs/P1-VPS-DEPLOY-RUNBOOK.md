@@ -581,8 +581,12 @@ soak (P1-DEPLOY-SOAK-CHECKLIST.md steps 4a–4c) now runs against *this* box.
 
 ## Day-to-day operations (cheat sheet)
 
-**Video rendering requirements (added 2026-09-06):** the worker renders YouTube
-films via `npx hyperframes@0.8.30`, which needs **Node ≥ 22** (the box's apt
+**Video rendering requirements (added 2026-09-06, amended 2026-09-07):**
+cinematic Shorts no longer need HyperFrames or Node at all: keyframe Ken Burns
+clips render with ffmpeg `zoompan` and assemble in the same single pass the
+motion builds already used (a ~60 s cinematic Short renders in a few minutes
+instead of ~21 min). Node ≥ 22 is still required for **code-authored 3D story
+films**, which render via `npx hyperframes@0.8.30` (the box's apt
 Node is 20 — do NOT upgrade it system-wide, the trading desk uses it). Node 22
 lives at `/opt/node22`, and `/etc/systemd/system/fce-worker.service.d/node22.conf`
 puts it on the worker's PATH and sets `PRODUCER_ENABLE_CHUNKED_ENCODE=true` +

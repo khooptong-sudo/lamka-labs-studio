@@ -532,11 +532,14 @@ async def generate_youtube_video(
     
     await _stage(job_id, "render")
 
-    motion_assembly = (
-        (backend or FRAME_BACKEND).lower() == "cinematic"
-        and motion not in (None, "off")
-    )
-    if motion_assembly:
+    cinematic = (backend or FRAME_BACKEND).lower() == "cinematic"
+    motion_on = cinematic and motion not in (None, "off")
+    # Cinematic builds assemble with ffmpeg: motion reuses the normalized
+    # per-scene clips, motion-off renders Ken Burns clips from the keyframes.
+    # Both replace the ~25-40 min headless-Chrome capture. SHORT_RENDERER=
+    # hyperframes restores the old browser capture for motion-off cinematic
+    # builds; code-authored 3D builds still require it.
+    if motion_on:
         # Motion scenes are already normalized per-scene MP4s of exactly
         # frame.duration; one ffmpeg pass replaces the ~25-40 min
         # headless-Chrome capture and writes the same renders/video.mp4.
@@ -550,6 +553,17 @@ async def generate_youtube_video(
             log.error("youtube_motion_assembly_failed", error=str(e))
             raise
         log.info("youtube_rendering_complete", renderer="ffmpeg-assemble")
+    elif cinematic and os.environ.get("SHORT_RENDERER", "ffmpeg").lower() != "hyperframes":
+        from app.scene3d.kenburns import assemble_kenburns_video
+
+        try:
+            await assemble_kenburns_video(
+                board, video_dir, with_bgm=(video_dir / "bgm.mp3").exists()
+            )
+        except Exception as e:
+            log.error("youtube_kenburns_assembly_failed", error=str(e))
+            raise
+        log.info("youtube_rendering_complete", renderer="ffmpeg-kenburns")
     else:
 
         import sys
