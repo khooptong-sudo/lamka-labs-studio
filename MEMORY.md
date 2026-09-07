@@ -364,3 +364,19 @@ docker exec desk-caddy-1 caddy reload --config /etc/caddy/Caddyfile
 7. `worker/.env.example` had documented a removed `openai` image provider for weeks — fixed in passing; keep example files honest when providers change.
 
 **Tests:** 53 motion/assemble tests (incl. 429 retry, non-quota reraise, clip reuse, ffmpeg command shape, adelay offsets, overlay bake); full suite 887 green minus the 5 known `test_x_publish.py` local-Postgres failures. GUI `tsc`/`eslint` clean.
+
+### Session-close update — 2026-09-07 (day): Inbox starvation post-mortem + ComfyUI tunnel outage
+
+**"Where have all the stories gone" — three stacked causes, none of them data loss.** All 1,785 stories stayed in the VPS Postgres the whole time; the Inbox only ever shows stories with source items ≤48h old (`get_pending_stories` freshness window), so when ingest stopped the window silently emptied. Ingest stopped because: (1) the worker crash-looped 15× on Sep 6–7 (deploy/test night) and `poll_rss` runs on a 30-min interval — uptime under the interval means the job never fires while 10-min jobs keep ticking; (2) the DB pool was `scheduler_max_workers + 2` = 6, and four 30-min jobs fire simultaneously at each half-hour mark, each holding a conn for its whole run — every boundary was a `PoolTimeout` lottery the loser dying silently (`/health` green throughout). **Fixes on the VPS:** `FCE_SCHEDULER_MAX_WORKERS=16` (pool 6→18), `rss_poll_minutes` 30→10 in the prod `config` row (the "10-minute ingest" tightening had only ever been applied to the local docker DB). Verified: 12 sources ingested, 54 new stories, Inbox back to 89.
+
+**The env-var prefix trap (cost one full restart cycle):** worker settings use pydantic `env_prefix="FCE_"` — a bare `SCHEDULER_MAX_WORKERS=16` in `/opt/fce/.env` is silently ignored (`extra="ignore"`), so the first pool fix did nothing and starvation recurred exactly at the next 30-min pile-up. Correct form: `FCE_SCHEDULER_MAX_WORKERS=16`. **Rule: every worker env override starts with `FCE_`; verify by counting connections (`pg_stat_activity`), never by "I set it".**
+
+**Finance channel + autopilot restored.** Stories arrive with `channel_id NULL`; scoring fills `vertical`/`content_archetype` but never the channel, so finance-vertical stories (macro/equities/market_structure/investing_concept/personal_finance/regulation/earnings) could never reach the video stage. Assigned `channel_id='finance'` to 256 stories; queued the top 3 fresh ones; autopilot (window 02:00–05:00 UTC = 07:30–10:30 IST, max 3/day, owner-queue-only) rendered the first one end-to-end minutes later. Standing flow: Inbox refills every 10 min → owner queues (or asks assistant to auto-queue top-scored) → window renders → manual publish from Drafts.
+
+**ComfyUI tunnel outage (this morning's 530):** quick tunnel was dead AND ComfyUI itself was down. `scripts/refresh-comfy-tunnel.ps1` had three latent bugs (em-dash broke PS 5.1 ANSI parse of the no-BOM file; wscript redirect produced an empty log; `ssh` without `-n` hung on piped stdin) — fixed in commit `b75584f`. New tunnel live, VPS `.env` re-patched, end-to-end 200 verified from the VPS. Quick tunnels are ephemeral; if the PC/cloudflared restarts, rerun the script.
+
+**Open items, ranked:**
+1. VPS worker was crash-looping Sep 6–7 (Restart=on-failure, no OOM evidence) — root cause of the crashes uninvestigated; watch `journalctl -u fce-worker` for the next loop.
+2. Auto-queue is manual/assistant-driven; no scheduled top-scored queueing exists.
+3. Motion clip generation progress still blind at shots stage (carried over).
+4. Pool starvation can recur under load: 18 conns vs 30-min pile-up is better but not provably sufficient — watch for `PoolTimeout` in the journal.
