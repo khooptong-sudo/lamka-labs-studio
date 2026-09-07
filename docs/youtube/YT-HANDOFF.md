@@ -537,3 +537,24 @@ debris in `.test-tmp/`:
   them as offline until the new card is installed and re-benched (PSU first).
 - After these reboots the ComfyUI quick tunnel URL is stale; if a VPS job ever selects a
   local provider, rerun `scripts/refresh-comfy-tunnel.ps1` first.
+
+## Session Close — 2026-09-07 (late night): first Veo motion draft + quota/billing state
+
+### Shipped
+
+- **First true-motion draft: `6f35d9e0` "NSE Pre-Open Rules Just Changed: What Traders Need to Know"** — 90 s, native 1080×1920 h264, 5 scenes with Veo fast image-to-video clips, Gemini Cinematic keyframes, TTS narration. Status `pending` — owner review in Drafts, then manual publish (never auto-publishes). Story `6bfce91a` (score 85, 10 KB source) was the one that passed every gate tonight.
+- ComfyUI local re-established at the owner's request: ComfyUI running (split-attention launcher), tunnel `https://title-trades-johnson-suggestions.trycloudflare.com`, VPS `COMFYUI_BASE_URL` re-enabled, tile Ready. **No GPU test job was ever submitted; the card remains suspect at the owner's 165 W cap** (hardware verdict from the evening forensics stands — shelved until the 4090/5080).
+- `refresh-comfy-tunnel.ps1` ssh hang fixed (`c290711`): remote script now passed as command argument, not piped into `ssh -n`.
+
+### Billing state (blocks NEW builds until topped up)
+
+- The Gemini API project's **prepay balance is zero** (~20:03): all text calls 429 "prepayment credits are depleted". Scripting is Gemini-text-only, so **no new film can script** until top-up at ai.studio/projects → Billing → Prepay.
+- **Veo video pools are unaffected** (separate free daily pools) — renders already past scripting keep working. `GEMINI_VIDEO_MODEL=veo-3.1-fast-generate-preview` on the VPS.
+- `SCENE_MODEL_PROVIDER=kimi` in `/opt/fce/.env` silently behaves as Gemini (code only special-cases `deepseek`) — misleading; clean up next session. DeepSeek scripting can't help tonight anyway: the fact-check must exclude the drafter, leaving only dead Gemini.
+- Optional: `FAL_KEY` (fal.run) on the VPS → Kling 2.0 as vendor-independent motion (tile currently "Setup needed").
+
+### Retry guidance for the next session
+
+1. Owner tops up prepay → any fresh finance story with ≥5 KB source body (`SELECT ... sum(length(full_text))` — avoid title-only wire items, they fail fact-check).
+2. Submit `mode=short`, `image_provider=gemini`, `motion=veo`. Ken Burns (`motion=off`) + `image_provider=comfyui` is the credit-free fallback but loads the sick GPU for keyframes.
+3. If the PC rebooted: ComfyUI + `scripts/refresh-comfy-tunnel.ps1` before any local-provider run.
