@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="320" viewBox="0 0 1200 320">
+  <rect width="1200" height="320" fill="#0A0A0A" />
+  
+      <g transform="translate(110, 85)">
+        <circle cx="75" cy="75" r="48" fill="none" stroke="#D4AF37" stroke-width="2.6999999999999997" />
+        <circle cx="75" cy="75" r="54.75" fill="none" stroke="#2A2A2A" stroke-width="1.6199999999999999" />
+        <text x="75" y="95.16" font-family="'Georgia','Times New Roman',serif" font-size="55.199999999999996" font-weight="400" fill="#F5F5F0" text-anchor="middle" letter-spacing="-0.05em">LL</text>
+        <path d="M75,37.56 L75,45.24" stroke="#D4AF37" stroke-width="2.6999999999999997" />
+        <path d="M70.2,37.56 L70.2,45.24" stroke="#D4AF37" stroke-width="2.6999999999999997" />
+      </g>
+      
+      
+    <text x="320" y="160" font-size="58" dominant-baseline="middle">
+      <tspan font-family="'Georgia','Times New Roman',serif" font-weight="400" fill="#F5F5F0" letter-spacing="0.04em">LAMKA</tspan>
+      <tspan dx="18.56" font-family="'Helvetica Neue','Arial',sans-serif" font-weight="300" fill="#F5F5F0" letter-spacing="0.12em">LABS</tspan>
+      <tspan dx="24.36" dy="-10.44" font-family="'Georgia','Times New Roman',serif" font-size="30.16" font-weight="400" fill="#D4AF37" letter-spacing="0.18em">STUDIO</tspan>
+    </text>
+  
+    
+</svg>

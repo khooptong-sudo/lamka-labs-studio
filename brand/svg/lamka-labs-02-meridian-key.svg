@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" width="1000" height="1000">
+  <!-- Lamka Labs Studio identity - Meridian Key -->
+  <rect width="1000" height="1000" fill="#15130E"/>
+  <polyline points="690,310 310,310 310,690 610,690 610,410 410,410 410,590" fill="none" stroke="#B99463" stroke-width="46"
+            stroke-miterlimit="8"/>
+  <text x="507" y="852" font-family="Georgia, 'Times New Roman', serif" font-size="54"
+        letter-spacing="14" fill="#F2EEE3" text-anchor="middle">LAMKA LABS</text>
+  <text x="510" y="906" font-family="Georgia, 'Times New Roman', serif" font-size="25"
+        letter-spacing="20" fill="#B99463" text-anchor="middle">STUDIO</text>
+</svg>

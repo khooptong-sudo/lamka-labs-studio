@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" width="1000" height="1000">
+  <!-- Lamka Labs Studio identity - Strata -->
+  <rect width="1000" height="1000" fill="#15130E"/>
+  <rect x="320" y="330" width="360" height="64" fill="#F2EEE3"/>
+  <rect x="320" y="458" width="250" height="64" fill="#F2EEE3"/>
+  <rect x="320" y="586" width="140" height="64" fill="#B99463"/>
+  <text x="507" y="852" font-family="Georgia, 'Times New Roman', serif" font-size="54"
+        letter-spacing="14" fill="#F2EEE3" text-anchor="middle">LAMKA LABS</text>
+  <text x="510" y="906" font-family="Georgia, 'Times New Roman', serif" font-size="25"
+        letter-spacing="20" fill="#B99463" text-anchor="middle">STUDIO</text>
+</svg>

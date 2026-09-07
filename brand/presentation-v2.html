@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lamka Labs Studio — Identity Program v2 · Black / White / Red</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#0F0E0C; --ink2:#171613; --white:#F7F5F0; --red:#C8102E;
+    --red2:#9C0C24; --mute:#8C877D; --line:#262420;
+    --serif:'Cormorant Garamond', Georgia, serif;
+    --sans:'Inter', 'Segoe UI', sans-serif;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:var(--ink);color:var(--white);font-family:var(--sans);font-weight:300;line-height:1.7}
+  .wrap{max-width:1180px;margin:0 auto;padding:0 48px}
+  section{padding:110px 0;border-bottom:1px solid var(--line)}
+  .kicker{font-size:11px;letter-spacing:.42em;text-transform:uppercase;color:var(--red);margin-bottom:26px}
+  h2{font-family:var(--serif);font-weight:500;font-size:52px;line-height:1.15;margin-bottom:20px}
+  .lede{max-width:640px;color:var(--mute);font-size:16px}
+  .rule{width:56px;height:1px;background:var(--red);margin:34px 0}
+
+  .cover{min-height:100vh;display:flex;flex-direction:column;justify-content:center;text-align:center;border-bottom:1px solid var(--line)}
+  .cover img{width:300px;height:300px;box-shadow:0 0 0 1px var(--line), 0 40px 90px rgba(0,0,0,.6)}
+  .cover h1{font-family:var(--serif);font-weight:400;font-size:76px;letter-spacing:.14em;margin-top:56px}
+  .cover .sub{font-size:12px;letter-spacing:.55em;text-transform:uppercase;color:var(--red);margin-top:14px}
+  .cover .meta{margin-top:70px;font-size:11px;letter-spacing:.3em;text-transform:uppercase;color:var(--mute)}
+
+  .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line);margin-top:56px;border:1px solid var(--line)}
+  .cell{background:var(--ink);padding:38px 34px}
+  .cell h3{font-family:var(--serif);font-size:24px;font-weight:500;margin-bottom:10px}
+  .cell p{font-size:14px;color:var(--mute)}
+  .swatches{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:56px}
+  .swatch .chip{height:120px;border:1px solid var(--line)}
+  .swatch .name{font-size:11px;letter-spacing:.22em;text-transform:uppercase;margin:14px 0 4px}
+  .swatch .hex{font-size:12px;color:var(--mute)}
+  .type{display:grid;grid-template-columns:1fr 1fr;gap:56px;margin-top:56px}
+  .type .big{font-family:var(--serif);font-size:64px;line-height:1.1;font-weight:500}
+  .type .alpha{color:var(--mute);font-size:15px;margin-top:18px;word-break:break-all}
+
+  .concept{display:grid;grid-template-columns:460px 1fr;gap:70px;align-items:center;margin-top:90px}
+  .concept.flip{grid-template-columns:1fr 460px}
+  .concept.flip .art{order:2}
+  .art img{width:100%;display:block;border:1px solid var(--line)}
+  .cnum{font-family:var(--serif);font-size:15px;color:var(--red);letter-spacing:.3em;margin-bottom:12px}
+  .concept h3{font-family:var(--serif);font-size:40px;font-weight:500;margin-bottom:18px}
+  .concept p{color:var(--mute);font-size:15px;max-width:520px}
+  .scale{display:flex;align-items:flex-end;gap:22px;margin-top:34px}
+  .scale img{border:1px solid var(--line)}
+  .scale span{font-size:10px;color:var(--mute);letter-spacing:.15em;text-align:center}
+  .scale div{display:flex;flex-direction:column;align-items:center;gap:8px}
+
+  .app{margin-top:80px}
+  .app h3{font-family:var(--serif);font-size:28px;font-weight:500;margin-bottom:8px}
+  .app .cap{font-size:12px;letter-spacing:.25em;text-transform:uppercase;color:var(--red);margin-bottom:30px}
+  .cards{display:flex;gap:44px;justify-content:center;padding:70px 40px;background:var(--ink2);border:1px solid var(--line)}
+  .bcard{width:400px;height:230;border-radius:10px;box-shadow:0 30px 60px rgba(0,0,0,.55);position:relative;flex-shrink:0}
+  .bcard.front{background:var(--white);color:var(--ink);display:flex;flex-direction:column;justify-content:center;padding:0 44px}
+  .bcard.front .nm{font-family:var(--serif);font-size:26px;letter-spacing:.06em}
+  .bcard.front .rl{font-size:10px;letter-spacing:.32em;text-transform:uppercase;color:var(--red);margin-top:8px}
+  .bcard.front .ct{font-size:11.5px;color:#6B665C;margin-top:26px;line-height:1.9}
+  .bcard.front img{position:absolute;right:40px;top:50%;transform:translateY(-50%);width:86px;height:86px}
+  .bcard.back{background:var(--ink);display:flex;align-items:center;justify-content:center;border:1px solid var(--line)}
+  .bcard.back img{width:150px;height:150px}
+
+  .pack{display:flex;gap:44px;justify-content:center;align-items:flex-end;padding:70px 40px;background:var(--ink2);border:1px solid var(--line)}
+  .box{width:300px;height:390;background:var(--ink);border:1px solid #2E2A24;position:relative;box-shadow:0 34px 70px rgba(0,0,0,.6);display:flex;flex-direction:column;align-items:center;justify-content:center}
+  .box::before{content:'';position:absolute;left:0;top:0;bottom:0;width:14px;background:#0A0908}
+  .box img{width:150px;height:150px}
+  .box .bw{font-family:var(--serif);letter-spacing:.28em;font-size:19px;margin-top:30px}
+  .box .bs{font-size:9px;letter-spacing:.5em;color:var(--red);margin-top:10px}
+  .box.tall{height:450;width:260}
+  .box.tall img{width:110px;height:110px}
+
+  .signage{padding:90px 40px;background:radial-gradient(ellipse at 50% 0%, #241014 0%, #120D0C 62%);border:1px solid var(--line);text-align:center}
+  .signage img{width:170px;height:170px;filter:drop-shadow(0 0 34px rgba(200,16,46,.35))}
+  .signage .lt{font-family:var(--serif);font-size:46px;letter-spacing:.3em;margin-top:36px;text-shadow:0 0 26px rgba(247,245,240,.28)}
+  .signage .ls{font-size:11px;letter-spacing:.6em;color:var(--red);margin-top:12px}
+
+  .board{margin:0 auto;max-width:980px;aspect-ratio:16/5.4;background:linear-gradient(160deg,#1C1216 0%,#0F0E0C 55%,#0A0908 100%);border:1px solid var(--line);box-shadow:0 40px 90px rgba(0,0,0,.6);display:flex;align-items:center;justify-content:space-between;padding:0 90px;position:relative;overflow:hidden}
+  .board::after{content:'';position:absolute;inset:0;background:linear-gradient(105deg,rgba(255,255,255,.05) 0%,transparent 30%)}
+  .board img{width:190px;height:190px}
+  .board .bt{font-family:var(--serif);font-size:56px;letter-spacing:.12em}
+  .board .bs2{font-size:12px;letter-spacing:.5em;color:var(--red);margin-top:14px}
+  .board .bu{font-size:11px;letter-spacing:.3em;color:var(--mute);position:absolute;bottom:26px;right:90px}
+  .poles{display:flex;justify-content:center;margin-top:0}
+  .pole{width:10px;height:120px;background:linear-gradient(#3A342A,#221E16)}
+
+  .poster-row{display:flex;gap:44px;justify-content:center;padding:70px 40px;background:var(--ink2);border:1px solid var(--line)}
+  .poster{width:280px;height:400;position:relative;box-shadow:0 26px 60px rgba(0,0,0,.55);overflow:hidden}
+  .poster.p1{background:var(--red)} .poster.p2{background:var(--white)} .poster.p3{background:var(--ink);border:1px solid var(--line)}
+  .poster img{position:absolute;width:150px;height:150px;left:50%;top:50%;transform:translate(-50%,-50%)}
+  .poster.p2 img{filter:invert(1) hue-rotate(180deg)}
+  .poster .pf{position:absolute;bottom:22px;width:100%;text-align:center;font-family:var(--serif);letter-spacing:.3em;font-size:15px}
+  .poster.p1 .pf{color:var(--white)} .poster.p2 .pf{color:var(--ink)} .poster.p3 .pf{color:var(--red)}
+  .poster-cap{font-size:10px;letter-spacing:.25em;color:var(--mute);text-align:center;margin-top:16px;text-transform:uppercase}
+
+  .verdict{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line);border:1px solid var(--line);margin-top:56px}
+  .vcell{background:var(--ink);padding:46px 44px}
+  .vcell.rec{background:var(--ink2)}
+  .vcell h3{font-family:var(--serif);font-size:26px;font-weight:500;margin-bottom:14px}
+  .vcell .tag{font-size:10px;letter-spacing:.35em;text-transform:uppercase;color:var(--red);margin-bottom:16px}
+  .vcell p{font-size:14px;color:var(--mute)}
+  table{width:100%;border-collapse:collapse;margin-top:56px;font-size:13px}
+  th,td{text-align:left;padding:14px 18px;border-bottom:1px solid var(--line)}
+  th{font-size:10px;letter-spacing:.3em;text-transform:uppercase;color:var(--red);font-weight:500}
+  td{color:var(--mute)} td:first-child{color:var(--white);font-family:var(--serif);font-size:15px}
+  footer{padding:70px 0 90px;text-align:center;font-size:11px;letter-spacing:.3em;text-transform:uppercase;color:var(--mute)}
+</style>
+</head>
+<body>
+
+<section class="cover">
+  <img src="svg/lamka-labs-v2-03-counter-l.svg" alt="Lamka Labs Studio mark v2">
+  <h1>LAMKA LABS</h1>
+  <div class="sub">Studio &middot; Identity Program v2</div>
+  <div class="meta">Black / White / Red &middot; Five directions &middot; Prepared 2026</div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="kicker">01 — Foundations</div>
+    <h2>Two colours held apart<br>by a third that shouts.</h2>
+    <p class="lede">Where the gold program whispers, this one declares. Black and white do the structure; red is spent like capital — one gesture per composition, never a gradient, never a wash. The marks are drawn bolder to carry it: heavier strokes, larger fields, harder edges.</p>
+    <div class="rule"></div>
+    <div class="grid3">
+      <div class="cell"><h3>Position</h3><p>The studio with a spine. Confident to the point of bluntness, never loud for its own sake.</p></div>
+      <div class="cell"><h3>Audience</h3><p>People who screenshot posters. Buyers who want the work to take a side.</p></div>
+      <div class="cell"><h3>Rule</h3><p>Red appears once per frame. If it appears twice, one of them is wrong.</p></div>
+    </div>
+    <div class="swatches">
+      <div class="swatch"><div class="chip" style="background:#0F0E0C"></div><div class="name">Carbon Black</div><div class="hex">#0F0E0C</div></div>
+      <div class="swatch"><div class="chip" style="background:#F7F5F0"></div><div class="name">Paper White</div><div class="hex">#F7F5F0</div></div>
+      <div class="swatch"><div class="chip" style="background:#C8102E"></div><div class="name">Signature Red</div><div class="hex">#C8102E</div></div>
+    </div>
+    <div class="type">
+      <div><div class="big">Cormorant<br>Garamond</div><div class="alpha">ABCDEFGHIJKLMNOPQRSTUVWXYZ &middot; display, wordmark, headlines</div></div>
+      <div><div class="big" style="font-family:var(--sans);font-weight:300">Inter</div><div class="alpha">abcdefghijklmnopqrstuvwxyz 0123456789 &middot; captions, interface, wayfinding</div></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="kicker">02 — The Five Directions</div>
+    <h2>Five marks.<br>Harder edges.</h2>
+    <p class="lede">New geometry, not recolours. Each mark is built to survive one-colour print, cut vinyl, and a 16-pixel square — because a red-and-black system gets reproduced cheaply, and cheap reproduction is where identities die.</p>
+
+    <div class="concept">
+      <div class="art"><img src="svg/lamka-labs-v2-01-vantage.svg" alt="Vantage"></div>
+      <div>
+        <div class="cnum">ITERATION V2·01</div>
+        <h3>Vantage</h3>
+        <p>A white peak with one red line of descent from the summit. Ambition, with the route drawn in. The most poster-ready of the five: at billboard scale the red line reads from a moving car, at 16px the silhouette still holds.</p>
+        <div class="scale">
+          <div><img src="svg/lamka-labs-v2-01-vantage.svg" width="64" height="64"><span>64px</span></div>
+          <div><img src="svg/lamka-labs-v2-01-vantage.svg" width="32" height="32"><span>32px</span></div>
+          <div><img src="svg/lamka-labs-v2-01-vantage.svg" width="16" height="16"><span>16px</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="concept flip">
+      <div class="art"><img src="svg/lamka-labs-v2-02-signal-core.svg" alt="Signal Core"></div>
+      <div>
+        <div class="cnum">ITERATION V2·02</div>
+        <h3>Signal Core</h3>
+        <p>Three arcs opening from a red core: the lab ping, reduced to its physics. The red dot is the only filled element in the mark, which makes it the thing the eye lands on first and last. Reads as broadcast, research, reach.</p>
+        <div class="scale">
+          <div><img src="svg/lamka-labs-v2-02-signal-core.svg" width="64" height="64"><span>64px</span></div>
+          <div><img src="svg/lamka-labs-v2-02-signal-core.svg" width="32" height="32"><span>32px</span></div>
+          <div><img src="svg/lamka-labs-v2-02-signal-core.svg" width="16" height="16"><span>16px</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="concept">
+      <div class="art"><img src="svg/lamka-labs-v2-03-counter-l.svg" alt="Counter L"></div>
+      <div>
+        <div class="cnum">ITERATION V2·03</div>
+        <h3>Counter L</h3>
+        <p>A heavy L with a red counter floating in the notch — the pause inside the work. Typographers call the enclosed space a counter; this one is pulled out, coloured, and made the signature. The heaviest, most ownable letterform in either program.</p>
+        <div class="scale">
+          <div><img src="svg/lamka-labs-v2-03-counter-l.svg" width="64" height="64"><span>64px</span></div>
+          <div><img src="svg/lamka-labs-v2-03-counter-l.svg" width="32" height="32"><span>32px</span></div>
+          <div><img src="svg/lamka-labs-v2-03-counter-l.svg" width="16" height="16"><span>16px</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="concept flip">
+      <div class="art"><img src="svg/lamka-labs-v2-04-orbit-study.svg" alt="Orbit Study"></div>
+      <div>
+        <div class="cnum">ITERATION V2·04</div>
+        <h3>Orbit Study</h3>
+        <p>One white orbit, one red body on it, one white body behind: an experiment in motion, frozen mid-revolution. The most kinetic mark in either program, and the one that animates best — the GIF writes itself.</p>
+        <div class="scale">
+          <div><img src="svg/lamka-labs-v2-04-orbit-study.svg" width="64" height="64"><span>64px</span></div>
+          <div><img src="svg/lamka-labs-v2-04-orbit-study.svg" width="32" height="32"><span>32px</span></div>
+          <div><img src="svg/lamka-labs-v2-04-orbit-study.svg" width="16" height="16"><span>16px</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="concept">
+      <div class="art"><img src="svg/lamka-labs-v2-05-quarter-turn.svg" alt="Quarter Turn"></div>
+      <div>
+        <div class="cnum">ITERATION V2·05</div>
+        <h3>Quarter Turn</h3>
+        <p>A white frame with one quadrant filled red, overlapping the stroke like a shutter set a quarter open. Modular by construction: the system can rotate the red quadrant to mark seasons, editions, or releases without redrawing anything.</p>
+        <div class="scale">
+          <div><img src="svg/lamka-labs-v2-05-quarter-turn.svg" width="64" height="64"><span>64px</span></div>
+          <div><img src="svg/lamka-labs-v2-05-quarter-turn.svg" width="32" height="32"><span>32px</span></div>
+          <div><img src="svg/lamka-labs-v2-05-quarter-turn.svg" width="16" height="16"><span>16px</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="kicker">03 — The Campaign</div>
+    <h2>How it lives<br>in the world.</h2>
+    <p class="lede">Applications rendered from V2·03 Counter L. This system is built for reproduction: screen print, cut vinyl, newsprint, one-colour stamp. Red is rationed across every touchpoint so it never stops landing.</p>
+
+    <div class="app">
+      <h3>Business cards</h3>
+      <div class="cap">600gsm black core &middot; white ink &middot; red edge paint</div>
+      <div class="cards">
+        <div class="bcard front">
+          <div class="nm">Lamka Labs</div>
+          <div class="rl">Studio</div>
+          <div class="ct">hello@lamkalabs.studio<br>lamkalabs.studio</div>
+          <img src="svg/lamka-labs-v2-03-counter-l.svg" alt="">
+        </div>
+        <div class="bcard back"><img src="svg/lamka-labs-v2-03-counter-l.svg" alt=""></div>
+      </div>
+    </div>
+
+    <div class="app">
+      <h3>Packaging</h3>
+      <div class="cap">black rigid boxes &middot; white ink &middot; red tissue seal</div>
+      <div class="pack">
+        <div class="box tall"><img src="svg/lamka-labs-v2-01-vantage.svg" alt=""><div class="bw">LAMKA LABS</div><div class="bs">STUDIO</div></div>
+        <div class="box"><img src="svg/lamka-labs-v2-03-counter-l.svg" alt=""><div class="bw">LAMKA LABS</div><div class="bs">STUDIO</div></div>
+        <div class="box tall"><img src="svg/lamka-labs-v2-05-quarter-turn.svg" alt=""><div class="bw">LAMKA LABS</div><div class="bs">STUDIO</div></div>
+      </div>
+    </div>
+
+    <div class="app">
+      <h3>Signage</h3>
+      <div class="cap">cut vinyl on black &middot; red edge-lit &middot; studio entrance</div>
+      <div class="signage">
+        <img src="svg/lamka-labs-v2-03-counter-l.svg" alt="">
+        <div class="lt">LAMKA LABS</div>
+        <div class="ls">STUDIO</div>
+      </div>
+    </div>
+
+    <div class="app">
+      <h3>Billboard</h3>
+      <div class="cap">48-sheet &middot; high-speed sites &middot; readable at 80 km/h</div>
+      <div class="board">
+        <img src="svg/lamka-labs-v2-03-counter-l.svg" alt="">
+        <div style="text-align:right">
+          <div class="bt">Work that<br>takes a side.</div>
+          <div class="bs2">LAMKA LABS STUDIO</div>
+        </div>
+        <div class="bu">LAMKALABS.STUDIO</div>
+      </div>
+      <div class="poles"><div class="pole"></div><div class="pole" style="margin-left:640px"></div></div>
+    </div>
+
+    <div class="app">
+      <h3>Poster series &amp; merch</h3>
+      <div class="cap">three-sheet series &middot; one mark &middot; three colour inversions</div>
+      <div class="poster-row">
+        <div><div class="poster p1"><img src="svg/lamka-labs-v2-03-counter-l.svg" alt="" style="filter:brightness(0) invert(1)"><div class="pf">LAMKA LABS</div></div><div class="poster-cap">Red field</div></div>
+        <div><div class="poster p2"><img src="svg/lamka-labs-v2-03-counter-l.svg" alt="" style="filter:brightness(0)"><div class="pf">LAMKA LABS</div></div><div class="poster-cap">White field</div></div>
+        <div><div class="poster p3"><img src="svg/lamka-labs-v2-03-counter-l.svg" alt=""><div class="pf">LAMKA LABS</div></div><div class="poster-cap">Black field</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="kicker">04 — Recommendation</div>
+    <h2>The verdict.</h2>
+    <div class="verdict">
+      <div class="vcell rec">
+        <div class="tag">Primary mark — recommended</div>
+        <h3>V2·03 · Counter L</h3>
+        <p>The strongest letterform in either program. The red counter is a signature that survives every reproduction method, including the cheap ones. It carries the card, the box, the wall, and the favicon without translation.</p>
+      </div>
+      <div class="vcell">
+        <div class="tag">Campaign mark — supporting</div>
+        <h3>V2·01 · Vantage</h3>
+        <p>Paired with Counter L for out-of-home and campaign moments. Where Counter L is the signature, Vantage is the statement: billboards, posters, launch films. One system, two volumes — black-and-red spoken softly, then spoken plainly.</p>
+      </div>
+    </div>
+    <table>
+      <tr><th>Deliverable</th><th>Format</th><th>Location</th></tr>
+      <tr><td>Iterations V2·01–05</td><td>SVG (master) · PNG 1000px · JPG · animated GIF</td><td>brand/svg · png · jpg · gif</td></tr>
+      <tr><td>This presentation</td><td>HTML</td><td>brand/presentation-v2.html</td></tr>
+      <tr><td>Generator scripts</td><td>Python (regenerate all formats)</td><td>brand/gen_svgs_v2.py · convert.py</td></tr>
+      <tr><td>Program v1 (gold)</td><td>5 iterations + deck</td><td>brand/presentation.html</td></tr>
+    </table>
+  </div>
+</section>
+
+<footer>LAMKA LABS STUDIO &middot; IDENTITY PROGRAM V2 &middot; MMXXVI</footer>
+
+</body>
+</html>

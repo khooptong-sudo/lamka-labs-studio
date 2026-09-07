@@ -421,3 +421,36 @@ def test_camera_cycle_covers_eight_paths():
     assert fifth != first
     ninth = render_cinematic_frame("s1", 5.0, "img.png", 9)
     assert "1.115" in ninth  # index 9 wraps back to path 1
+
+
+# ---------------------------------------------------------------------------
+# Motion provider normalization (worker/tests/test_motion.py covers the rest)
+# ---------------------------------------------------------------------------
+
+
+def test_normalize_motion_provider_accepts_off_veo_kling_and_none():
+    from app.scene3d.motion import normalize_motion_provider
+
+    assert normalize_motion_provider("off") == "off"
+    assert normalize_motion_provider("veo") == "veo"
+    assert normalize_motion_provider("kling") == "kling"
+    assert normalize_motion_provider(None) == "off"
+    assert normalize_motion_provider("Kling") == "kling"
+
+
+def test_normalize_motion_provider_rejects_unknown():
+    from app.scene3d.motion import normalize_motion_provider
+
+    with pytest.raises(ValueError, match="unknown motion provider"):
+        normalize_motion_provider("wan")
+
+
+def test_motion_provider_statuses_reflect_env(monkeypatch):
+    from app.scene3d.motion import motion_provider_statuses
+
+    monkeypatch.setenv("GEMINI_API_KEY", "set")
+    monkeypatch.delenv("FAL_KEY", raising=False)
+    statuses = {item["id"]: item for item in motion_provider_statuses()}
+    assert statuses["off"]["configured"] is True
+    assert statuses["veo"]["configured"] is True
+    assert statuses["kling"]["configured"] is False

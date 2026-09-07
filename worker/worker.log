@@ -1,0 +1,7 @@
+INFO:     Started server process [11644]
+INFO:     Waiting for application startup.
+2026-09-06 02:33:35 [info     ] db_pool_opened                 database_url=postgresql://postgres:***@localhost:5432/fce
+2026-09-06 02:33:36 [info     ] worker_started                 jobs=['poll_rss', 'poll_edgar', 'poll_nse', 'poll_reddit', 'cluster_new', 'score_new', 'autopilot_overnight', 'reddit_outreach', 'video_stats', 'embed_retry', 'db_health']
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)
+INFO:     127.0.0.1:12370 - "GET /health HTTP/1.1" 200 OK

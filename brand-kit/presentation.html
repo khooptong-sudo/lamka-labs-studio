@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lamka Labs Studio — Brand Identity System</title>
+  <style>
+    :root {
+      --bg: #0A0A0A;
+      --panel: #111111;
+      --panel-2: #161616;
+      --gold: #D4AF37;
+      --champagne: #C9A227;
+      --silver: #C0C0C0;
+      --charcoal: #2A2A2A;
+      --ivory: #F5F5F0;
+      --gutter: 24px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--ivory);
+      font-family: "Helvetica Neue", Arial, sans-serif;
+      line-height: 1.5;
+      overflow-x: hidden;
+    }
+
+    section {
+      min-height: 100vh;
+      padding: 6vw;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      border-bottom: 1px solid var(--charcoal);
+    }
+
+    h1, h2, h3 {
+      font-weight: 300;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    h1 { font-size: clamp(2.5rem, 6vw, 5.5rem); }
+    h2 { font-size: clamp(1.6rem, 3.2vw, 2.8rem); margin-bottom: 0.6em; }
+    h3 { font-size: 0.85rem; color: var(--gold); margin-bottom: 1em; }
+
+    p { color: var(--silver); max-width: 620px; }
+    .lead { font-size: 1.25rem; color: var(--ivory); margin-top: 1.5rem; }
+
+    .label {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.2em;
+      color: var(--gold);
+      margin-bottom: 1.5rem;
+    }
+
+    .grid {
+      display: grid;
+      gap: var(--gutter);
+      margin-top: 3rem;
+    }
+
+    .grid-2 { grid-template-columns: repeat(2, 1fr); }
+    .grid-3 { grid-template-columns: repeat(3, 1fr); }
+    .grid-5 { grid-template-columns: repeat(5, 1fr); }
+
+    @media (max-width: 900px) {
+      .grid-2, .grid-3, .grid-5 { grid-template-columns: 1fr; }
+    }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--charcoal);
+      padding: 2.5rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      min-height: 320px;
+      transition: border-color 0.3s ease;
+    }
+
+    .panel:hover { border-color: var(--gold); }
+
+    .panel img {
+      max-width: 100%;
+      height: auto;
+      margin-bottom: 1.5rem;
+    }
+
+    .panel p {
+      font-size: 0.85rem;
+      color: var(--silver);
+      max-width: 260px;
+    }
+
+    .concept-name {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.18em;
+      color: var(--ivory);
+      margin-bottom: 0.4rem;
+    }
+
+    /* Cover */
+    .cover {
+      text-align: center;
+      align-items: center;
+    }
+
+    .cover img { width: 180px; margin-bottom: 3rem; }
+
+    .cover h1 { margin-bottom: 0.2em; }
+    .cover .subtitle {
+      font-size: 0.95rem;
+      letter-spacing: 0.35em;
+      color: var(--gold);
+      text-transform: uppercase;
+    }
+
+    /* Palette */
+    .swatch {
+      width: 100%;
+      height: 120px;
+      border-radius: 4px;
+      margin-bottom: 0.8rem;
+      border: 1px solid var(--charcoal);
+    }
+    .swatch-name { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.1em; }
+    .swatch-hex { font-size: 0.7rem; color: var(--silver); font-family: monospace; }
+
+    /* Mockups */
+    .mockup-stage {
+      background: var(--panel-2);
+      padding: 4vw;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 3vw;
+      flex-wrap: wrap;
+      border: 1px solid var(--charcoal);
+      margin-top: 2rem;
+    }
+
+    .business-card {
+      width: 340px;
+      height: 200px;
+      background: var(--panel);
+      border: 1px solid var(--charcoal);
+      border-radius: 10px;
+      padding: 1.8rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+    }
+
+    .business-card .card-logo { width: 54px; }
+    .business-card .card-name {
+      font-size: 0.75rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--ivory);
+    }
+    .business-card .card-role {
+      font-size: 0.65rem;
+      color: var(--silver);
+      letter-spacing: 0.08em;
+      margin-top: 0.3rem;
+    }
+
+    .packaging-box {
+      width: 220px;
+      height: 280px;
+      background: var(--panel);
+      border: 1px solid var(--charcoal);
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+      box-shadow: 0 25px 70px rgba(0,0,0,0.45);
+    }
+    .packaging-box img { width: 90%; }
+
+    .signage {
+      width: 100%;
+      max-width: 720px;
+      background: var(--panel);
+      border: 1px solid var(--charcoal);
+      border-radius: 6px;
+      padding: 3rem 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 2rem;
+      box-shadow: 0 30px 80px rgba(0,0,0,0.5);
+    }
+    .signage img { width: 80px; }
+    .signage .sign-text {
+      font-size: 1.6rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--ivory);
+    }
+
+    .billboard {
+      width: 100%;
+      max-width: 900px;
+      aspect-ratio: 16 / 9;
+      background: var(--panel);
+      border: 1px solid var(--charcoal);
+      border-radius: 8px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 1.5rem;
+      box-shadow: 0 40px 100px rgba(0,0,0,0.55);
+      margin: 0 auto;
+    }
+    .billboard img { width: 140px; }
+    .billboard .tagline {
+      font-size: 0.9rem;
+      letter-spacing: 0.35em;
+      text-transform: uppercase;
+      color: var(--silver);
+    }
+
+    .icon-row {
+      display: flex;
+      gap: 2rem;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-top: 2rem;
+    }
+    .icon-row img {
+      width: 64px;
+      height: 64px;
+      border-radius: 14px;
+      border: 1px solid var(--charcoal);
+    }
+
+    .usage-list {
+      list-style: none;
+      margin-top: 1.5rem;
+    }
+    .usage-list li {
+      padding: 0.8rem 0;
+      border-bottom: 1px solid var(--charcoal);
+      color: var(--silver);
+      font-size: 0.9rem;
+    }
+
+    footer {
+      padding: 3rem 6vw;
+      text-align: center;
+      color: var(--silver);
+      font-size: 0.75rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Cover -->
+  <section class="cover">
+    <img src="assets/01-aperture-icon.png" alt="Lamka Labs Studio mark">
+    <div class="label">Brand Identity System</div>
+    <h1>Lamka Labs Studio</h1>
+    <div class="subtitle">Luxury Content Studio</div>
+    <p class="lead">A refined visual identity built for a premium finance-content studio. Minimal, memorable, and engineered to scale across digital, print, and environmental applications.</p>
+  </section>
+
+  <!-- Strategy -->
+  <section>
+    <div class="label">01 — Strategy</div>
+    <h2>Brand Foundation</h2>
+    <div class="grid grid-2">
+      <div class="panel" style="align-items:flex-start; text-align:left;">
+        <h3>Position</h3>
+        <p>A premium studio that transforms financial intelligence into elevated content — posts, carousels, video, and educational design.</p>
+      </div>
+      <div class="panel" style="align-items:flex-start; text-align:left;">
+        <h3>Promise</h3>
+        <p>Clarity without noise. Taste without pretension. A studio that makes complex markets feel intentional and beautiful.</p>
+      </div>
+      <div class="panel" style="align-items:flex-start; text-align:left;">
+        <h3>Audience</h3>
+        <p>Founders, investors, analysts, and discerning professionals who value substance and visual craft.</p>
+      </div>
+      <div class="panel" style="align-items:flex-start; text-align:left;">
+        <h3>Personality</h3>
+        <p>Refined, calm, precise, confident. Never loud. Never generic. Always intentional.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Logo Iterations -->
+  <section>
+    <div class="label">02 — Logo Iterations</div>
+    <h2>Five Directions</h2>
+    <p>Each concept explores a different facet of the studio: focus, craft, light, intelligence, and authority.</p>
+    <div class="grid grid-5">
+      <div class="panel">
+        <img src="assets/01-aperture-logo.png" alt="Aperture Mark">
+        <div class="concept-name">Aperture</div>
+        <p>Focus, lens, and precision. The aperture forms a negative-space L.</p>
+      </div>
+      <div class="panel">
+        <img src="assets/02-frame-logo.png" alt="Frame Mark">
+        <div class="concept-name">Frame</div>
+        <p>A studio frame with an L-shaped cut — composition and clarity.</p>
+      </div>
+      <div class="panel">
+        <img src="assets/03-prism-logo.png" alt="Prism Mark">
+        <div class="concept-name">Prism</div>
+        <p>Three planes of light converge into an L — insight and craft.</p>
+      </div>
+      <div class="panel">
+        <img src="assets/04-node-logo.png" alt="Node Mark">
+        <div class="concept-name">Node</div>
+        <p>Connected points form the L — intelligence and studio networks.</p>
+      </div>
+      <div class="panel">
+        <img src="assets/05-seal-logo.png" alt="Monogram Seal">
+        <div class="concept-name">Seal</div>
+        <p>A timeless circular seal with interlocking LL initials.</p>
+      </div>
+    </div>
+    <div class="panel" style="margin-top: var(--gutter); border-color: var(--gold);">
+      <div class="label" style="margin-bottom:1rem;">Reference-Inspired Direction</div>
+      <img src="assets/06-sovereign-logo.png" alt="Sovereign Studio Seal">
+      <div class="concept-name">Sovereign Studio Seal</div>
+      <p>Hairline double-ring seal with a shared-stem LL monogram and vertical divider — family DNA to Lamka Equities, distinct for the studio.</p>
+    </div>
+  </section>
+
+  <!-- Color System -->
+  <section>
+    <div class="label">03 — Color System</div>
+    <h2>Palette</h2>
+    <p>A disciplined palette built around rich black, warm ivory, and a single gold accent. Designed to feel expensive in print and luminous on screen.</p>
+    <div class="grid grid-5">
+      <div>
+        <div class="swatch" style="background:#0A0A0A;"></div>
+        <div class="swatch-name">Rich Black</div>
+        <div class="swatch-hex">#0A0A0A</div>
+      </div>
+      <div>
+        <div class="swatch" style="background:#D4AF37;"></div>
+        <div class="swatch-name">Gold</div>
+        <div class="swatch-hex">#D4AF37</div>
+      </div>
+      <div>
+        <div class="swatch" style="background:#F5F5F0;"></div>
+        <div class="swatch-name">Warm Ivory</div>
+        <div class="swatch-hex">#F5F5F0</div>
+      </div>
+      <div>
+        <div class="swatch" style="background:#C0C0C0;"></div>
+        <div class="swatch-name">Silver</div>
+        <div class="swatch-hex">#C0C0C0</div>
+      </div>
+      <div>
+        <div class="swatch" style="background:#2A2A2A;"></div>
+        <div class="swatch-name">Graphite</div>
+        <div class="swatch-hex">#2A2A2A</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Typography -->
+  <section>
+    <div class="label">04 — Typography</div>
+    <h2>Type System</h2>
+    <p>Elegant contrast between a refined serif wordmark and a clean sans-serif system. Built for hierarchy, restraint, and readability across all scales.</p>
+    <div class="grid grid-2">
+      <div class="panel" style="align-items:flex-start; text-align:left;">
+        <h3>Primary — Serif</h3>
+        <p style="font-family:Georgia,serif; font-size:2.2rem; color:var(--ivory); margin-bottom:1rem;">Lamka Labs</p>
+        <p>Georgia or equivalent editorial serif. Used for the wordmark and high-impact headlines.</p>
+      </div>
+      <div class="panel" style="align-items:flex-start; text-align:left;">
+        <h3>Secondary — Sans</h3>
+        <p style="font-family:'Helvetica Neue',Arial,sans-serif; font-size:1.6rem; color:var(--ivory); margin-bottom:1rem; letter-spacing:0.1em;">STUDIO</p>
+        <p>Helvetica Neue / Arial. Used for labels, UI, and system details. Generous tracking.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Business Card Mockup -->
+  <section>
+    <div class="label">05 — Business Card</div>
+    <h2>Stationery Application</h2>
+    <div class="mockup-stage">
+      <div class="business-card">
+        <img class="card-logo" src="assets/01-aperture-icon.png" alt="">
+        <div>
+          <div class="card-name">Min Khooptong</div>
+          <div class="card-role">Founder & Creative Director</div>
+          <div class="card-role" style="margin-top:1rem;">lamkalabs.com</div>
+        </div>
+      </div>
+      <div class="business-card">
+        <img class="card-logo" src="assets/06-sovereign-icon.png" alt="">
+        <div>
+          <div class="card-name">Lamka Labs Studio</div>
+          <div class="card-role">Luxury Content Studio</div>
+          <div class="card-role" style="margin-top:1rem;">hello@lamkalabs.com</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Packaging -->
+  <section>
+    <div class="label">06 — Packaging</div>
+    <h2>Product Packaging</h2>
+    <div class="mockup-stage">
+      <div class="packaging-box">
+        <img src="assets/03-prism-logo.png" alt="">
+      </div>
+      <div class="packaging-box">
+        <img src="assets/05-seal-logo.png" alt="">
+      </div>
+      <div class="packaging-box">
+        <img src="assets/04-node-logo.png" alt="">
+      </div>
+    </div>
+  </section>
+
+  <!-- Signage -->
+  <section>
+    <div class="label">07 — Signage</div>
+    <h2>Environmental Branding</h2>
+    <div class="mockup-stage">
+      <div class="signage">
+        <img src="assets/06-sovereign-icon.png" alt="">
+        <div class="sign-text">Lamka Labs Studio</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Billboard -->
+  <section>
+    <div class="label">08 — Billboard</div>
+    <h2>Campaign Presence</h2>
+    <div class="billboard">
+      <img src="assets/06-sovereign-icon.png" alt="">
+      <div class="sign-text">Lamka Labs Studio</div>
+      <div class="tagline">Luxury Content Studio</div>
+    </div>
+  </section>
+
+  <!-- App Icons -->
+  <section>
+    <div class="label">09 — Digital Icons</div>
+    <h2>Favicon & App Icon System</h2>
+    <p>Each mark is tested at 64×64 for clarity and recognition.</p>
+    <div class="icon-row">
+      <img src="assets/01-aperture-favicon.png" alt="">
+      <img src="assets/02-frame-favicon.png" alt="">
+      <img src="assets/03-prism-favicon.png" alt="">
+      <img src="assets/04-node-favicon.png" alt="">
+      <img src="assets/05-seal-favicon.png" alt="">
+      <img src="assets/06-sovereign-favicon.png" alt="" style="border-color:var(--gold);">
+    </div>
+  </section>
+
+  <!-- Usage Guidelines -->
+  <section>
+    <div class="label">10 — Guidelines</div>
+    <h2>Usage Principles</h2>
+    <ul class="usage-list">
+      <li>Always maintain clear space around the mark equal to the height of the icon.</li>
+      <li>Use the gold accent sparingly — one highlight per composition.</li>
+      <li>On dark backgrounds, use the ivory wordmark. On light backgrounds, use rich black.</li>
+      <li>Do not stretch, rotate, or add effects to the logo.</li>
+      <li>The icon may be used alone for favicons, app icons, and social avatars.</li>
+      <li>When in doubt, add more negative space.</li>
+    </ul>
+  </section>
+
+  <footer>
+    Lamka Labs Studio — Brand Identity System — 2026
+  </footer>
+
+</body>
+</html>

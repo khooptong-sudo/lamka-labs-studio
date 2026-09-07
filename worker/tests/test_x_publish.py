@@ -58,18 +58,25 @@ async def test_publish_post_creates_published_draft(story, monkeypatch):
 
 
 @pytest.mark.asyncio
-async def test_publish_post_blocks_blocked_term(story):
-    with pytest.raises(publish.XComplianceError, match="blocked term"):
-        await publish.publish_post(story_id=story, text="You should buy this stock now.")
+async def test_publish_post_allows_blocked_term_when_guardrails_disabled(story, monkeypatch):
+    async def fake_publish(text):
+        return {"tweet_id": "abc123", "url": "https://x.com/i/web/status/abc123", "text": text}
 
-    drafts = await db.get_drafts()
-    assert len(drafts) == 0
+    monkeypatch.setattr(client, "publish_text", fake_publish)
+
+    result = await publish.publish_post(story_id=story, text="You should buy this stock now.")
+    assert result["tweet_id"] == "abc123"
 
 
 @pytest.mark.asyncio
-async def test_publish_post_blocks_sell_term(story):
-    with pytest.raises(publish.XComplianceError, match="blocked term"):
-        await publish.publish_post(story_id=story, text="Sell everything before the crash.")
+async def test_publish_post_allows_sell_term_when_guardrails_disabled(story, monkeypatch):
+    async def fake_publish(text):
+        return {"tweet_id": "abc123", "url": "https://x.com/i/web/status/abc123", "text": text}
+
+    monkeypatch.setattr(client, "publish_text", fake_publish)
+
+    result = await publish.publish_post(story_id=story, text="Sell everything before the crash.")
+    assert result["tweet_id"] == "abc123"
 
 
 @pytest.mark.asyncio

@@ -13,17 +13,6 @@ type ChannelConfig = {
 
 type ChannelsConfig = Record<string, ChannelConfig>;
 
-// Mirrors BASE_BLOCKLIST in worker/app/channels.py. Displayed read-only: these
-// terms always apply and cannot be edited away from the GUI.
-const BASE_BLOCKLIST = [
-  "buy",
-  "sell",
-  "accumulate",
-  "target price",
-  "multibagger",
-  "sure shot",
-];
-
 export default function SettingsPage() {
   const [channels, setChannels] = useState<ChannelsConfig | null>(null);
   const [loading, setLoading] = useState(true);
@@ -177,28 +166,19 @@ export default function SettingsPage() {
         {/* Compliance Card */}
         <div className="rounded-[var(--radius)] border border-border bg-[var(--surface-deck)] p-6">
           <div className="flex items-center space-x-3 mb-6">
-            <div className="w-10 h-10 rounded-lg bg-destructive/20 flex items-center justify-center text-destructive">
+            <div className="w-10 h-10 rounded-lg bg-success/20 flex items-center justify-center text-success">
               <ShieldAlert className="w-5 h-5" />
             </div>
             <div>
               <h2 className="text-lg font-bold text-foreground">Compliance Guardrails</h2>
-              <p className="text-xs text-[var(--muted)]">L1 Regex Blocklist Active</p>
+              <p className="text-xs text-[var(--muted)]">Disabled for this session</p>
             </div>
           </div>
 
           <div className="space-y-6">
-            <div>
-              <label className="block text-sm font-bold text-foreground/70 mb-2 uppercase tracking-wider">
-                Always blocked (not editable)
-              </label>
-              <div className="flex flex-wrap gap-2 opacity-70">
-                {BASE_BLOCKLIST.map((term) => (
-                  <span key={term} className="px-3 py-1 rounded-full bg-foreground/10 border border-foreground/10 text-foreground/60 text-xs font-mono">
-                    {term}
-                  </span>
-                ))}
-              </div>
-            </div>
+            <p className="text-sm text-foreground/70">
+              Base blocklist and compliance rules are currently turned off. You can still add extra blocked words below if you want them applied.
+            </p>
 
             <div>
               <label className="block text-sm font-bold text-foreground/70 mb-2 uppercase tracking-wider">Extra blocked words</label>

@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lamka Labs Studio — Identity Program</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#15130E; --ink2:#1D1A13; --ivory:#F2EEE3; --ivory2:#E9E4D6;
+    --gold:#B99463; --gold2:#8F7248; --mute:#8C877D; --line:#2C2820;
+    --serif:'Cormorant Garamond', Georgia, serif;
+    --sans:'Inter', 'Segoe UI', sans-serif;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:var(--ink);color:var(--ivory);font-family:var(--sans);font-weight:300;line-height:1.7}
+  .wrap{max-width:1180px;margin:0 auto;padding:0 48px}
+  section{padding:110px 0;border-bottom:1px solid var(--line)}
+  .kicker{font-size:11px;letter-spacing:.42em;text-transform:uppercase;color:var(--gold);margin-bottom:26px}
+  h2{font-family:var(--serif);font-weight:500;font-size:52px;line-height:1.15;margin-bottom:20px;letter-spacing:.01em}
+  .lede{max-width:640px;color:var(--mute);font-size:16px}
+  .rule{width:56px;height:1px;background:var(--gold);margin:34px 0}
+
+  /* cover */
+  .cover{min-height:100vh;display:flex;flex-direction:column;justify-content:center;text-align:center;border-bottom:1px solid var(--line)}
+  .cover img{width:300px;height:300px;border-radius:50%;box-shadow:0 0 0 1px var(--line), 0 40px 90px rgba(0,0,0,.6)}
+  .cover h1{font-family:var(--serif);font-weight:400;font-size:76px;letter-spacing:.14em;margin-top:56px}
+  .cover .sub{font-size:12px;letter-spacing:.55em;text-transform:uppercase;color:var(--gold);margin-top:14px}
+  .cover .meta{margin-top:70px;font-size:11px;letter-spacing:.3em;text-transform:uppercase;color:var(--mute)}
+
+  /* strategy */
+  .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line);margin-top:56px;border:1px solid var(--line)}
+  .cell{background:var(--ink);padding:38px 34px}
+  .cell h3{font-family:var(--serif);font-size:24px;font-weight:500;margin-bottom:10px}
+  .cell p{font-size:14px;color:var(--mute)}
+  .swatches{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin-top:56px}
+  .swatch .chip{height:120px;border:1px solid var(--line)}
+  .swatch .name{font-size:11px;letter-spacing:.22em;text-transform:uppercase;margin:14px 0 4px}
+  .swatch .hex{font-size:12px;color:var(--mute)}
+  .type{display:grid;grid-template-columns:1fr 1fr;gap:56px;margin-top:56px}
+  .type .big{font-family:var(--serif);font-size:64px;line-height:1.1;font-weight:500}
+  .type .alpha{color:var(--mute);font-size:15px;margin-top:18px;word-break:break-all}
+
+  /* concepts */
+  .concept{display:grid;grid-template-columns:460px 1fr;gap:70px;align-items:center;margin-top:90px}
+  .concept.flip{grid-template-columns:1fr 460px}
+  .concept.flip .art{order:2}
+  .art img{width:100%;display:block;border:1px solid var(--line)}
+  .cnum{font-family:var(--serif);font-size:15px;color:var(--gold);letter-spacing:.3em;margin-bottom:12px}
+  .concept h3{font-family:var(--serif);font-size:40px;font-weight:500;margin-bottom:18px}
+  .concept p{color:var(--mute);font-size:15px;max-width:520px}
+  .scale{display:flex;align-items:flex-end;gap:22px;margin-top:34px}
+  .scale img{border-radius:6px;border:1px solid var(--line)}
+  .scale span{font-size:10px;color:var(--mute);letter-spacing:.15em;text-align:center}
+  .scale div{display:flex;flex-direction:column;align-items:center;gap:8px}
+
+  /* campaign */
+  .app{margin-top:80px}
+  .app h3{font-family:var(--serif);font-size:28px;font-weight:500;margin-bottom:8px}
+  .app .cap{font-size:12px;letter-spacing:.25em;text-transform:uppercase;color:var(--gold);margin-bottom:30px}
+  .cards{display:flex;gap:44px;justify-content:center;padding:70px 40px;background:var(--ink2);border:1px solid var(--line)}
+  .bcard{width:400px;height:230;border-radius:10px;box-shadow:0 30px 60px rgba(0,0,0,.55);position:relative;flex-shrink:0}
+  .bcard.front{background:var(--ivory);color:var(--ink);display:flex;flex-direction:column;justify-content:center;padding:0 44px}
+  .bcard.front .nm{font-family:var(--serif);font-size:26px;letter-spacing:.06em}
+  .bcard.front .rl{font-size:10px;letter-spacing:.32em;text-transform:uppercase;color:var(--gold2);margin-top:8px}
+  .bcard.front .ct{font-size:11.5px;color:#6B665C;margin-top:26px;line-height:1.9}
+  .bcard.front img{position:absolute;right:40px;top:50%;transform:translateY(-50%);width:86px;height:86px;border-radius:50%}
+  .bcard.back{background:var(--ink);display:flex;align-items:center;justify-content:center;border:1px solid #2A2519}
+  .bcard.back img{width:150px;height:150px;border-radius:50%}
+
+  .pack{display:flex;gap:44px;justify-content:center;align-items:flex-end;padding:70px 40px;background:var(--ink2);border:1px solid var(--line)}
+  .box{width:300px;height:390;background:var(--ink);border:1px solid #322C1E;position:relative;box-shadow:0 34px 70px rgba(0,0,0,.6);display:flex;flex-direction:column;align-items:center;justify-content:center}
+  .box::before{content:'';position:absolute;left:0;top:0;bottom:0;width:14px;background:#0E0C08}
+  .box img{width:150px;height:150px;border-radius:50%}
+  .box .bw{font-family:var(--serif);letter-spacing:.28em;font-size:19px;margin-top:30px}
+  .box .bs{font-size:9px;letter-spacing:.5em;color:var(--gold);margin-top:10px}
+  .box.tall{height:450;width:260}
+  .box.tall img{width:110px;height:110px}
+
+  .signage{padding:90px 40px;background:radial-gradient(ellipse at 50% 0%, #2A251B 0%, #14110B 62%);border:1px solid var(--line);text-align:center}
+  .signage img{width:170px;height:170px;border-radius:50%;filter:drop-shadow(0 0 34px rgba(185,148,99,.35))}
+  .signage .lt{font-family:var(--serif);font-size:46px;letter-spacing:.3em;margin-top:36px;text-shadow:0 0 26px rgba(242,238,227,.28)}
+  .signage .ls{font-size:11px;letter-spacing:.6em;color:var(--gold);margin-top:12px}
+
+  .board{margin:0 auto;max-width:980px;aspect-ratio:16/5.4;background:linear-gradient(160deg,#221D12 0%,#15130E 55%,#0E0C08 100%);border:1px solid var(--line);box-shadow:0 40px 90px rgba(0,0,0,.6);display:flex;align-items:center;justify-content:space-between;padding:0 90px;position:relative;overflow:hidden}
+  .board::after{content:'';position:absolute;inset:0;background:linear-gradient(105deg,rgba(255,255,255,.05) 0%,transparent 30%)}
+  .board img{width:190px;height:190px;border-radius:50%}
+  .board .bt{font-family:var(--serif);font-size:56px;letter-spacing:.16em}
+  .board .bs2{font-size:12px;letter-spacing:.5em;color:var(--gold);margin-top:14px}
+  .board .bu{font-size:11px;letter-spacing:.3em;color:var(--mute);position:absolute;bottom:26px;right:90px}
+  .poles{display:flex;justify-content:center;margin-top:0}
+  .pole{width:10px;height:120px;background:linear-gradient(#3A342A,#221E16)}
+
+  .pin-row{display:flex;gap:60px;justify-content:center;align-items:flex-end;padding:70px 40px;background:var(--ink2);border:1px solid var(--line)}
+  .pin{width:170px;height:170px;border-radius:50%;box-shadow:0 18px 40px rgba(0,0,0,.6), inset 0 2px 6px rgba(255,255,255,.12)}
+  .pin.g{background:var(--gold)} .pin.i{background:var(--ivory)}
+  .pin img{width:100%;height:100%;border-radius:50%;mix-blend-mode:multiply}
+  .pin.g img{mix-blend-mode:normal;filter:brightness(0) invert(1);opacity:.92}
+  .pin-cap{font-size:10px;letter-spacing:.25em;color:var(--mute);text-align:center;margin-top:16px;text-transform:uppercase}
+
+  /* verdict */
+  .verdict{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line);border:1px solid var(--line);margin-top:56px}
+  .vcell{background:var(--ink);padding:46px 44px}
+  .vcell.rec{background:var(--ink2)}
+  .vcell h3{font-family:var(--serif);font-size:26px;font-weight:500;margin-bottom:14px}
+  .vcell .tag{font-size:10px;letter-spacing:.35em;text-transform:uppercase;color:var(--gold);margin-bottom:16px}
+  .vcell p{font-size:14px;color:var(--mute)}
+  table{width:100%;border-collapse:collapse;margin-top:56px;font-size:13px}
+  th,td{text-align:left;padding:14px 18px;border-bottom:1px solid var(--line)}
+  th{font-size:10px;letter-spacing:.3em;text-transform:uppercase;color:var(--gold);font-weight:500}
+  td{color:var(--mute)} td:first-child{color:var(--ivory);font-family:var(--serif);font-size:15px}
+  footer{padding:70px 0 90px;text-align:center;font-size:11px;letter-spacing:.3em;text-transform:uppercase;color:var(--mute)}
+</style>
+</head>
+<body>
+
+<section class="cover">
+  <img src="svg/lamka-labs-01-aperture.svg" alt="Lamka Labs Studio mark">
+  <h1>LAMKA LABS</h1>
+  <div class="sub">Studio &middot; Identity Program</div>
+  <div class="meta">Five directions &middot; One voice &middot; Prepared 2026</div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="kicker">01 — Foundations</div>
+    <h2>A studio that treats<br>every release like an heirloom.</h2>
+    <p class="lede">Lamka Labs Studio sits between laboratory and atelier: experimental in method, exacting in finish. The identity had to hold that tension — precise geometry, warm materials, nothing decorative that isn't also structural. It must survive a 16-pixel favicon and a ten-metre billboard with equal authority.</p>
+    <div class="rule"></div>
+    <div class="grid3">
+      <div class="cell"><h3>Position</h3><p>Quiet luxury for a working studio. Restraint is the flex; the mark does the talking.</p></div>
+      <div class="cell"><h3>Audience</h3><p>Founders, collectors, and collaborators who buy craft and keep packaging.</p></div>
+      <div class="cell"><h3>Voice</h3><p>Short sentences. Measured confidence. One gold accent per composition, never two.</p></div>
+    </div>
+    <div class="swatches">
+      <div class="swatch"><div class="chip" style="background:#15130E"></div><div class="name">Press Ink</div><div class="hex">#15130E</div></div>
+      <div class="swatch"><div class="chip" style="background:#F2EEE3"></div><div class="name">Bone Ivory</div><div class="hex">#F2EEE3</div></div>
+      <div class="swatch"><div class="chip" style="background:#B99463"></div><div class="name">Antique Gold</div><div class="hex">#B99463</div></div>
+      <div class="swatch"><div class="chip" style="background:#8C877D"></div><div class="name">Fog Grey</div><div class="hex">#8C877D</div></div>
+    </div>
+    <div class="type">
+      <div><div class="big">Cormorant<br>Garamond</div><div class="alpha">ABCDEFGHIJKLMNOPQRSTUVWXYZ &middot; display, wordmark, headlines</div></div>
+      <div><div class="big" style="font-family:var(--sans);font-weight:300">Inter</div><div class="alpha">abcdefghijklmnopqrstuvwxyz 0123456789 &middot; captions, interface, wayfinding</div></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="kicker">02 — The Five Directions</div>
+    <h2>Five marks.<br>One discipline.</h2>
+    <p class="lede">Each direction is built on a single idea, drawn to a strict grid, and tested at favicon scale before anything else. All five share the same palette, wordmark, and spacing system, so any of them can carry the full program.</p>
+
+    <div class="concept">
+      <div class="art"><img src="svg/lamka-labs-01-aperture.svg" alt="Aperture"></div>
+      <div>
+        <div class="cnum">ITERATION 01</div>
+        <h3>Aperture</h3>
+        <p>A lens ring frames a chamfered L, closed by a single gold period. The full stop is the signature: work leaves the studio finished. Reads instantly at 16px, embosses cleanly on paper, and cuts into metal without thin strokes to fail.</p>
+        <div class="scale">
+          <div><img src="svg/lamka-labs-01-aperture.svg" width="64" height="64"><span>64px</span></div>
+          <div><img src="svg/lamka-labs-01-aperture.svg" width="32" height="32"><span>32px</span></div>
+          <div><img src="svg/lamka-labs-01-aperture.svg" width="16" height="16"><span>16px</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="concept flip">
+      <div class="art"><img src="svg/lamka-labs-02-meridian-key.svg" alt="Meridian Key"></div>
+      <div>
+        <div class="cnum">ITERATION 02</div>
+        <h3>Meridian Key</h3>
+        <p>One continuous gold line spirals inward and stops, deliberate, at the centre. It borrows the Greek meander, a pattern that has meant continuity for twenty-five centuries, and re-tasks it as a lab key: the path in, the problem opened. Drawn in a single stroke weight, it silkscreens and laser-etches perfectly.</p>
+        <div class="scale">
+          <div><img src="svg/lamka-labs-02-meridian-key.svg" width="64" height="64"><span>64px</span></div>
+          <div><img src="svg/lamka-labs-02-meridian-key.svg" width="32" height="32"><span>32px</span></div>
+          <div><img src="svg/lamka-labs-02-meridian-key.svg" width="16" height="16"><span>16px</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="concept">
+      <div class="art"><img src="svg/lamka-labs-03-crucible.svg" alt="Crucible"></div>
+      <div>
+        <div class="cnum">ITERATION 03</div>
+        <h3>Crucible</h3>
+        <p>The vessel of the lab, reduced to six strokes. The gold meniscus marks the fill line: ideas poured in, work poured out, and the level always visible. The most literal of the five, and the warmest; it wants to live on glass, bottles, and packaging.</p>
+        <div class="scale">
+          <div><img src="svg/lamka-labs-03-crucible.svg" width="64" height="64"><span>64px</span></div>
+          <div><img src="svg/lamka-labs-03-crucible.svg" width="32" height="32"><span>32px</span></div>
+          <div><img src="svg/lamka-labs-03-crucible.svg" width="16" height="16"><span>16px</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="concept flip">
+      <div class="art"><img src="svg/lamka-labs-04-strata.svg" alt="Strata"></div>
+      <div>
+        <div class="cnum">ITERATION 04</div>
+        <h3>Strata</h3>
+        <p>Three foundation courses, each shorter than the last, the final one gold. Craft built in layers, the way the studio actually works: research, structure, finish. The boldest and most architectural; it scales to signage larger than any other direction here.</p>
+        <div class="scale">
+          <div><img src="svg/lamka-labs-04-strata.svg" width="64" height="64"><span>64px</span></div>
+          <div><img src="svg/lamka-labs-04-strata.svg" width="32" height="32"><span>32px</span></div>
+          <div><img src="svg/lamka-labs-04-strata.svg" width="16" height="16"><span>16px</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="concept">
+      <div class="art"><img src="svg/lamka-labs-05-north-star-seal.svg" alt="North Star Seal"></div>
+      <div>
+        <div class="cnum">ITERATION 05</div>
+        <h3>North Star Seal</h3>
+        <p>An eight-point compass star set in a fine ring: direction, craft, permanence. The most ceremonial of the five. It is a seal before it is a logo, which makes it the natural wax stamp, foil block, and app-icon mark. Heritage without nostalgia.</p>
+        <div class="scale">
+          <div><img src="svg/lamka-labs-05-north-star-seal.svg" width="64" height="64"><span>64px</span></div>
+          <div><img src="svg/lamka-labs-05-north-star-seal.svg" width="32" height="32"><span>32px</span></div>
+          <div><img src="svg/lamka-labs-05-north-star-seal.svg" width="16" height="16"><span>16px</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="kicker">03 — The Campaign</div>
+    <h2>How it lives<br>in the world.</h2>
+    <p class="lede">Applications rendered from Iteration 01, with Iteration 05 as the ceremonial seal. The system is one palette, two typefaces, and a rule the campaign never breaks: the mark is always the quietest loud thing in the frame.</p>
+
+    <div class="app">
+      <h3>Business cards</h3>
+      <div class="cap">600gsm cotton &middot; gold foil &middot; letterpress deboss</div>
+      <div class="cards">
+        <div class="bcard front">
+          <div class="nm">Lamka Labs</div>
+          <div class="rl">Studio</div>
+          <div class="ct">hello@lamkalabs.studio<br>lamkalabs.studio</div>
+          <img src="svg/lamka-labs-01-aperture.svg" alt="">
+        </div>
+        <div class="bcard back"><img src="svg/lamka-labs-01-aperture.svg" alt=""></div>
+      </div>
+    </div>
+
+    <div class="app">
+      <h3>Packaging</h3>
+      <div class="cap">rigid boxes &middot; foil-stamped &middot; seal sticker closure</div>
+      <div class="pack">
+        <div class="box tall"><img src="svg/lamka-labs-05-north-star-seal.svg" alt=""><div class="bw">LAMKA LABS</div><div class="bs">STUDIO</div></div>
+        <div class="box"><img src="svg/lamka-labs-01-aperture.svg" alt=""><div class="bw">LAMKA LABS</div><div class="bs">STUDIO</div></div>
+        <div class="box tall"><img src="svg/lamka-labs-02-meridian-key.svg" alt=""><div class="bw">LAMKA LABS</div><div class="bs">STUDIO</div></div>
+      </div>
+    </div>
+
+    <div class="app">
+      <h3>Signage</h3>
+      <div class="cap">backlit halo-lit letters &middot; brass inlay &middot; studio entrance</div>
+      <div class="signage">
+        <img src="svg/lamka-labs-01-aperture.svg" alt="">
+        <div class="lt">LAMKA LABS</div>
+        <div class="ls">STUDIO</div>
+      </div>
+    </div>
+
+    <div class="app">
+      <h3>Billboard</h3>
+      <div class="cap">48-sheet &middot; premium sites &middot; one message per frame</div>
+      <div class="board">
+        <img src="svg/lamka-labs-01-aperture.svg" alt="">
+        <div style="text-align:right">
+          <div class="bt">Finished,<br>or not shipped.</div>
+          <div class="bs2">LAMKA LABS STUDIO</div>
+        </div>
+        <div class="bu">LAMKALABS.STUDIO</div>
+      </div>
+      <div class="poles"><div class="pole"></div><div class="pole" style="margin-left:640px"></div></div>
+    </div>
+
+    <div class="app">
+      <h3>Merchandise</h3>
+      <div class="cap">hard enamel pins &middot; 32mm &middot; two finishes</div>
+      <div class="pin-row">
+        <div><div class="pin g"><img src="svg/lamka-labs-05-north-star-seal.svg" alt=""></div><div class="pin-cap">Gold on ink</div></div>
+        <div><div class="pin i"><img src="svg/lamka-labs-05-north-star-seal.svg" alt=""></div><div class="pin-cap">Ivory on ink</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="kicker">04 — Recommendation</div>
+    <h2>The verdict.</h2>
+    <div class="verdict">
+      <div class="vcell rec">
+        <div class="tag">Primary mark — recommended</div>
+        <h3>01 · Aperture</h3>
+        <p>The only direction that is equally strong at 16 pixels and 16 metres. The gold period gives it a signature no competitor can borrow without looking like they did. It carries the favicon, the app icon, the card, the wall.</p>
+      </div>
+      <div class="vcell">
+        <div class="tag">Ceremonial seal — supporting mark</div>
+        <h3>05 · North Star Seal</h3>
+        <p>Paired with 01 as the seal of the house: wax stamps, foil closures, packaging stickers, and the app icon where a roundel reads better than a letterform. The two marks share one geometry and one palette, so the system stays single.</p>
+      </div>
+    </div>
+    <table>
+      <tr><th>Deliverable</th><th>Format</th><th>Location</th></tr>
+      <tr><td>Iterations 01–05</td><td>SVG (master) · PNG 1000px · JPG · animated GIF</td><td>brand/svg · png · jpg · gif</td></tr>
+      <tr><td>This presentation</td><td>HTML</td><td>brand/presentation.html</td></tr>
+      <tr><td>Generator scripts</td><td>Python (regenerate all formats)</td><td>brand/gen_svgs.py · convert.py</td></tr>
+    </table>
+  </div>
+</section>
+
+<footer>LAMKA LABS STUDIO &middot; IDENTITY PROGRAM &middot; MMXXVI</footer>
+
+</body>
+</html>

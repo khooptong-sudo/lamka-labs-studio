@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" width="1000" height="1000">
+  <!-- Lamka Labs Studio identity v2 - Signal Core -->
+  <rect width="1000" height="1000" fill="#0F0E0C"/><path d="M476.9 411.7 A100 100 0 0 1 476.9 588.3" fill="none" stroke="#F7F5F0" stroke-width="18" stroke-linecap="butt"/><path d="M514.5 341.1 A180 180 0 0 1 514.5 658.9" fill="none" stroke="#F7F5F0" stroke-width="18" stroke-linecap="butt"/><path d="M552.1 270.4 A260 260 0 0 1 552.1 729.6" fill="none" stroke="#F7F5F0" stroke-width="18" stroke-linecap="butt"/><circle cx="430" cy="500" r="46" fill="#C8102E"/>
+  <text x="507" y="852" font-family="Georgia, 'Times New Roman', serif" font-size="54"
+        letter-spacing="14" fill="#F7F5F0" text-anchor="middle">LAMKA LABS</text>
+  <text x="510" y="906" font-family="Georgia, 'Times New Roman', serif" font-size="25"
+        letter-spacing="20" fill="#C8102E" text-anchor="middle">STUDIO</text>
+</svg>

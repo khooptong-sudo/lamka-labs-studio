@@ -25,6 +25,12 @@ import structlog
 
 from app import gpu
 from app.scene3d.author import author_shot, author_world
+from app.scene3d.motion import (
+    MOTION_MAX_PARALLEL,
+    generate_motion_clip,
+    normalize_clip,
+    normalize_motion_provider,
+)
 from app.scene3d.probes import ProbeStats, frames_are_distinct
 from app.scene3d.shell import render_3d_frame
 from app.scene3d.verify import verify_shot
@@ -269,6 +275,24 @@ Do not imitate a named studio, franchise, or living artist. The result must be s
 and young adults."""
 
 
+def cinematic_motion_prompt(board, frame) -> str:
+    """One-line image-to-video prompt for a scene, from the board it already has.
+
+    Veo rejects prompts over ~500 chars, so this stays terse: the scene's own
+    text plus the direction bible's frame-to-motion intent, with an explicit
+    no-text suffix so the model never burns a caption into the clip.
+    """
+    intent = motion_intent_of(board.direction or "")
+    scene = (frame.scene or frame.title or "").strip()[:200]
+    movement = f" Camera movement: {intent}." if intent else " Slow, deliberate camera move."
+    prompt = (
+        f"Cinematic shot for one scene of a finance education short: {scene}."
+        f"{movement} Smooth continuous motion, single unbroken take, consistent lighting "
+        f"and character design with the start frame; no text, no captions."
+    )
+    return prompt[:500]
+
+
 _MOTION_INTENT = re.compile(r"^\s*-\s*Frame-to-motion intent:\s*(.+?)\s*$", re.IGNORECASE | re.MULTILINE)
 
 
@@ -329,6 +353,63 @@ def render_cinematic_frame(
         const tl = gsap.timeline({{ paused: true }});
         tl.fromTo(\"#{slug}-backdrop\", {{ scale: 1.18, x: {pan_x * -0.35}, y: {pan_y * -0.35} }}, {{ scale: 1.28, x: {pan_x * 0.5}, y: {pan_y * 0.5}, duration: {duration}, ease: \"none\" }}, 0);
         tl.fromTo(\"#{slug}-image\", {{ scale: 1.025, x: 0, y: 0 }}, {{ scale: {camera_scale + motion_boost}, x: {pan_x}, y: {pan_y}, duration: {duration}, ease: \"{motion_ease}\" }}, 0);
+        tl.fromTo(\"#{slug}-atmosphere\", {{ scale: .96, x: {pan_x * -0.2}, y: {pan_y * -0.15}, opacity: .08 }}, {{ scale: 1.08, x: {pan_x * 0.25}, y: {pan_y * 0.2}, opacity: .38, duration: {duration}, ease: \"sine.inOut\" }}, 0);
+        tl.fromTo(\"#{slug}-light-pass\", {{ xPercent: -20, opacity: 0 }}, {{ xPercent: 20, opacity: .42, duration: {duration * 0.72}, ease: \"sine.inOut\" }}, {duration * 0.12});
+        window.__timelines[\"{slug}\"] = tl;
+      </script>
+    </template>
+  </body>
+</html>
+"""
+
+
+def render_cinematic_motion_frame(
+    slug: str, duration: float, video_src: str, poster_src: str, motion_index: int = 1,
+) -> str:
+    """Render a normalized motion clip with the same composition contract as the Ken Burns frame.
+
+    The hero is a ``<video>`` (exactly ``duration`` long, muted — the model's
+    audio was stripped at normalize time) inside a wrapper that carries a
+    gentle scale tween; the blurred keyframe backdrop, atmosphere, light pass,
+    and vignette are identical to ``render_cinematic_frame``.
+    """
+    camera_paths = (
+        (-18, -14, 1.115), (16, -10, 1.13), (-12, 15, 1.12), (18, 12, 1.125),
+        (-10, 16, 1.14), (14, 14, 1.11), (-16, 8, 1.135), (10, -16, 1.12),
+    )
+    pan_x, pan_y, _camera_scale = camera_paths[(motion_index - 1) % len(camera_paths)]
+    return f"""<!doctype html>
+<html lang=\"en\">
+  <body>
+    <template>
+      <style>
+        #root {{ position: absolute; inset: 0; width: 100%; height: 100%; overflow: hidden; background: #08090c; }}
+        .stage-fill {{ position: absolute; inset: 0; overflow: hidden; background: #08090c; }}
+        .image {{ display: block; width: 100%; height: 100%; object-fit: cover; object-position: center; transform-origin: 50% 50%; will-change: transform; }}
+        .video {{ display: block; width: 100%; height: 100%; object-fit: cover; object-position: center; transform-origin: 50% 50%; will-change: transform; }}
+        .depth-backdrop {{ filter: blur(16px) brightness(.72) saturate(.84); transform: scale(1.18); }}
+        .video-wrap {{ position: absolute; inset: 0; overflow: hidden; transform-origin: 50% 50%; will-change: transform; }}
+        .atmosphere {{ position: absolute; inset: -12%; pointer-events: none; background: radial-gradient(ellipse at 22% 28%, rgba(255,230,180,.20), transparent 42%), radial-gradient(ellipse at 76% 72%, rgba(115,190,255,.16), transparent 46%); mix-blend-mode: screen; will-change: transform, opacity; }}
+        .light-pass {{ position: absolute; inset: -28%; pointer-events: none; background: linear-gradient(112deg, transparent 42%, rgba(255,249,225,.16) 50%, transparent 58%); mix-blend-mode: screen; will-change: transform, opacity; }}
+        .vignette {{ position: absolute; inset: 0; pointer-events: none; background: radial-gradient(circle at 50% 42%, transparent 45%, rgba(0,0,0,.28) 100%); }}
+      </style>
+      <div id=\"root\" data-composition-id=\"{slug}\" data-start=\"0\" data-duration=\"{duration}\" data-width=\"1080\" data-height=\"1920\">
+        <div class=\"stage-fill\">
+          <img id=\"{slug}-backdrop\" class=\"image depth-backdrop\" src=\"../../{poster_src}\" alt=\"\" aria-hidden=\"true\" />
+          <div id=\"{slug}-video-wrap\" class=\"video-wrap\">
+            <video id=\"{slug}-video\" class=\"video hero-video clip\" src=\"../../{video_src}\" poster=\"../../{poster_src}\" muted playsinline data-start=\"0\" data-duration=\"{duration}\" data-track-index=\"1\"></video>
+          </div>
+          <div id=\"{slug}-atmosphere\" class=\"atmosphere\" aria-hidden=\"true\"></div>
+          <div id=\"{slug}-light-pass\" class=\"light-pass\" aria-hidden=\"true\"></div>
+          <div class=\"vignette\"></div>
+        </div>
+      </div>
+      <script src=\"https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js\"></script>
+      <script>
+        window.__timelines = window.__timelines || {{}};
+        const tl = gsap.timeline({{ paused: true }});
+        tl.fromTo(\"#{slug}-backdrop\", {{ scale: 1.18, x: {pan_x * -0.35}, y: {pan_y * -0.35} }}, {{ scale: 1.28, x: {pan_x * 0.5}, y: {pan_y * 0.5}, duration: {duration}, ease: \"none\" }}, 0);
+        tl.fromTo(\"#{slug}-video-wrap\", {{ scale: 1.0, x: 0, y: 0 }}, {{ scale: 1.04, x: {pan_x * 0.2}, y: {pan_y * 0.2}, duration: {duration}, ease: \"sine.inOut\" }}, 0);
         tl.fromTo(\"#{slug}-atmosphere\", {{ scale: .96, x: {pan_x * -0.2}, y: {pan_y * -0.15}, opacity: .08 }}, {{ scale: 1.08, x: {pan_x * 0.25}, y: {pan_y * 0.2}, opacity: .38, duration: {duration}, ease: \"sine.inOut\" }}, 0);
         tl.fromTo(\"#{slug}-light-pass\", {{ xPercent: -20, opacity: 0 }}, {{ xPercent: 20, opacity: .42, duration: {duration * 0.72}, ease: \"sine.inOut\" }}, {duration * 0.12});
         window.__timelines[\"{slug}\"] = tl;
@@ -503,6 +584,7 @@ async def _build_cinematic_frames_inner(
     video_dir: Path,
     selected: str,
     on_frame_complete: Callable[[int, int], Awaitable[None]] | None = None,
+    motion: str = "off",
 ) -> list[str]:
     frames_dir = video_dir / "compositions" / "frames"
     assets_dir = video_dir / "assets" / "cinematic"
@@ -511,18 +593,55 @@ async def _build_cinematic_frames_inner(
 
     total_frames = len(board.frames)
     ease, boost = motion_style(motion_intent_of(board.direction))
+    for frame in board.frames:
+        image_path = assets_dir / f"{frame.slug}.png"
+        await _generate_cinematic_image(cinematic_image_prompt(board, frame), image_path, selected)
+
+    async def animate_one(frame) -> None:
+        # I2V polling runs minutes per clip; run clips concurrently (bounded by
+        # MOTION_MAX_PARALLEL) so runtime does not multiply by the frame count.
+        async with clip_semaphore:
+            normalized_path = assets_dir / f"{frame.slug}.mp4"
+            if normalized_path.exists():
+                # A retried build reuses clips that already survived quota
+                # throttling; only the scenes a 429 interrupted are regenerated.
+                log.info("motion_clip_reused", slug=frame.slug)
+                return
+            image_path = assets_dir / f"{frame.slug}.png"
+            raw_path = assets_dir / f"{frame.slug}.raw.mp4"
+            await generate_motion_clip(
+                motion, image_path, cinematic_motion_prompt(board, frame), raw_path
+            )
+            await normalize_clip(raw_path, normalized_path, frame.duration)
+
+    clip_semaphore = asyncio.Semaphore(MOTION_MAX_PARALLEL)
+    if motion != "off":
+        await asyncio.gather(*(animate_one(frame) for frame in board.frames))
+
+    # Compositions are written in board order regardless of clip completion order.
     for completed, frame in enumerate(board.frames, start=1):
         image_src = f"assets/cinematic/{frame.slug}.png"
-        image_path = video_dir / image_src
-        await _generate_cinematic_image(cinematic_image_prompt(board, frame), image_path, selected)
-        (frames_dir / f"{frame.slug}.html").write_text(
-            render_cinematic_frame(frame.slug, frame.duration, image_src, completed, ease, boost),
-            encoding="utf-8",
-        )
+        if motion == "off":
+            html = render_cinematic_frame(frame.slug, frame.duration, image_src, completed, ease, boost)
+        else:
+            html = render_cinematic_motion_frame(
+                frame.slug,
+                frame.duration,
+                f"assets/cinematic/{frame.slug}.mp4",
+                image_src,
+                completed,
+            )
+        (frames_dir / f"{frame.slug}.html").write_text(html, encoding="utf-8")
         if on_frame_complete:
             await on_frame_complete(completed, total_frames)
 
-    log.info("cinematic_frames_built", frames=len(board.frames), provider=selected, model=GEMINI_IMAGE_MODEL)
+    log.info(
+        "cinematic_frames_built",
+        frames=len(board.frames),
+        provider=selected,
+        model=GEMINI_IMAGE_MODEL,
+        motion=motion,
+    )
     return []
 
 
@@ -531,15 +650,23 @@ async def build_cinematic_frames(
     video_dir: Path,
     provider: str | None = None,
     on_frame_complete: Callable[[int, int], Awaitable[None]] | None = None,
+    motion: str | None = None,
 ) -> list[str]:
     """Build image-led portrait scenes without ever substituting a fallback frame.
 
     A missing or failed keyframe is a content-quality failure, not a reason to
     send a title card to render. The caller therefore receives an exception and
-    the job stops with an actionable error.
+    the job stops with an actionable error. ``motion`` selects an optional
+    image-to-video provider; ``off`` (the default) renders the Ken Burns
+    keyframe compositions.
     """
     selected = require_cinematic_image_provider(provider)
+    selected_motion = normalize_motion_provider(motion)
     if selected == "comfyui":
         async with gpu.slot:
-            return await _build_cinematic_frames_inner(board, video_dir, selected, on_frame_complete)
-    return await _build_cinematic_frames_inner(board, video_dir, selected, on_frame_complete)
+            return await _build_cinematic_frames_inner(
+                board, video_dir, selected, on_frame_complete, selected_motion
+            )
+    return await _build_cinematic_frames_inner(
+        board, video_dir, selected, on_frame_complete, selected_motion
+    )

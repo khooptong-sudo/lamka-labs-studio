@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" width="1000" height="1000">
+  <!-- Lamka Labs Studio identity v2 - Counter L -->
+  <rect width="1000" height="1000" fill="#0F0E0C"/>
+  <path d="M400 300 h100 v280 h180 v100 h-280 Z" fill="#F7F5F0"/>
+  <rect x="516" y="516" width="56" height="56" fill="#C8102E"/>
+  <text x="507" y="852" font-family="Georgia, 'Times New Roman', serif" font-size="54"
+        letter-spacing="14" fill="#F7F5F0" text-anchor="middle">LAMKA LABS</text>
+  <text x="510" y="906" font-family="Georgia, 'Times New Roman', serif" font-size="25"
+        letter-spacing="20" fill="#C8102E" text-anchor="middle">STUDIO</text>
+</svg>

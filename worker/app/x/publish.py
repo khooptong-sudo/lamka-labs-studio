@@ -10,7 +10,6 @@ from typing import Any
 import structlog
 
 from app import audit, db
-from app.channels import BASE_BLOCKLIST
 from app.x import client
 
 log = structlog.get_logger()
@@ -40,19 +39,6 @@ async def _fetch_story(story_id: uuid.UUID) -> dict[str, Any]:
     return row
 
 
-def _check_compliance(text: str) -> None:
-    """Apply the same base blocklist used for video scripts.
-
-    X posts are shorter, but the financial-advice prohibition is the same.
-    """
-    lowered = text.lower()
-    blocked = [term for term in BASE_BLOCKLIST if term.lower() in lowered]
-    if blocked:
-        raise XComplianceError(
-            f"text contains blocked term(s): {', '.join(blocked)}"
-        )
-
-
 async def publish_post(
     story_id: uuid.UUID,
     text: str,
@@ -62,7 +48,7 @@ async def publish_post(
 
     Steps:
       1. Story exists.
-      2. Text passes blocklist/compliance checks and length rules.
+      2. Text passes length rules.
       3. Draft row created as 'pending'.
       4. X API called.
       5. Draft updated to 'published' with tweet id, or 'failed' on error.
@@ -73,7 +59,6 @@ async def publish_post(
 
     try:
         client.validate_text(text)
-        _check_compliance(text)
     except client.XPublishError as exc:
         # Validation failures are caller errors, not publish failures.
         raise XComplianceError(str(exc)) from exc

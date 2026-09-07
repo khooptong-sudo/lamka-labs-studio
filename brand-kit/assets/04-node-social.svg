@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="1080" viewBox="0 0 1080 1080">
+  <rect width="1080" height="1080" fill="#0A0A0A" />
+  
+      <g transform="translate(360, 194.4)"><line x1="90" y1="100.80000000000001" x2="79.2" y2="187.20000000000002" stroke="#D4AF37" stroke-width="4.32" /><line x1="79.2" y1="187.20000000000002" x2="100.80000000000001" y2="270" stroke="#D4AF37" stroke-width="4.32" /><line x1="100.80000000000001" y1="270" x2="187.20000000000002" y2="259.2" stroke="#D4AF37" stroke-width="4.32" /><circle cx="90" cy="100.80000000000001" r="13.608" fill="#D4AF37" /><circle cx="172.79999999999998" cy="79.2" r="10.08" fill="#2A2A2A" /><circle cx="259.2" cy="108" r="10.08" fill="#2A2A2A" /><circle cx="79.2" cy="187.20000000000002" r="13.608" fill="#D4AF37" /><circle cx="162" cy="172.79999999999998" r="10.08" fill="#2A2A2A" /><circle cx="244.8" cy="187.20000000000002" r="10.08" fill="#2A2A2A" /><circle cx="100.80000000000001" cy="270" r="13.608" fill="#D4AF37" /><circle cx="187.20000000000002" cy="259.2" r="13.608" fill="#D4AF37" /><circle cx="270" cy="280.8" r="10.08" fill="#2A2A2A" /></g>
+      
+    <text x="540" y="777.6" font-size="86" text-anchor="middle" dominant-baseline="middle">
+      <tspan font-family="'Georgia','Times New Roman',serif" font-weight="400" fill="#F5F5F0" letter-spacing="0.04em">LAMKA</tspan>
+      <tspan dx="27.52" font-family="'Helvetica Neue','Arial',sans-serif" font-weight="300" fill="#F5F5F0" letter-spacing="0.12em">LABS</tspan>
+      <tspan x="540" y="880.8000000000001" font-family="'Helvetica Neue','Arial',sans-serif" font-size="29.240000000000002" font-weight="400" fill="#D4AF37">LUXURY CONTENT STUDIO</tspan>
+    </text>
+  
+    
+</svg>

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="1080" viewBox="0 0 1080 1080">
+  <rect width="1080" height="1080" fill="#0A0A0A" />
+  
+      <g transform="translate(360, 194.4)">
+        <circle cx="180" cy="180" r="135.6" fill="none" stroke="#2A2A2A" stroke-width="2" />
+        <path d="M225.35999999999999,180 L309.6,180 A129.6,129.6 0 0,1 256.1769686971045,284.84860247099317 Z" fill="#D4AF37" opacity="0.92" /><path d="M202.68,219.28291231566214 L244.8,292.2368923304632 A129.6,129.6 0 0,1 127.28693105737628,298.3954913104811 Z" fill="#D4AF37" opacity="0.92" /><path d="M157.32000000000002,219.28291231566214 L115.20000000000003,292.23689233046326 A129.6,129.6 0 0,1 51.109962360271794,193.54688883948793 Z" fill="#D4AF37" opacity="0.92" /><path d="M134.64000000000001,180 L50.400000000000006,180.00000000000003 A129.6,129.6 0 0,1 103.82303130289547,75.15139752900683 Z" fill="#D4AF37" opacity="0.92" /><path d="M157.32,140.71708768433788 L115.19999999999995,67.76310766953678 A129.6,129.6 0 0,1 232.71306894262364,61.60450868951891 Z" fill="#D4AF37" opacity="0.92" /><path d="M202.68,140.71708768433786 L244.8,67.76310766953677 A129.6,129.6 0 0,1 308.89003763972823,166.45311116051212 Z" fill="#D4AF37" opacity="0.92" />
+        <path d="M108.72,199.44 L108.72,264.24 L212.4,264.24" fill="none" stroke="#0A0A0A" stroke-width="19.8" stroke-linecap="square" />
+      </g>
+      
+    <text x="540" y="777.6" font-size="86" text-anchor="middle" dominant-baseline="middle">
+      <tspan font-family="'Georgia','Times New Roman',serif" font-weight="400" fill="#F5F5F0" letter-spacing="0.04em">LAMKA</tspan>
+      <tspan dx="27.52" font-family="'Helvetica Neue','Arial',sans-serif" font-weight="300" fill="#F5F5F0" letter-spacing="0.12em">LABS</tspan>
+      <tspan x="540" y="880.8000000000001" font-family="'Helvetica Neue','Arial',sans-serif" font-size="29.240000000000002" font-weight="400" fill="#D4AF37">LUXURY CONTENT STUDIO</tspan>
+    </text>
+  
+    
+</svg>

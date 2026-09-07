@@ -133,6 +133,7 @@ class YouTubeGenerateRequest(BaseModel):
     channel_id: str = Field(min_length=1)
     upload_preference: str = "manual"
     voice_key: str | None = Field(default=None, max_length=40)
+    motion: str | None = Field(default=None, max_length=20)
 
 
 class CinematicControls(BaseModel):
@@ -155,6 +156,7 @@ class YouTubeJobRequest(BaseModel):
     mode: str | None = None
     storyboard: str | None = Field(default=None, max_length=50000)
     image_provider: str | None = Field(default=None, max_length=20)
+    motion: str | None = Field(default=None, max_length=20)
     voice_key: str | None = Field(default=None, max_length=40)
     cinematic_controls: CinematicControls | None = None
     brief: str | None = Field(default=None, max_length=2000)
@@ -203,6 +205,7 @@ async def youtube_generate(req: YouTubeGenerateRequest) -> dict:
             upload_preference=req.upload_preference,
             backend="cinematic",
             voice_key=req.voice_key,
+            motion=req.motion,
         )
         if draft_id is None:
             raise HTTPException(status_code=404, detail="story not found")
@@ -252,6 +255,14 @@ async def youtube_job_start(req: YouTubeJobRequest) -> dict:
             except (RuntimeError, ValueError) as exc:
                 raise HTTPException(status_code=400, detail=str(exc)) from exc
 
+        if req.motion is not None:
+            from app.scene3d.motion import normalize_motion_provider
+
+            try:
+                normalize_motion_provider(req.motion)
+            except ValueError as exc:
+                raise HTTPException(status_code=422, detail=str(exc)) from exc
+
         # Resolved synchronously, same as /youtube/generate: a bad channel_id
         # must fail the request, never a background task that already returned 202.
         await channels.resolve(req.channel_id)
@@ -277,6 +288,7 @@ async def youtube_job_start(req: YouTubeJobRequest) -> dict:
                 job_id=job_id,
                 storyboard_override=req.storyboard,
                 image_provider=req.image_provider,
+                motion=req.motion,
                 voice_key=req.voice_key,
                 cinematic_controls=(
                     req.cinematic_controls.model_dump() if req.cinematic_controls else None
@@ -309,6 +321,7 @@ async def youtube_job_with_voice(
     mode: str | None = Form(None),
     storyboard: str | None = Form(None),
     image_provider: str | None = Form(None),
+    motion: str | None = Form(None),
     voice_key: str | None = Form(None),
     clips: list[UploadFile] | None = File(None),
     brief: str | None = Form(default=None, max_length=2000),
@@ -344,6 +357,14 @@ async def youtube_job_with_voice(
                 require_cinematic_image_provider(image_provider)
             except (RuntimeError, ValueError) as exc:
                 raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+        if motion is not None:
+            from app.scene3d.motion import normalize_motion_provider
+
+            try:
+                normalize_motion_provider(motion)
+            except ValueError as exc:
+                raise HTTPException(status_code=422, detail=str(exc)) from exc
 
         await channels.resolve(channel_id)
         if voice_key:
@@ -392,6 +413,7 @@ async def youtube_job_with_voice(
                 job_id=job_id,
                 storyboard_override=storyboard,
                 image_provider=image_provider,
+                motion=motion,
                 voice_clip_paths=clip_paths,
                 documentary=(mode == "documentary"),
                 brief=brief,
@@ -416,6 +438,14 @@ async def youtube_image_providers() -> dict:
     from app.scene3d.backend import cinematic_image_provider_statuses
 
     return {"providers": cinematic_image_provider_statuses()}
+
+
+@router.get("/youtube/motion-providers")
+async def youtube_motion_providers() -> dict:
+    """Safe motion-provider readiness for the 3D Short dashboard selector."""
+    from app.scene3d.motion import motion_provider_statuses
+
+    return {"providers": motion_provider_statuses()}
 
 
 @router.get("/youtube/jobs/{job_id}")

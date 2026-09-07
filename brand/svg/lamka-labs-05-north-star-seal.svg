@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" width="1000" height="1000">
+  <!-- Lamka Labs Studio identity - North Star Seal -->
+  <rect width="1000" height="1000" fill="#15130E"/>
+  <circle cx="500" cy="458" r="314" fill="none" stroke="#F2EEE3" stroke-width="7"/>
+  <polygon points="500.0,194.0 532.1,380.4 593.3,364.7 577.6,425.9 764.0,458.0 577.6,490.1 593.3,551.3 532.1,535.6 500.0,722.0 467.9,535.6 406.7,551.3 422.4,490.1 236.0,458.0 422.4,425.9 406.7,364.7 467.9,380.4" fill="#B99463"/>
+  <text x="507" y="852" font-family="Georgia, 'Times New Roman', serif" font-size="54"
+        letter-spacing="14" fill="#F2EEE3" text-anchor="middle">LAMKA LABS</text>
+  <text x="510" y="906" font-family="Georgia, 'Times New Roman', serif" font-size="25"
+        letter-spacing="20" fill="#B99463" text-anchor="middle">STUDIO</text>
+</svg>

@@ -168,6 +168,7 @@ async def generate_youtube_video(
     job_id: uuid.UUID | None = None,
     storyboard_override: str | None = None,
     image_provider: str | None = None,
+    motion: str | None = None,
     voice_key: str | None = None,
     cinematic_controls: dict[str, str] | None = None,
     voice_clip_paths: list[Path] | None = None,
@@ -490,6 +491,7 @@ async def generate_youtube_video(
         video_dir,
         backend=backend,
         image_provider=image_provider,
+        motion=motion,
         on_frame_complete=report_frame_progress if job_id else None,
     )
     if placeholders:
@@ -530,45 +532,65 @@ async def generate_youtube_video(
     
     await _stage(job_id, "render")
 
-    import sys
-    import subprocess
-    from starlette.concurrency import run_in_threadpool
-    npx_cmd = "npx.cmd" if sys.platform == "win32" else "npx"
-    try:
-        def run_hyperframes():
-            return subprocess.run(
-                [
-                    npx_cmd,
-                    "--yes",
-                    f"hyperframes@{HYPERFRAMES_VERSION}",
-                    "render",
-                    "--output",
-                    "renders/video.mp4",
-                ],
-                cwd=str(video_dir),
-                capture_output=True,
-                check=True,
-                timeout=HYPERFRAMES_TIMEOUT_SECONDS,
-            )
+    motion_assembly = (
+        (backend or FRAME_BACKEND).lower() == "cinematic"
+        and motion not in (None, "off")
+    )
+    if motion_assembly:
+        # Motion scenes are already normalized per-scene MP4s of exactly
+        # frame.duration; one ffmpeg pass replaces the ~25-40 min
+        # headless-Chrome capture and writes the same renders/video.mp4.
+        from app.scene3d.assemble import assemble_motion_video
 
-        async with gpu.slot:
-            proc = await asyncio.to_thread(run_hyperframes)
-        log.info("youtube_rendering_complete")
-    except subprocess.TimeoutExpired as e:
-        log.error("youtube_rendering_failed", reason="timeout", timeout_seconds=e.timeout)
-        raise Exception("youtube rendering timed out")
-    except subprocess.CalledProcessError as e:
-        raw = e.stderr or e.stdout or b""
-        text = raw.decode("utf-8", errors="replace") if isinstance(raw, bytes) else str(raw)
-        tail = "\n".join(text.strip().splitlines()[-20:])
-        log.error("youtube_rendering_failed", returncode=e.returncode, stderr=tail)
-        detail = f"youtube rendering failed (exit {e.returncode})"
-        if tail:
-            detail = f"{detail}: {tail}"
-        raise Exception(detail)
-    except Exception as e:
-        log.error("youtube_rendering_error", error=str(e))
-        raise
+        try:
+            await assemble_motion_video(
+                board, video_dir, with_bgm=(video_dir / "bgm.mp3").exists()
+            )
+        except Exception as e:
+            log.error("youtube_motion_assembly_failed", error=str(e))
+            raise
+        log.info("youtube_rendering_complete", renderer="ffmpeg-assemble")
+    else:
+
+        import sys
+        import subprocess
+        from starlette.concurrency import run_in_threadpool
+        npx_cmd = "npx.cmd" if sys.platform == "win32" else "npx"
+        try:
+            def run_hyperframes():
+                return subprocess.run(
+                    [
+                        npx_cmd,
+                        "--yes",
+                        f"hyperframes@{HYPERFRAMES_VERSION}",
+                        "render",
+                        "--output",
+                        "renders/video.mp4",
+                    ],
+                    cwd=str(video_dir),
+                    capture_output=True,
+                    check=True,
+                    timeout=HYPERFRAMES_TIMEOUT_SECONDS,
+                )
+
+            async with gpu.slot:
+                proc = await asyncio.to_thread(run_hyperframes)
+            log.info("youtube_rendering_complete")
+        except subprocess.TimeoutExpired as e:
+            log.error("youtube_rendering_failed", reason="timeout", timeout_seconds=e.timeout)
+            raise Exception("youtube rendering timed out")
+        except subprocess.CalledProcessError as e:
+            raw = e.stderr or e.stdout or b""
+            text = raw.decode("utf-8", errors="replace") if isinstance(raw, bytes) else str(raw)
+            tail = "\n".join(text.strip().splitlines()[-20:])
+            log.error("youtube_rendering_failed", returncode=e.returncode, stderr=tail)
+            detail = f"youtube rendering failed (exit {e.returncode})"
+            if tail:
+                detail = f"{detail}: {tail}"
+            raise Exception(detail)
+        except Exception as e:
+            log.error("youtube_rendering_error", error=str(e))
+            raise
 
     mp4_path = video_dir / "renders" / "video.mp4"
 
@@ -1206,6 +1228,7 @@ async def _build_frames(
     video_dir: Path,
     backend: str | None = None,
     image_provider: str | None = None,
+    motion: str | None = None,
     on_frame_complete=None,
 ) -> list[str]:
     """Dispatch frame generation to the requested backend.
@@ -1215,15 +1238,18 @@ async def _build_frames(
     restart; FRAME_BACKEND only supplies the default.
     """
     chosen = (backend or FRAME_BACKEND).lower()
+    if motion and motion != "off" and chosen != "cinematic":
+        log.info("motion_ignored", backend=chosen, motion=motion)
     if chosen == "three":
         return await build_3d_frames(board, video_dir)
     if chosen == "cinematic":
         if on_frame_complete is None:
-            return await build_cinematic_frames(board, video_dir, provider=image_provider)
+            return await build_cinematic_frames(board, video_dir, provider=image_provider, motion=motion)
         return await build_cinematic_frames(
             board,
             video_dir,
             provider=image_provider,
+            motion=motion,
             on_frame_complete=on_frame_complete,
         )
     if chosen == "gemini":

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="1080" viewBox="0 0 1080 1080">
+  <rect width="1080" height="1080" fill="#0A0A0A" />
+  
+      <g transform="translate(360, 194.4)">
+        <rect x="79.2" y="79.2" width="201.6" height="201.6" fill="none" stroke="#D4AF37" stroke-width="23.400000000000002" />
+        <line x1="79.2" y1="210.24" x2="210.24" y2="210.24" stroke="#0A0A0A" stroke-width="28.080000000000002" stroke-linecap="butt" />
+        <line x1="149.76" y1="210.24" x2="149.76" y2="280.8" stroke="#0A0A0A" stroke-width="28.080000000000002" stroke-linecap="butt" />
+      </g>
+      
+    <text x="540" y="777.6" font-size="86" text-anchor="middle" dominant-baseline="middle">
+      <tspan font-family="'Georgia','Times New Roman',serif" font-weight="400" fill="#F5F5F0" letter-spacing="0.04em">LAMKA</tspan>
+      <tspan dx="27.52" font-family="'Helvetica Neue','Arial',sans-serif" font-weight="300" fill="#F5F5F0" letter-spacing="0.12em">LABS</tspan>
+      <tspan x="540" y="880.8000000000001" font-family="'Helvetica Neue','Arial',sans-serif" font-size="29.240000000000002" font-weight="400" fill="#D4AF37">LUXURY CONTENT STUDIO</tspan>
+    </text>
+  
+    
+</svg>

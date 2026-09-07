@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="1080" viewBox="0 0 1080 1080">
+  <rect width="1080" height="1080" fill="#0A0A0A" />
+  
+      <g transform="translate(360, 194.4)">
+        <polygon points="86.39999999999999,86.4 157.536,86.4 86.39999999999999,273.6" fill="#D4AF37" opacity="0.35" />
+        <polygon points="97.07039999999999,97.0704 189.5472,97.0704 97.07039999999999,262.92960000000005" fill="#D4AF37" opacity="0.65" />
+        <polygon points="111.29759999999999,111.2976 218.0016,111.2976 111.29759999999999,248.7024" fill="#C9A227" opacity="0.95" />
+      </g>
+      
+    <text x="540" y="777.6" font-size="86" text-anchor="middle" dominant-baseline="middle">
+      <tspan font-family="'Georgia','Times New Roman',serif" font-weight="400" fill="#F5F5F0" letter-spacing="0.04em">LAMKA</tspan>
+      <tspan dx="27.52" font-family="'Helvetica Neue','Arial',sans-serif" font-weight="300" fill="#F5F5F0" letter-spacing="0.12em">LABS</tspan>
+      <tspan x="540" y="880.8000000000001" font-family="'Helvetica Neue','Arial',sans-serif" font-size="29.240000000000002" font-weight="400" fill="#D4AF37">LUXURY CONTENT STUDIO</tspan>
+    </text>
+  
+    
+</svg>

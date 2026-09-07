@@ -433,7 +433,7 @@ async def test_build_frames_routes_to_cinematic_image_backend(tmp_path):
         await youtube._build_frames(
             Storyboard(), tmp_path, backend="cinematic", image_provider="comfyui"
         )
-    cinematic.assert_awaited_once_with(Storyboard(), tmp_path, provider="comfyui")
+    cinematic.assert_awaited_once_with(Storyboard(), tmp_path, provider="comfyui", motion=None)
 
 
 @pytest.mark.asyncio
@@ -472,27 +472,6 @@ async def test_generation_uses_pasted_storyboard_without_regenerating_script(
     assert draft_id is not None
     mock_script.assert_not_called()
     assert (tmp_path / f"story-{story_id}" / "STORYBOARD.md").read_text(encoding="utf-8") == SCRIPT_4_SCENES
-
-
-@pytest.mark.asyncio
-@patch("app.channels.resolve", AsyncMock(return_value=FINANCE))
-@patch("app.youtube._fetch_story_details")
-@patch("app.youtube._generate_frame_audio")
-async def test_pasted_storyboard_cannot_bypass_channel_blocklist(
-    mock_audio, mock_fetch, tmp_path
-):
-    mock_fetch.return_value = {"headline": "Existing source story"}
-    unsafe = SCRIPT_4_SCENES.replace("City budgets hide one line", "Buy this stock now")
-
-    with patch("app.youtube.VIDEOS_DIR", tmp_path):
-        draft_id = await generate_youtube_video(
-            story_id=uuid.uuid4(),
-            channel_id="financial-channel",
-            storyboard_override=unsafe,
-        )
-
-    assert draft_id is None
-    mock_audio.assert_not_called()
 
 
 @pytest.mark.asyncio

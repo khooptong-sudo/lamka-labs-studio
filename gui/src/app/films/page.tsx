@@ -45,8 +45,21 @@ type ImageProvider = {
   detail: string;
   configured: boolean;
 };
+type MotionKey = "off" | "veo" | "kling";
+type MotionProvider = {
+  id: MotionKey;
+  label: string;
+  detail: string;
+  configured: boolean;
+};
 type Mode = "short" | "film";
 type VoiceKey = "adult_female" | "teenage_girl";
+
+const MOTIONS: { id: MotionKey; label: string; detail: string }[] = [
+  { id: "off", label: "Ken Burns", detail: "2.5D pan & zoom on the keyframe · no video model" },
+  { id: "veo", label: "Veo 3", detail: "Google image-to-video · 720p 9:16 · uses API credits" },
+  { id: "kling", label: "Kling 2.0", detail: "fal.run start-frame video · strong keyframe fidelity" },
+];
 
 const FEMALE_VOICES: { id: VoiceKey; label: string; detail: string }[] = [
   { id: "adult_female", label: "Jenny", detail: "Warm, clear delivery. Edge Neural." },
@@ -81,6 +94,8 @@ export default function FilmsPage() {
   const [mode, setMode] = useState<Mode>("short");
   const [imageProviders, setImageProviders] = useState<ImageProvider[]>([]);
   const [imageProvider, setImageProvider] = useState<ImageProvider["id"]>("comfyui");
+  const [motionProviders, setMotionProviders] = useState<MotionProvider[]>([]);
+  const [motion, setMotion] = useState<MotionKey>("off");
   const [voiceKey, setVoiceKey] = useState<VoiceKey>("adult_female");
   const [voiceClips, setVoiceClips] = useState<File[]>([]);
   const [storyboard, setStoryboard] = useState("");
@@ -98,13 +113,15 @@ export default function FilmsPage() {
   const needsReviewedBoard = Boolean(selectedStory && selectedStory.items.length === 0 && !storyboard.trim());
   const selectedImageProvider = imageProviders.find((provider) => provider.id === imageProvider);
   const imageProviderReady = selectedImageProvider?.configured ?? false;
+  const selectedMotionProvider = motionProviders.find((provider) => provider.id === motion);
+  const motionReady = motion === "off" || (selectedMotionProvider?.configured ?? false);
   const canGenerate =
     hasHydrated &&
     Boolean(channelId) &&
     Boolean(storyId || hasStoryboard) &&
     !busy &&
     !needsReviewedBoard &&
-    (mode !== "short" || imageProviderReady);
+    (mode !== "short" || (imageProviderReady && motionReady));
 
   useEffect(() => {
     fetch("/api/stories", { cache: "no-store" })
@@ -128,6 +145,13 @@ export default function FilmsPage() {
       .then((res) => res.json())
       .then((data) => setImageProviders(Array.isArray(data.providers) ? data.providers : []))
       .catch(() => setImageProviders([]));
+  }, []);
+
+  useEffect(() => {
+    fetch("/api/youtube/motion-providers", { cache: "no-store" })
+      .then((res) => res.json())
+      .then((data) => setMotionProviders(Array.isArray(data.providers) ? data.providers : []))
+      .catch(() => setMotionProviders([]));
   }, []);
 
   if (!hasHydrated) {
@@ -192,6 +216,7 @@ export default function FilmsPage() {
             form.append("mode", mode);
             if (board) form.append("storyboard", board);
             if (mode === "short") form.append("image_provider", imageProvider);
+            if (mode === "short") form.append("motion", motion);
             form.append("voice_key", voiceKey);
             for (const clip of voiceClips) form.append("clips", clip, clip.name);
             return fetch("/api/youtube/jobs/with-voice", { method: "POST", body: form });
@@ -205,6 +230,7 @@ export default function FilmsPage() {
           mode,
           storyboard: board || undefined,
           image_provider: mode === "short" ? imageProvider : undefined,
+          motion: mode === "short" ? motion : undefined,
           voice_key: voiceKey,
           cinematic_controls: cinematicControls,
         }),
@@ -492,6 +518,39 @@ export default function FilmsPage() {
                   {imageProviders.length === 0 && <p className="text-xs text-[var(--warning)]">Provider status is unavailable. Check the worker.</p>}
                 </fieldset>
               )}
+
+              {mode === "short" && (
+                <fieldset className="space-y-2">
+                  <legend className="mb-2 text-xs font-medium text-[var(--muted)]">Motion</legend>
+                  <div className="grid grid-cols-3 gap-1 rounded-[var(--radius)] border border-border bg-[var(--surface-recessed)] p-1" role="group" aria-label="Motion provider">
+                    {MOTIONS.map((option) => {
+                      const active = option.id === motion;
+                      const status = motionProviders.find((provider) => provider.id === option.id);
+                      const configured = option.id === "off" || (status?.configured ?? false);
+                      return (
+                        <button
+                          key={option.id}
+                          type="button"
+                          aria-pressed={active}
+                          onClick={() => setMotion(option.id)}
+                          className={`min-h-[68px] rounded-[calc(var(--radius)-4px)] border p-3 text-left transition-colors ${active ? "border-border bg-[var(--surface-deck)]" : "border-transparent hover:bg-foreground/[0.035]"}`}
+                        >
+                          <span className="flex items-center gap-2 text-sm font-semibold">
+                            <Play className={`h-4 w-4 ${active ? "text-primary" : "text-[var(--muted)]"}`} aria-hidden="true" />
+                            {option.label}
+                          </span>
+                          <span className="mt-1 block font-mono text-[10px] leading-4 text-[var(--muted)]">{option.detail}</span>
+                          <span className={`mt-1 flex items-center gap-1.5 text-[11px] ${configured ? "text-[var(--success)]" : "text-[var(--warning)]"}`}>
+                            {configured && <Check className="h-3 w-3" aria-hidden="true" />}
+                            {configured ? "Ready" : "Setup needed"}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                  {motionProviders.length === 0 && <p className="text-xs text-[var(--warning)]">Motion status is unavailable. Check the worker.</p>}
+                </fieldset>
+              )}
             </div>
             <CinematicControls
               value={cinematicControls}
@@ -539,7 +598,7 @@ export default function FilmsPage() {
           </div>
         )}
 
-        <section className="sticky bottom-3 z-20 grid rounded-[var(--radius)] border border-border bg-[var(--surface-raised)] md:grid-cols-[1fr_1fr_1fr_1.2fr_auto]" aria-label="Production dock">
+        <section className="sticky bottom-3 z-20 grid rounded-[var(--radius)] border border-border bg-[var(--surface-raised)] md:grid-cols-[1fr_1fr_1fr_1fr_1.2fr_auto]" aria-label="Production dock">
           <div className="flex min-h-[76px] items-center gap-3 border-b border-border px-4 md:border-b-0 md:border-r">
             <Clapperboard className="h-5 w-5 text-[var(--muted)]" aria-hidden="true" />
             <div>
@@ -552,6 +611,13 @@ export default function FilmsPage() {
             <div className="min-w-0">
               <p className="text-[10px] text-[var(--muted)]">PROVIDER</p>
               <p className="mt-1 truncate text-sm font-medium">{mode === "film" ? "Local Three.js" : selectedImageProvider?.label || "Not available"}</p>
+            </div>
+          </div>
+          <div className="flex min-h-[76px] items-center gap-3 border-b border-border px-4 md:border-b-0 md:border-r">
+            <Play className="h-5 w-5 text-[var(--muted)]" aria-hidden="true" />
+            <div className="min-w-0">
+              <p className="text-[10px] text-[var(--muted)]">MOTION</p>
+              <p className="mt-1 truncate text-sm font-medium">{mode === "film" ? "Off (film)" : MOTIONS.find((option) => option.id === motion)?.label || "Off"}</p>
             </div>
           </div>
           <div className="flex min-h-[76px] items-center gap-3 border-b border-border px-4 md:border-b-0 md:border-r">

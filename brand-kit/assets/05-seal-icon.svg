@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <rect width="512" height="512" fill="#0A0A0A" />
+  
+        <circle cx="256" cy="256" r="163.84" fill="none" stroke="#D4AF37" stroke-width="9.216" />
+        <circle cx="256" cy="256" r="186.88" fill="none" stroke="#2A2A2A" stroke-width="5.529599999999999" />
+        <text x="256" y="324.8128" font-family="'Georgia','Times New Roman',serif" font-size="188.416" font-weight="400" fill="#F5F5F0" text-anchor="middle" letter-spacing="-0.05em">LL</text>
+        <path d="M256,128.20479999999998 L256,154.4192" stroke="#D4AF37" stroke-width="9.216" />
+        <path d="M239.61599999999999,128.20479999999998 L239.61599999999999,154.4192" stroke="#D4AF37" stroke-width="9.216" />
+      
+</svg>

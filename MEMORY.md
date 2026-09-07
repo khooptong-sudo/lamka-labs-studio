@@ -6,7 +6,7 @@
 
 **Project:** AI pipeline for compliant US/India finance content (X + IG).
 **Owner:** UMinkoo (sole publish authority).
-**Started:** 2026-07-25. **Last update:** 2026-08-20.
+**Started:** 2026-07-25. **Last update:** 2026-09-07.
 **GitHub repo:** `khooptong-sudo/lamka-labs-studio` (transferred/renamed from `khooptong-creator/fin-content-engine`).
 **Local folder:** `F:\lamka-labs-studio` (renamed from `F:\Content Creation Project` on 2026-08-14).
 
@@ -333,3 +333,34 @@ docker exec desk-caddy-1 caddy reload --config /etc/caddy/Caddyfile
 5. The blueprint (`fin-content-engine-FINAL-blueprint.md`) is the source of truth for everything after P1.
 6. The YouTube expansion is detailed in `docs/youtube/YT-STRATEGY-OS-FINANCE.md`, `docs/youtube/YT-STRATEGY-OS-BABY.md`, and `docs/youtube/YT-HANDOFF.md`.
 7. **Latest session handoff is at the bottom of `docs/youtube/YT-HANDOFF.md`** (2026-07-31) — first true end-to-end production run, the guards it forced, and the ranked open items.
+
+
+---
+
+### Session-close update — 2026-09-07
+
+**Shipped: true motion video for 3D Shorts (image-to-video per scene) + the VPS database repair that was blocking all builds.**
+
+**VPS database drift (root cause of "STOPPED AT THUMBNAILS — column channel_id does not exist").** The VPS Postgres had only migrations 001–005 applied; 006–015 existed on disk but had only ever been hand-applied in fragments (that's why `jobs`, `stories.channel_id`, and `cineprompt_generations` existed while `drafts.channel_id`/`upload_preference` and the widened platform/format CHECKs from 006 did not). Fix: `pg_dump -Fc` backup to `/tmp/fce-pre-migration-20260906.dump` (note: `/tmp` is ephemeral — re-dump before any risky work), then applied 006→015 in order with `ON_ERROR_STOP=1`; all are idempotent so the partially-present ones skipped cleanly. **Lesson: after any VPS deploy, diff `supabase/migrations/` against what's actually applied — fragments were applied ad hoc at least twice.** A migration-check step in the deploy path is the durable fix, still unbuilt.
+
+**Motion pipeline (v1 then v2, both validated end-to-end on the VPS):**
+- Every scene still gets its generated keyframe (style anchor, thumbnail source, I2V start frame). When a build selects a motion provider, the keyframe is animated by an image-to-video model, then ffmpeg-normalized to the scene's measured narration duration (model audio stripped — narration is always the fact-checked TTS; clip trimmed or `-stream_loop`-ed to fit). Per-scene timing model untouched, so narration sync is identical to Ken Burns builds.
+- **v1**: `<video>`-based HyperFrames composition (`render_cinematic_motion_frame`, same determinism contract as the Ken Burns renderer). Validated: "The Ghost Clouds with No Stars" (65s) — frame extraction proved real camera moves + character action, not Ken Burns.
+- **v2**: motion builds skip HyperFrames entirely — `scene3d/assemble.py` does single-pass ffmpeg assembly (concat → baked overlay PNG via Pillow → voice tracks with `adelay` at `frame.start + voice_offset` → bgm at 0.35 volume, `storyboard.BGM_VOLUME`). **Render stage: 37 min → 2 min. Same story head-to-head: v2 is native 1080p (v1 was 720p upscaled by the browser plus an MJPEG capture intermediate), single clean encode CRF 18.**
+- Providers (Films page chip group, short mode only): `off` (Ken Burns, default) / `veo` (Google, `GEMINI_API_KEY`) / `kling` (fal.run queue REST, needs `FAL_KEY`, port of the Cinema page flow). `GET /youtube/motion-providers` mirrors `/youtube/image-providers`. New env: `GEMINI_VIDEO_MODEL`, `FAL_KEY`, `MOTION_MAX_PARALLEL` (default 3), `VEO_MAX_ATTEMPTS` (8), `VEO_RETRY_INITIAL_SECONDS` (20).
+- **429 resilience**: Veo submit and poll retry with exponential backoff on quota errors only (other errors reraise immediately); a retried build reuses already-normalized clips per scene (`motion_clip_reused`) — only interrupted scenes regenerate.
+
+**Gemini quota reality (cost the session its second half):** a consumer Gemini subscription (AI Pro/Ultra) does NOT include API quota — the API key draws from AI Studio free-tier pools. `veo-3.1-generate-preview` has a small daily pool; the validation builds exhausted it (~15 clips). `veo-3.1-fast-generate-preview` and `-lite-` are **separate pools** and stayed open — VPS `/opt/fce/.env` now sets `GEMINI_VIDEO_MODEL=veo-3.1-fast-generate-preview`. Full quality returns when the daily pool resets (Pacific) or when billing is enabled on the API project. **Kling via `FAL_KEY` is the vendor-independent backup — still unconfigured.**
+
+**Deployment notes (unusual, by design this session):** code went to the VPS by direct `scp` to `/opt/fce/current/worker/` (originals in `/opt/fce/backup-motion-deploy/`), NOT git — the VPS checkout's remote is the OLD repo (`khooptong-creator/fin-content-engine`) and it sits 2 commits behind local (those 2 are docs-only). Replacing files under a running worker is safe for module-level imports only when the new import is lazy; motion/assemble imports are inside the call path, so mid-flight jobs were unaffected. This EoS commit brings git back in sync with what's deployed. **Also on the VPS venv:** installed Pillow 12.3.0 (assemble.py needs it), and removed a leftover `~ce_worker-0.1.0.dist-info` pip artifact that made every `pip install` as the `fce` user crash with PermissionError (run pip as root there; some editable-install hooks are root-owned).
+
+**Open items, ranked:**
+1. Owner's "The Novel Trial" build (job ea5ef691) died on the Veo quota 429 pre-fast-switch; rebuild picks it up — `f02`/`f03` clips are on disk and will be reused.
+2. `MOTION_MAX_PARALLEL=3` × two concurrent jobs bursts the small free-tier pool; with retries it's survivable but slow. Drop to 2 via env if building two films at once becomes routine.
+3. Progress blind spot: the shots-stage counter sits at 0/N through the entire clip-generation phase (compositions are written after all clips finish). Per-clip progress reporting is a small follow-up.
+4. Local ComfyUI Wan/LTX image-to-video (phase 2) — free motion, needs the RTX 3070 + tunnel path.
+5. Motion for `film`/Three.js backend and documentary mode — not built, by design.
+6. VPS deploy path still git-less (see above); migration-check step unbuilt.
+7. `worker/.env.example` had documented a removed `openai` image provider for weeks — fixed in passing; keep example files honest when providers change.
+
+**Tests:** 53 motion/assemble tests (incl. 429 retry, non-quota reraise, clip reuse, ffmpeg command shape, adelay offsets, overlay bake); full suite 887 green minus the 5 known `test_x_publish.py` local-Postgres failures. GUI `tsc`/`eslint` clean.

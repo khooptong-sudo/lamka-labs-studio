@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="1080" viewBox="0 0 1080 1080">
+  <rect width="1080" height="1080" fill="#0A0A0A" />
+  
+      <g transform="translate(360, 194.4)">
+        <circle cx="180" cy="180" r="115.2" fill="none" stroke="#D4AF37" stroke-width="6.4799999999999995" />
+        <circle cx="180" cy="180" r="131.4" fill="none" stroke="#2A2A2A" stroke-width="3.8879999999999995" />
+        <text x="180" y="228.38400000000001" font-family="'Georgia','Times New Roman',serif" font-size="132.48" font-weight="400" fill="#F5F5F0" text-anchor="middle" letter-spacing="-0.05em">LL</text>
+        <path d="M180,90.14399999999999 L180,108.576" stroke="#D4AF37" stroke-width="6.4799999999999995" />
+        <path d="M168.48,90.14399999999999 L168.48,108.576" stroke="#D4AF37" stroke-width="6.4799999999999995" />
+      </g>
+      
+    <text x="540" y="777.6" font-size="86" text-anchor="middle" dominant-baseline="middle">
+      <tspan font-family="'Georgia','Times New Roman',serif" font-weight="400" fill="#F5F5F0" letter-spacing="0.04em">LAMKA</tspan>
+      <tspan dx="27.52" font-family="'Helvetica Neue','Arial',sans-serif" font-weight="300" fill="#F5F5F0" letter-spacing="0.12em">LABS</tspan>
+      <tspan x="540" y="880.8000000000001" font-family="'Helvetica Neue','Arial',sans-serif" font-size="29.240000000000002" font-weight="400" fill="#D4AF37">LUXURY CONTENT STUDIO</tspan>
+    </text>
+  
+    
+</svg>

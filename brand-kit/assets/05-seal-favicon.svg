@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64">
+  <rect width="64" height="64" fill="#0A0A0A" />
+  
+        <circle cx="32" cy="32" r="20.48" fill="none" stroke="#D4AF37" stroke-width="1.152" />
+        <circle cx="32" cy="32" r="23.36" fill="none" stroke="#2A2A2A" stroke-width="0.6911999999999999" />
+        <text x="32" y="40.6016" font-family="'Georgia','Times New Roman',serif" font-size="23.552" font-weight="400" fill="#F5F5F0" text-anchor="middle" letter-spacing="-0.05em">LL</text>
+        <path d="M32,16.025599999999997 L32,19.3024" stroke="#D4AF37" stroke-width="1.152" />
+        <path d="M29.951999999999998,16.025599999999997 L29.951999999999998,19.3024" stroke="#D4AF37" stroke-width="1.152" />
+      
+</svg>

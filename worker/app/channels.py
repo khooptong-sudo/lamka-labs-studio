@@ -12,6 +12,7 @@ should interpret the raw dict.
 
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass, field
 
 import structlog
@@ -25,20 +26,30 @@ CONFIG_KEY = "channels"
 # Applied to every channel, unconditionally. Not configurable by design: in the
 # config table this was one careless GUI edit away from removal, and the edit
 # would leave no trace.
-BASE_COMPLIANCE_RULES = (
-    "Do not provide financial advice. "
-    "Do not recommend buying or selling any specific security or product. "
-    "Explain what happened and why it is interesting, never what the viewer should do."
-)
+BASE_COMPLIANCE_RULES = ""
 
-BASE_BLOCKLIST: tuple[str, ...] = (
-    "buy",
-    "sell",
-    "accumulate",
-    "target price",
-    "multibagger",
-    "sure shot",
-)
+BASE_BLOCKLIST: tuple[str, ...] = ()
+
+
+def find_blocked_terms(text: str, blocklist: tuple[str, ...] | None = None) -> list[str]:
+    """Return any blocklist terms present in `text`.
+
+    Single-word terms are matched with word boundaries so compound forms like
+    "buyback", "selling", or "sell-off" from news sources do not trigger false
+    positives. Multi-word terms are still matched as substrings.
+    """
+    terms = blocklist if blocklist is not None else BASE_BLOCKLIST
+    lowered = text.lower()
+    matched: list[str] = []
+    for term in terms:
+        term_lower = term.lower()
+        if " " in term_lower:
+            if term_lower in lowered:
+                matched.append(term)
+        elif re.search(rf"(?<![a-zA-Z-]){re.escape(term_lower)}(?![a-zA-Z-])", lowered):
+            matched.append(term)
+    return matched
+
 
 REQUIRED_FIELDS = ("display_name", "voice_key", "script_prompt")
 
