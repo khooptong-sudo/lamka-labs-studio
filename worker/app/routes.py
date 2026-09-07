@@ -134,6 +134,7 @@ class YouTubeGenerateRequest(BaseModel):
     upload_preference: str = "manual"
     voice_key: str | None = Field(default=None, max_length=40)
     motion: str | None = Field(default=None, max_length=20)
+    image_style: str | None = Field(default=None, max_length=20)
 
 
 class CinematicControls(BaseModel):
@@ -157,6 +158,7 @@ class YouTubeJobRequest(BaseModel):
     storyboard: str | None = Field(default=None, max_length=50000)
     image_provider: str | None = Field(default=None, max_length=20)
     motion: str | None = Field(default=None, max_length=20)
+    image_style: str | None = Field(default=None, max_length=20)
     voice_key: str | None = Field(default=None, max_length=40)
     cinematic_controls: CinematicControls | None = None
     brief: str | None = Field(default=None, max_length=2000)
@@ -206,6 +208,7 @@ async def youtube_generate(req: YouTubeGenerateRequest) -> dict:
             backend="cinematic",
             voice_key=req.voice_key,
             motion=req.motion,
+            image_style=req.image_style,
         )
         if draft_id is None:
             raise HTTPException(status_code=404, detail="story not found")
@@ -263,6 +266,14 @@ async def youtube_job_start(req: YouTubeJobRequest) -> dict:
             except ValueError as exc:
                 raise HTTPException(status_code=422, detail=str(exc)) from exc
 
+        if req.image_style is not None:
+            from app.scene3d.backend import normalize_image_style
+
+            try:
+                normalize_image_style(req.image_style)
+            except ValueError as exc:
+                raise HTTPException(status_code=422, detail=str(exc)) from exc
+
         # Resolved synchronously, same as /youtube/generate: a bad channel_id
         # must fail the request, never a background task that already returned 202.
         await channels.resolve(req.channel_id)
@@ -289,6 +300,7 @@ async def youtube_job_start(req: YouTubeJobRequest) -> dict:
                 storyboard_override=req.storyboard,
                 image_provider=req.image_provider,
                 motion=req.motion,
+                image_style=req.image_style,
                 voice_key=req.voice_key,
                 cinematic_controls=(
                     req.cinematic_controls.model_dump() if req.cinematic_controls else None
@@ -322,6 +334,7 @@ async def youtube_job_with_voice(
     storyboard: str | None = Form(None),
     image_provider: str | None = Form(None),
     motion: str | None = Form(None),
+    image_style: str | None = Form(None),
     voice_key: str | None = Form(None),
     clips: list[UploadFile] | None = File(None),
     brief: str | None = Form(default=None, max_length=2000),
@@ -363,6 +376,14 @@ async def youtube_job_with_voice(
 
             try:
                 normalize_motion_provider(motion)
+            except ValueError as exc:
+                raise HTTPException(status_code=422, detail=str(exc)) from exc
+
+        if image_style is not None:
+            from app.scene3d.backend import normalize_image_style
+
+            try:
+                normalize_image_style(image_style)
             except ValueError as exc:
                 raise HTTPException(status_code=422, detail=str(exc)) from exc
 
@@ -414,6 +435,7 @@ async def youtube_job_with_voice(
                 storyboard_override=storyboard,
                 image_provider=image_provider,
                 motion=motion,
+                image_style=image_style,
                 voice_clip_paths=clip_paths,
                 documentary=(mode == "documentary"),
                 brief=brief,

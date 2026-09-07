@@ -433,7 +433,9 @@ async def test_build_frames_routes_to_cinematic_image_backend(tmp_path):
         await youtube._build_frames(
             Storyboard(), tmp_path, backend="cinematic", image_provider="comfyui"
         )
-    cinematic.assert_awaited_once_with(Storyboard(), tmp_path, provider="comfyui", motion=None)
+    cinematic.assert_awaited_once_with(
+            Storyboard(), tmp_path, provider="comfyui", motion=None, image_style=None
+        )
 
 
 @pytest.mark.asyncio

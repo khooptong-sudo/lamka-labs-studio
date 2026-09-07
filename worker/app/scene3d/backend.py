@@ -60,6 +60,48 @@ def normalize_cinematic_image_provider(provider: str | None = None) -> str:
     return selected
 
 
+# Per-run keyframe look. "cinematic3d" is the original stylized-3D direction and
+# must keep producing byte-identical prompts; "photoreal" swaps the ART DIRECTION
+# block for a live-action vocabulary without touching the rest of the contract.
+IMAGE_STYLES = ("cinematic3d", "photoreal")
+
+_IMAGE_STYLE_BLOCKS = {
+    "cinematic3d": (
+        "premium stylized 3D animated-feature render, expressive original\n"
+        "characters when the scene calls for them, rich miniature-scale environments, physically plausible warm\n"
+        "lighting, readable silhouette, shallow depth of field, polished materials, smooth cinematic framing, and\n"
+        "clear visual storytelling. This must look like a finished film frame, never a presentation slide."
+    ),
+    "photoreal": (
+        "live-action cinema look: real humans and animals on physical\n"
+        "locations, natural light only, documentary-grade realism, authentic textures and wardrobe,\n"
+        "readable faces, shallow depth of field, smooth cinematic framing, and clear visual storytelling.\n"
+        "This must look like a frame shot on location for a documentary film, never a render or illustration."
+    ),
+}
+
+_IMAGE_NEGATIVE_PROMPTS = {
+    "cinematic3d": "text, letters, numbers, watermark, logo, blurry, distorted anatomy, duplicate subject",
+    "photoreal": (
+        "text, letters, numbers, watermark, logo, blurry, 3d render, cgi, cartoon, animation, "
+        "illustration, distorted anatomy, duplicate subject"
+    ),
+}
+
+
+def normalize_image_style(style: str | None = None) -> str:
+    """Validate a per-run image style without silently downgrading it."""
+    selected = (style or "cinematic3d").strip().lower()
+    if selected not in IMAGE_STYLES:
+        raise ValueError(f"unknown image style {selected!r}; expected one of {IMAGE_STYLES}")
+    return selected
+
+
+def cinematic_negative_prompt(style: str | None = None) -> str:
+    """Provider negative prompt for one keyframe; keeps 3D vocabulary out of photoreal."""
+    return _IMAGE_NEGATIVE_PROMPTS[normalize_image_style(style)]
+
+
 def cinematic_image_provider_statuses() -> list[dict[str, str | bool]]:
     """Return safe dashboard metadata—never keys or workflow contents."""
     comfy_workflow = os.environ.get("COMFYUI_WORKFLOW_PATH", "").strip()
@@ -234,7 +276,7 @@ async def build_3d_frames(board, video_dir: Path) -> list[str]:
     return failed
 
 
-def cinematic_image_prompt(board, frame) -> str:
+def cinematic_image_prompt(board, frame, style: str = "cinematic3d") -> str:
     """Turn one board frame into a consistent, image-generation-ready keyframe.
 
     The storyboard direction is the continuity bible. It is repeated verbatim
@@ -247,10 +289,7 @@ def cinematic_image_prompt(board, frame) -> str:
     )
     return f"""Create one original vertical 9:16 cinematic keyframe for a finance education short.
 
-ART DIRECTION (apply to every scene): premium stylized 3D animated-feature render, expressive original
-characters when the scene calls for them, rich miniature-scale environments, physically plausible warm
-lighting, readable silhouette, shallow depth of field, polished materials, smooth cinematic framing, and
-clear visual storytelling. This must look like a finished film frame, never a presentation slide.
+ART DIRECTION (apply to every scene): {_IMAGE_STYLE_BLOCKS[normalize_image_style(style)]}
 
 CONTINUITY BIBLE:
 {direction}
@@ -275,20 +314,26 @@ Do not imitate a named studio, franchise, or living artist. The result must be s
 and young adults."""
 
 
-def cinematic_motion_prompt(board, frame) -> str:
+def cinematic_motion_prompt(board, frame, style: str = "cinematic3d") -> str:
     """One-line image-to-video prompt for a scene, from the board it already has.
 
     Veo rejects prompts over ~500 chars, so this stays terse: the scene's own
     text plus the direction bible's frame-to-motion intent, with an explicit
     no-text suffix so the model never burns a caption into the clip.
     """
+    selected = normalize_image_style(style)
     intent = motion_intent_of(board.direction or "")
     scene = (frame.scene or frame.title or "").strip()[:200]
     movement = f" Camera movement: {intent}." if intent else " Slow, deliberate camera move."
+    shot = "Live-action shot" if selected == "photoreal" else "Cinematic shot"
+    continuity = (
+        "consistent lighting and appearance with the start frame"
+        if selected == "photoreal"
+        else "consistent lighting and character design with the start frame"
+    )
     prompt = (
-        f"Cinematic shot for one scene of a finance education short: {scene}."
-        f"{movement} Smooth continuous motion, single unbroken take, consistent lighting "
-        f"and character design with the start frame; no text, no captions."
+        f"{shot} for one scene of a finance education short: {scene}."
+        f"{movement} Smooth continuous motion, single unbroken take, {continuity}; no text, no captions."
     )
     return prompt[:500]
 
@@ -480,7 +525,7 @@ def _replace_comfy_tokens(value, replacements: dict[str, str | int | float]):
     return value
 
 
-def _comfyui_workflow(prompt: str) -> dict:
+def _comfyui_workflow(prompt: str, style: str = "cinematic3d") -> dict:
     """Create an API-format ComfyUI workflow for a single portrait keyframe.
 
     A checkpoint workflow is included for the 8 GB RTX 3070 test path. Advanced
@@ -496,7 +541,7 @@ def _comfyui_workflow(prompt: str) -> dict:
     seed = int.from_bytes(os.urandom(8), "big") % (2**63 - 1)
     replacements: dict[str, str | int | float] = {
         "PROMPT": prompt,
-        "NEGATIVE_PROMPT": "text, letters, numbers, watermark, logo, blurry, distorted anatomy, duplicate subject",
+        "NEGATIVE_PROMPT": cinematic_negative_prompt(style),
         "SEED": seed,
         "WIDTH": width,
         "HEIGHT": height,
@@ -526,13 +571,15 @@ def _comfyui_workflow(prompt: str) -> dict:
     }
 
 
-async def _generate_comfyui_cinematic_image(prompt: str, destination: Path) -> None:
+async def _generate_comfyui_cinematic_image(
+    prompt: str, destination: Path, style: str = "cinematic3d"
+) -> None:
     """Submit a local ComfyUI workflow, wait for it, then copy its first image."""
     import httpx
 
     base_url = os.environ["COMFYUI_BASE_URL"].rstrip("/")
     timeout_seconds = float(os.environ.get("COMFYUI_TIMEOUT_SECONDS", "300"))
-    workflow = _comfyui_workflow(prompt)
+    workflow = _comfyui_workflow(prompt, style)
     client_id = f"lamka-{uuid.uuid4().hex}"
     timeout = httpx.Timeout(timeout_seconds)
     async with httpx.AsyncClient(base_url=base_url, timeout=timeout) as client:
@@ -570,13 +617,15 @@ async def _generate_comfyui_cinematic_image(prompt: str, destination: Path) -> N
         destination.write_bytes(image_response.content)
 
 
-async def _generate_cinematic_image(prompt: str, destination: Path, provider: str | None = None) -> None:
+async def _generate_cinematic_image(
+    prompt: str, destination: Path, provider: str | None = None, style: str = "cinematic3d"
+) -> None:
     """Generate one keyframe through the explicitly selected image provider."""
     selected = require_cinematic_image_provider(provider)
     if selected == "gemini":
         await _generate_gemini_cinematic_image(prompt, destination)
         return
-    await _generate_comfyui_cinematic_image(prompt, destination)
+    await _generate_comfyui_cinematic_image(prompt, destination, style)
 
 
 async def _build_cinematic_frames_inner(
@@ -585,6 +634,7 @@ async def _build_cinematic_frames_inner(
     selected: str,
     on_frame_complete: Callable[[int, int], Awaitable[None]] | None = None,
     motion: str = "off",
+    image_style: str = "cinematic3d",
 ) -> list[str]:
     frames_dir = video_dir / "compositions" / "frames"
     assets_dir = video_dir / "assets" / "cinematic"
@@ -602,7 +652,9 @@ async def _build_cinematic_frames_inner(
             # temporarily down, mirroring the motion path's clip reuse.
             log.info("cinematic_image_reused", slug=frame.slug)
             continue
-        await _generate_cinematic_image(cinematic_image_prompt(board, frame), image_path, selected)
+        await _generate_cinematic_image(
+            cinematic_image_prompt(board, frame, image_style), image_path, selected, image_style
+        )
 
     async def animate_one(frame) -> None:
         # I2V polling runs minutes per clip; run clips concurrently (bounded by
@@ -617,11 +669,14 @@ async def _build_cinematic_frames_inner(
             image_path = assets_dir / f"{frame.slug}.png"
             raw_path = assets_dir / f"{frame.slug}.raw.mp4"
             await generate_motion_clip(
-                motion, image_path, cinematic_motion_prompt(board, frame), raw_path
+                motion, image_path, cinematic_motion_prompt(board, frame, image_style), raw_path
             )
             await normalize_clip(raw_path, normalized_path, frame.duration)
 
-    clip_semaphore = asyncio.Semaphore(MOTION_MAX_PARALLEL)
+    # The local ComfyUI provider drives one thermally marginal GPU; parallel
+    # I2V jobs are what would trip shutdowns, so it always runs serially.
+    clip_parallel = 1 if motion == "comfyui" else MOTION_MAX_PARALLEL
+    clip_semaphore = asyncio.Semaphore(clip_parallel)
     if motion != "off":
         await asyncio.gather(*(animate_one(frame) for frame in board.frames))
 
@@ -658,6 +713,7 @@ async def build_cinematic_frames(
     provider: str | None = None,
     on_frame_complete: Callable[[int, int], Awaitable[None]] | None = None,
     motion: str | None = None,
+    image_style: str | None = None,
 ) -> list[str]:
     """Build image-led portrait scenes without ever substituting a fallback frame.
 
@@ -665,15 +721,17 @@ async def build_cinematic_frames(
     send a title card to render. The caller therefore receives an exception and
     the job stops with an actionable error. ``motion`` selects an optional
     image-to-video provider; ``off`` (the default) renders the Ken Burns
-    keyframe compositions.
+    keyframe compositions. ``image_style`` selects the keyframe look
+    (``cinematic3d`` default, or ``photoreal`` live action).
     """
     selected = require_cinematic_image_provider(provider)
     selected_motion = normalize_motion_provider(motion)
+    selected_style = normalize_image_style(image_style)
     if selected == "comfyui":
         async with gpu.slot:
             return await _build_cinematic_frames_inner(
-                board, video_dir, selected, on_frame_complete, selected_motion
+                board, video_dir, selected, on_frame_complete, selected_motion, selected_style
             )
     return await _build_cinematic_frames_inner(
-        board, video_dir, selected, on_frame_complete, selected_motion
+        board, video_dir, selected, on_frame_complete, selected_motion, selected_style
     )

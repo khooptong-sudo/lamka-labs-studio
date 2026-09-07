@@ -19,6 +19,7 @@ from app.scene3d.backend import (
     MIN_VERIFIED_FRAMES,
     build_3d_frames,
     build_cinematic_frames,
+    normalize_image_style,
 )
 from app.script_quality import (
     MAX_ACT_SCENES,
@@ -169,6 +170,7 @@ async def generate_youtube_video(
     storyboard_override: str | None = None,
     image_provider: str | None = None,
     motion: str | None = None,
+    image_style: str | None = None,
     voice_key: str | None = None,
     cinematic_controls: dict[str, str] | None = None,
     voice_clip_paths: list[Path] | None = None,
@@ -492,6 +494,7 @@ async def generate_youtube_video(
         backend=backend,
         image_provider=image_provider,
         motion=motion,
+        image_style=image_style,
         on_frame_complete=report_frame_progress if job_id else None,
     )
     if placeholders:
@@ -616,6 +619,7 @@ async def generate_youtube_video(
         hook=(board.frames[0].voiceover if board.frames else title),
         bible=board.direction,
         video_dir=video_dir,
+        image_style=image_style,
     )
 
     # 4. Local Draft Registration
@@ -1243,6 +1247,7 @@ async def _build_frames(
     backend: str | None = None,
     image_provider: str | None = None,
     motion: str | None = None,
+    image_style: str | None = None,
     on_frame_complete=None,
 ) -> list[str]:
     """Dispatch frame generation to the requested backend.
@@ -1258,12 +1263,15 @@ async def _build_frames(
         return await build_3d_frames(board, video_dir)
     if chosen == "cinematic":
         if on_frame_complete is None:
-            return await build_cinematic_frames(board, video_dir, provider=image_provider, motion=motion)
+            return await build_cinematic_frames(
+                board, video_dir, provider=image_provider, motion=motion, image_style=image_style
+            )
         return await build_cinematic_frames(
             board,
             video_dir,
             provider=image_provider,
             motion=motion,
+            image_style=image_style,
             on_frame_complete=on_frame_complete,
         )
     if chosen == "gemini":
@@ -1548,16 +1556,34 @@ async def _generate_audio_for_script(script_content: str, output_path: Path):
             "-t", "30", "-q:a", "9", "-acodec", "libmp3lame", str(output_path)
         ], check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
-def build_thumbnail_art_prompt(*, title: str, hook: str, bible: str, mood: str) -> str:
+# Thumbnail background art follows the run's keyframe style: the 3D Short keeps
+# the stylized-3D look, photoreal runs get a live-action vocabulary instead.
+_THUMBNAIL_ART_STYLES = {
+    "cinematic3d": {
+        "phrase": "premium stylized 3D render",
+        "bible": "Warm stylized 3D animated-feature look, miniature-scale finance world.",
+    },
+    "photoreal": {
+        "phrase": "live-action cinematic photograph, natural light, documentary-grade realism",
+        "bible": "Live-action documentary look: real people and animals in real places.",
+    },
+}
+
+
+def build_thumbnail_art_prompt(
+    *, title: str, hook: str, bible: str, mood: str, image_style: str | None = None
+) -> str:
     """Background-art prompt for one thumbnail variant. Never any text."""
+    selected = normalize_image_style(image_style)
+    preset = _THUMBNAIL_ART_STYLES[selected]
     return f"""Create one original 16:9 landscape YouTube thumbnail background for a finance education video.
 
 VIDEO TITLE: {title}
 HOOK: {hook}
-WORLD BIBLE: {bible or "Warm stylized 3D animated-feature look, miniature-scale finance world."}
+WORLD BIBLE: {bible or preset["bible"]}
 MOOD: {mood}
 
-One decisive cinematic moment, premium stylized 3D render, strong readable silhouette, uncluttered
+One decisive cinematic moment, {preset["phrase"]}, strong readable silhouette, uncluttered
 negative space across the full upper third for a title band. Absolutely no words, letters, numbers,
 tickers, logos, watermarks, UI, or subtitles anywhere in the image."""
 
@@ -1724,7 +1750,9 @@ _THUMBNAIL_VARIANTS = (
 )
 
 
-async def build_thumbnail_variants(*, title: str, hook: str, bible: str, video_dir: Path) -> dict[str, Path]:
+async def build_thumbnail_variants(
+    *, title: str, hook: str, bible: str, video_dir: Path, image_style: str | None = None
+) -> dict[str, Path]:
     """Build thumbnail-a/b.jpg. Best-effort per variant: art failure falls back
     to the legacy card, and a variant that still fails is skipped. Never raises."""
     built: dict[str, Path] = {}
@@ -1734,7 +1762,9 @@ async def build_thumbnail_variants(*, title: str, hook: str, bible: str, video_d
             try:
                 art = video_dir / f"thumbnail-{suffix}-art.png"
                 await _generate_gemini_thumbnail_art(
-                    prompt=build_thumbnail_art_prompt(title=title, hook=hook, bible=bible, mood=mood),
+                    prompt=build_thumbnail_art_prompt(
+                        title=title, hook=hook, bible=bible, mood=mood, image_style=image_style
+                    ),
                     destination=art,
                 )
                 background: Path | None = art

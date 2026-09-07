@@ -323,7 +323,7 @@ async def test_gemini_image_recovers_from_a_blank_response(tmp_path, monkeypatch
 async def test_cinematic_backend_writes_one_image_and_composition_per_scene(tmp_path):
     from app.scene3d.backend import build_cinematic_frames
 
-    async def make_image(_prompt, destination, _provider):
+    async def make_image(_prompt, destination, _provider, _style="cinematic3d"):
         destination.write_bytes(b"png")
 
     with (

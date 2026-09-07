@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 from types import SimpleNamespace
 from unittest.mock import AsyncMock, MagicMock, patch
 
@@ -305,6 +306,14 @@ class _FakeResponse:
     def json(self):
         return self._json
 
+    def raise_for_status(self):
+        if self.status_code >= 400:
+            import httpx
+
+            raise httpx.HTTPStatusError(
+                f"{self.status_code}", request=None, response=None
+            )
+
 
 class _FakeAsyncClient:
     def __init__(self, *args, **kwargs):
@@ -418,7 +427,9 @@ async def test_build_frames_routes_to_cinematic_with_motion(tmp_path):
         await youtube._build_frames(
             Storyboard(), tmp_path, backend="cinematic", image_provider="gemini", motion="veo"
         )
-    cinematic.assert_awaited_once_with(Storyboard(), tmp_path, provider="gemini", motion="veo")
+    cinematic.assert_awaited_once_with(
+            Storyboard(), tmp_path, provider="gemini", motion="veo", image_style=None
+        )
 
 
 @pytest.mark.asyncio
@@ -500,3 +511,177 @@ async def test_cinematic_build_without_motion_keeps_ken_burns(tmp_path):
         html = (tmp_path / "compositions" / "frames" / f"{frame.slug}.html").read_text(encoding="utf-8")
         assert "<video" not in html
         assert 'class="image hero-image clip"' in html
+
+
+# ---------------------------------------------------------------------------
+# generate_comfyui_clip — local LTX-Video provider
+# ---------------------------------------------------------------------------
+
+
+def test_normalize_motion_provider_accepts_comfyui():
+    from app.scene3d.motion import normalize_motion_provider
+
+    assert normalize_motion_provider(" comfyui ") == "comfyui"
+
+
+def test_motion_provider_statuses_reflect_comfyui_env(monkeypatch):
+    from app.scene3d import motion
+
+    monkeypatch.delenv("COMFYUI_BASE_URL", raising=False)
+    statuses = {item["id"]: item for item in motion.motion_provider_statuses()}
+    assert "comfyui" in statuses
+    assert statuses["comfyui"]["configured"] is False
+
+    monkeypatch.setenv("COMFYUI_BASE_URL", "http://127.0.0.1:8188")
+    statuses = {item["id"]: item for item in motion.motion_provider_statuses()}
+    assert statuses["comfyui"]["configured"] is True
+
+
+def test_require_motion_provider_comfyui_needs_base_url(monkeypatch):
+    from app.scene3d.motion import require_motion_provider
+
+    monkeypatch.delenv("COMFYUI_BASE_URL", raising=False)
+    with pytest.raises(RuntimeError, match="COMFYUI_BASE_URL"):
+        require_motion_provider("comfyui")
+
+    monkeypatch.setenv("COMFYUI_BASE_URL", "http://127.0.0.1:8188")
+    assert require_motion_provider("comfyui") == "comfyui"
+
+
+def test_generate_motion_clip_dispatches_comfyui():
+    from app.scene3d import motion
+    import asyncio
+
+    with patch.object(motion, "generate_comfyui_clip", new=AsyncMock()) as comfy:
+        asyncio.run(motion.generate_motion_clip("comfyui", MagicMock(), "p", MagicMock()))
+    comfy.assert_awaited_once()
+
+
+def test_comfyui_motion_workflow_replaces_tokens(monkeypatch):
+    from app.scene3d import motion
+
+    monkeypatch.setattr(motion, "COMFYUI_VIDEO_WIDTH", 576)
+    monkeypatch.setattr(motion, "COMFYUI_VIDEO_HEIGHT", 896)
+    monkeypatch.setattr(motion, "COMFYUI_VIDEO_FRAMES", 49)
+    monkeypatch.setattr(motion, "COMFYUI_VIDEO_STEPS", 15)
+    monkeypatch.setattr(motion, "COMFYUI_VIDEO_FPS", 24)
+    monkeypatch.delenv("COMFYUI_MOTION_WORKFLOW_PATH", raising=False)
+    monkeypatch.setattr(motion, "COMFYUI_MOTION_WORKFLOW_PATH", "")
+
+    workflow = motion._comfyui_motion_workflow("a prompt", "a negative", "f01-frame.png", 42)
+
+    assert workflow["4"]["inputs"]["image"] == "f01-frame.png"
+    assert workflow["5"]["inputs"]["text"] == "a prompt"
+    assert workflow["6"]["inputs"]["text"] == "a negative"
+    assert workflow["8"]["inputs"]["width"] == "576"
+    assert workflow["8"]["inputs"]["length"] == "49"
+    assert workflow["11"]["inputs"]["steps"] == "15"
+    assert workflow["11"]["inputs"]["seed"] == "42"
+    # No unreplaced tokens may survive.
+    assert "{{" not in json.dumps(workflow)
+
+
+def test_comfyui_motion_workflow_honors_custom_path(tmp_path, monkeypatch):
+    from app.scene3d import motion
+
+    custom = tmp_path / "custom.json"
+    custom.write_text(json.dumps({"9": {"class_type": "LoadImage", "inputs": {"image": "{{KEYFRAME}}"}}}))
+    monkeypatch.setattr(motion, "COMFYUI_MOTION_WORKFLOW_PATH", str(custom))
+    workflow = motion._comfyui_motion_workflow("p", "n", "k.png", 7)
+    assert workflow == {"9": {"class_type": "LoadImage", "inputs": {"image": "k.png"}}}
+
+
+def test_comfyui_motion_workflow_bad_path_raises(monkeypatch):
+    from app.scene3d import motion
+
+    monkeypatch.setattr(motion, "COMFYUI_MOTION_WORKFLOW_PATH", "/nonexistent/nope.json")
+    with pytest.raises(RuntimeError, match="Could not load LTX motion workflow"):
+        motion._comfyui_motion_workflow("p", "n", "k.png", 7)
+
+
+class _FakeComfyClient:
+    def __init__(self, *args, **kwargs):
+        self.post_calls = []
+        self.get_calls = []
+
+    async def __aenter__(self):
+        return self
+
+    async def __aexit__(self, *args):
+        return False
+
+    async def post(self, url, **kwargs):
+        self.post_calls.append((url, kwargs))
+        if "upload" in url:
+            return _FakeResponse(json_body={"name": "f01-frame.png", "subfolder": "", "type": "input"})
+        return _FakeResponse(json_body={"prompt_id": "job-1"})
+
+    async def get(self, url, **kwargs):
+        self.get_calls.append((url, kwargs))
+        if "/history/" in url:
+            return _FakeResponse(json_body={
+                "job-1": {
+                    "status": {"status_str": "success"},
+                    "outputs": {"13": {"gifs": [{
+                        "filename": "ltx_i2v_00001.mp4", "subfolder": "", "type": "output",
+                    }]}},
+                }
+            })
+        if "/view" in url:
+            return _FakeResponse(content=b"ltx-bytes")
+        return _FakeResponse()
+
+
+@pytest.mark.asyncio
+async def test_generate_comfyui_clip_upload_submit_poll_download(tmp_path, monkeypatch):
+    from app.scene3d import motion
+
+    keyframe = tmp_path / "f01-frame.png"
+    keyframe.write_bytes(b"png-bytes")
+    destination = tmp_path / "clip.raw.mp4"
+    monkeypatch.setenv("COMFYUI_BASE_URL", "http://127.0.0.1:8188")
+    monkeypatch.setattr(motion, "COMFYUI_MOTION_POLL_INTERVAL_SECONDS", 0.01)
+
+    fake = _FakeComfyClient()
+    with patch("httpx.AsyncClient", return_value=fake):
+        await motion.generate_comfyui_clip(keyframe, "a prompt", destination)
+
+    upload_url, upload_kwargs = fake.post_calls[0]
+    assert upload_url == "http://127.0.0.1:8188/upload/image"
+    assert upload_kwargs["data"] == {"type": "input", "overwrite": "true"}
+    assert fake.post_calls[1][0] == "http://127.0.0.1:8188/prompt"
+    prompt_payload = fake.post_calls[1][1]["json"]["prompt"]
+    assert prompt_payload["5"]["inputs"]["text"] == "a prompt"
+    assert prompt_payload["4"]["inputs"]["image"] == "f01-frame.png"
+    view_call = fake.get_calls[-1]
+    assert view_call[0] == "http://127.0.0.1:8188/view"
+    assert view_call[1]["params"]["filename"] == "ltx_i2v_00001.mp4"
+    assert destination.read_bytes() == b"ltx-bytes"
+
+
+@pytest.mark.asyncio
+async def test_generate_comfyui_clip_unreachable_has_recovery_message(tmp_path, monkeypatch):
+    from app.scene3d import motion
+
+    keyframe = tmp_path / "f.png"
+    keyframe.write_bytes(b"png")
+    monkeypatch.setenv("COMFYUI_BASE_URL", "http://127.0.0.1:8188")
+
+    class _DeadClient:
+        def __init__(self, *args, **kwargs):
+            pass
+
+        async def __aenter__(self):
+            return self
+
+        async def __aexit__(self, *args):
+            return False
+
+        async def post(self, url, **kwargs):
+            import httpx
+
+            raise httpx.ConnectError("connection refused")
+
+    with patch("httpx.AsyncClient", return_value=_DeadClient()):
+        with pytest.raises(RuntimeError, match="restart ComfyUI"):
+            await motion.generate_comfyui_clip(keyframe, "p", tmp_path / "o.mp4")
