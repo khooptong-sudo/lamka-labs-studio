@@ -688,6 +688,7 @@ export default function PosterCard({
           <p className="text-[10px] uppercase tracking-[0.2em] mt-1">
             <span className="opacity-60">in collaboration with Lamka </span>
             <span style={{ color: MAROON }}>Labs</span>
+            <span className="opacity-60"> Studio</span>
           </p>
         </div>
         <div className="flex items-center justify-center gap-2.5 text-xs opacity-70">
