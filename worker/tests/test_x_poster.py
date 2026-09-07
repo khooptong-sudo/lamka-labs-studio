@@ -101,37 +101,60 @@ async def test_generate_poster_normalises_list_summary(monkeypatch):
     monkeypatch.setenv("DEEPSEEK_API_KEY", "test-key")
 
     result = await poster.generate_poster_from_text("Topic", ["A"])
-    assert result["summary"] == f"{first_half} {second_half}"
+    assert result["summary"] == f"{first_half}\n\n{second_half}"
 
 
-def test_validate_poster_rejects_summary_under_70_words():
+def test_validate_poster_rejects_summary_under_min_words():
     from app.x.poster import PosterError, _validate_and_trim
 
     poster = {
         "title": "T",
         "subtitle": "S",
-        "summary": "This is a short summary that does not contain enough words to stand alone as a useful news briefing for the reader.",
+        "summary": "This is a short summary that does not contain enough words.",
         "sections": [{"heading": "H", "bullets": ["B"]}],
         "footer": "F",
     }
 
-    with pytest.raises(PosterError, match="summary must contain 70 to 120 words"):
+    with pytest.raises(PosterError, match="summary must contain at least"):
         _validate_and_trim(poster)
 
 
-def test_validate_poster_rejects_summary_over_500_characters():
-    from app.x.poster import PosterError, _validate_and_trim
+def test_validate_poster_preserves_paragraph_breaks():
+    """A two-paragraph summary keeps its blank line so the poster can render
+    the paragraphs separately instead of collapsing them into one block."""
+    from app.x.poster import _validate_and_trim
 
+    para1 = "word " * 40 + "end."
+    para2 = "more " * 40 + "end."
     poster = {
         "title": "T",
         "subtitle": "S",
-        "summary": "word " * 101,
+        "summary": f"{para1}\n\n   {para2}",
         "sections": [{"heading": "H", "bullets": ["B"]}],
         "footer": "F",
     }
 
-    with pytest.raises(PosterError, match="summary must be 500 characters or fewer"):
-        _validate_and_trim(poster)
+    result = _validate_and_trim(poster)
+    assert "\n\n" in result["summary"]
+    assert result["summary"].split("\n\n")[1].startswith("more")
+
+
+def test_validate_poster_trims_summary_over_char_cap():
+    from app.x import poster
+    from app.x.poster import _validate_and_trim
+
+    poster_dict = {
+        "title": "T",
+        "subtitle": "S",
+        "summary": "This is a sentence about markets. " * 60,
+        "sections": [{"heading": "H", "bullets": ["B"]}],
+        "footer": "F",
+    }
+
+    result = _validate_and_trim(poster_dict)
+    assert len(result["summary"]) <= poster.MAX_SUMMARY_CHARS
+    # The trim lands on a sentence boundary, never mid-word.
+    assert result["summary"].endswith(".")
 
 
 @pytest.mark.asyncio

@@ -530,7 +530,7 @@ export default function PosterCard({
   const generatedAt = formatGeneratedAt();
   const sections = poster.sections.slice(0, 6);
 
-  // The poster is a fixed 1080x1350 frame, so a full summary paragraph plus
+  // The poster is a fixed 1080x1350 frame, so a two-paragraph summary plus
   // five sections of five bullets has to buy its space from type and padding
   // rather than from height. One step down is enough for the worst case.
   const bulletCount = sections.reduce((n, section) => n + section.bullets.length, 0);
@@ -598,10 +598,17 @@ export default function PosterCard({
         <p className={`${dense ? "text-xl" : "text-2xl"} leading-snug mt-3 opacity-75`}>{poster.subtitle}</p>
       </div>
 
-      {/* Summary */}
+      {/* Summary — one or two paragraphs separated by a blank line */}
       <div className={`relative z-10 ${dense ? "mb-4" : "mb-6"} ${cardClass}`} style={variant.cardStyle}>
         <div className="mb-3">{heading("At a Glance")}</div>
-        <p className={`${dense ? "text-[15px] leading-[1.55]" : "text-[17px] leading-relaxed"}`}>{poster.summary}</p>
+        {poster.summary.split(/\n\s*\n+/).map((paragraph, index) => (
+          <p
+            key={index}
+            className={`${dense ? "text-[15px] leading-[1.55]" : "text-[17px] leading-relaxed"} ${index > 0 ? "mt-3" : ""}`}
+          >
+            {paragraph}
+          </p>
+        ))}
       </div>
 
       {/* Sections */}

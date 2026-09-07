@@ -12,9 +12,11 @@ from app import db
 from app.llm import providers
 
 MAX_BULLET_LENGTH = 120
-MIN_SUMMARY_WORDS = 70
-MAX_SUMMARY_WORDS = 120
-MAX_SUMMARY_CHARS = 500
+# A summary shorter than this is almost certainly a broken extraction, not a
+# stylistic choice. There is deliberately no upper word cap: overlong summaries
+# are trimmed to fit the poster instead of failing the whole generation.
+MIN_SUMMARY_WORDS = 40
+MAX_SUMMARY_CHARS = 900
 MAX_SECTIONS = 6
 MAX_BULLETS_PER_SECTION = 5
 
@@ -30,7 +32,7 @@ Rules:
   {
     "title": "string (max 60 chars)",
     "subtitle": "string (max 90 chars)",
-    "summary": "string (one paragraph, 70 to 120 words)",
+    "summary": "string (one or two short paragraphs, 60 to 120 words total)",
     "sections": [
       {
         "heading": "string (max 40 chars)",
@@ -39,7 +41,7 @@ Rules:
     ],
     "footer": "string (max 120 chars)"
   }
-- summary is REQUIRED and must never be empty. It is a single prose paragraph of 70 to 120 words that retells the news item itself: what happened, which companies and people, when, the numbers, and the outcome. Write it so a reader who has not seen the article understands the story from this paragraph alone. It is a summary, not advice, and it is not a list.
+- summary is REQUIRED and must never be empty. It is one or two short prose paragraphs (60 to 120 words in total, a short read) that retell the news item itself: what happened, which companies and people, when, the numbers, and the outcome. Write it so a reader who has not seen the article understands the story from the summary alone. It is a summary, not advice, and it is not a list.
 - Produce 3 to 5 additional sections after the summary. Each section must have exactly 5 bullets, or 4 if there is genuinely nothing more to say.
 - When the input is a news story, base the poster on the article text. Do not replace the story with generic advice.
 - Keep one section focused on the advisory/disclaimer, and put it last.
@@ -103,6 +105,17 @@ def _extract_json(text: str) -> dict[str, Any]:
         raise PosterError(f"provider returned invalid JSON: {exc}") from exc
 
 
+def _trim_to_sentence_boundary(text: str, max_chars: int) -> str:
+    """Trim text to at most max_chars, ending at a sentence boundary when one
+    is available so the summary never stops mid-word or mid-clause."""
+    cut = text[:max_chars]
+    boundary = max(cut.rfind(". "), cut.rfind(".\n"))
+    if boundary >= max_chars * 0.6:
+        return cut[: boundary + 1].strip()
+    word_end = cut.rfind(" ")
+    return (cut[:word_end] if word_end > 0 else cut).strip()
+
+
 def _validate_and_trim(poster: dict[str, Any]) -> dict[str, Any]:
     """Validate the poster schema and trim overlong fields."""
     if not isinstance(poster, dict):
@@ -121,17 +134,19 @@ def _validate_and_trim(poster: dict[str, Any]) -> dict[str, Any]:
     # normalise to the paragraph the poster renders, so a list-shaped response
     # is not silently dropped into an empty "At a Glance" box.
     if isinstance(summary, list):
-        summary = " ".join(str(b).strip() for b in summary if str(b).strip())
-    clean_summary = " ".join(str(summary or "").split())
+        summary = "\n\n".join(str(b).strip() for b in summary if str(b).strip())
+    # Collapse runs of whitespace inside each paragraph but keep the blank-line
+    # breaks between up to two paragraphs, so the poster renders them as
+    # separate blocks instead of one run-on wall of text.
+    paragraphs = [" ".join(part.split()) for part in re.split(r"\n\s*\n+", str(summary or ""))]
+    clean_summary = "\n\n".join(p for p in paragraphs if p)
     if not clean_summary:
         raise PosterError("poster missing summary")
     if len(clean_summary) > MAX_SUMMARY_CHARS:
-        raise PosterError(f"summary must be {MAX_SUMMARY_CHARS} characters or fewer")
+        clean_summary = _trim_to_sentence_boundary(clean_summary, MAX_SUMMARY_CHARS)
     word_count = len(clean_summary.split())
-    if not MIN_SUMMARY_WORDS <= word_count <= MAX_SUMMARY_WORDS:
-        raise PosterError(
-            f"summary must contain {MIN_SUMMARY_WORDS} to {MAX_SUMMARY_WORDS} words"
-        )
+    if word_count < MIN_SUMMARY_WORDS:
+        raise PosterError(f"summary must contain at least {MIN_SUMMARY_WORDS} words")
 
     if not isinstance(sections, list) or not sections:
         raise PosterError("poster missing sections")

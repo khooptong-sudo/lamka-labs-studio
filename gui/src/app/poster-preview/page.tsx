@@ -14,7 +14,7 @@ const SAMPLE: Poster = {
   title: "Stock Picks Unveiled: Jayaswal Neco & More",
   subtitle: "Understanding Analyst Recommendations and Market Signals",
   summary:
-    "Market analysts published a fresh set of short-term stock recommendations ahead of Monday trading, with Jayaswal Neco Industries among the two names singled out for attention. The calls lean on a mix of technical chart patterns and fundamental screening, and were circulated through the usual financial media channels that retail traders follow. Recommendations of this kind describe what an analyst expects, not what the market is obliged to do, and they carry no guarantee of outcome. Readers should treat them as one input among several rather than as instructions, and should check the underlying reasoning against their own research before acting on any of it.",
+    "Market analysts published a fresh set of short-term stock recommendations ahead of Monday trading, with Jayaswal Neco Industries among the two names singled out for attention. The calls lean on a mix of technical chart patterns and fundamental screening, and were circulated through the usual financial media channels that retail traders follow.\n\nRecommendations of this kind describe what an analyst expects, not what the market is obliged to do, and they carry no guarantee of outcome. Readers should treat them as one input among several rather than as instructions, and should check the underlying reasoning against their own research before acting on any of it.",
   sections: [
     {
       heading: "What Happened",
