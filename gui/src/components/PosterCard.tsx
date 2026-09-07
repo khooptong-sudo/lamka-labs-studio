@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useLayoutEffect, useMemo, useRef, useState } from "react";
 import type { CSSProperties, ReactNode } from "react";
 
 import { CHIBI_SCENERIES } from "./posterScenery";
@@ -27,6 +27,8 @@ const INK = "#111111";
 const MAROON = "#991b1b";
 const DISPLAY = "var(--font-poster-display), 'Trebuchet MS', ui-rounded, system-ui, sans-serif";
 const BODY = "var(--font-poster-body), ui-rounded, 'Segoe UI', system-ui, sans-serif";
+/** Fixed 1080x1350 frame minus the p-12 padding — the space content gets. */
+const FRAME_INNER_HEIGHT = 1350 - 96;
 
 type MarkerKind = "star" | "heart" | "check" | "arrow" | "dot" | "spark";
 type PatternKind = "dots" | "grid" | "hatch" | "rule" | "none";
@@ -530,9 +532,27 @@ export default function PosterCard({
   const generatedAt = formatGeneratedAt();
   const sections = poster.sections.slice(0, 6);
 
-  // The poster is a fixed 1080x1350 frame, so a two-paragraph summary plus
-  // five sections of five bullets has to buy its space from type and padding
-  // rather than from height. One step down is enough for the worst case.
+  // The poster is a fixed 1080x1350 frame and the content below is not: a long
+  // summary plus five dense sections runs taller than the frame and would clip
+  // the footer. Measure the natural content height and shrink the whole block
+  // to fit — the footer stays visible at the cost of even side gutters, which
+  // reads far better than a poster with no disclaimer.
+  const contentRef = useRef<HTMLDivElement>(null);
+  const [fitScale, setFitScale] = useState(1);
+
+  useLayoutEffect(() => {
+    const content = contentRef.current;
+    if (!content) return;
+    const measure = () => {
+      const scale = Math.min(1, FRAME_INNER_HEIGHT / content.offsetHeight);
+      setFitScale((prev) => (Math.abs(prev - scale) < 0.0005 ? prev : scale));
+    };
+    measure();
+    // Poster fonts load async; a measurement taken before they arrive
+    // underestimates the height and would leave the footer clipped.
+    document.fonts?.ready.then(measure);
+  }, [poster]);
+
   const bulletCount = sections.reduce((n, section) => n + section.bullets.length, 0);
   const dense = sections.length >= 4 || bulletCount >= 16;
   const cardClass = `${variant.card} ${dense ? "p-4" : "p-5"}`;
@@ -553,13 +573,24 @@ export default function PosterCard({
 
   return (
     <div
-      className={`relative w-[1080px] h-[1350px] p-12 flex flex-col overflow-hidden ${className}`}
+      className={`relative w-[1080px] h-[1350px] p-12 overflow-hidden ${className}`}
       style={{ backgroundColor: "#ffffff", color: INK, fontFamily: BODY }}
     >
       {/* Background texture */}
       <div className="absolute inset-0 pointer-events-none" style={patternStyle(variant.pattern)} />
       <Doodles marker={variant.marker} />
 
+      {/* Content block. min-h-full pins the footer to the frame bottom when
+          content is short; fitScale shrinks the whole block (even gutters
+          left/right) when it is not, so the footer is never clipped. */}
+      <div
+        ref={contentRef}
+        className="relative z-10 flex min-h-full flex-col"
+        style={{
+          transform: fitScale < 1 ? `scale(${fitScale})` : undefined,
+          transformOrigin: "top center",
+        }}
+      >
       {/* Header — kicker, then the Lamka Labs lockup, then the timestamp */}
       <header className={`relative z-10 ${dense ? "mb-5" : "mb-7"} flex items-center gap-4`}>
         <div
@@ -604,7 +635,7 @@ export default function PosterCard({
         {poster.summary.split(/\n\s*\n+/).map((paragraph, index) => (
           <p
             key={index}
-            className={`${dense ? "text-[15px] leading-[1.55]" : "text-[17px] leading-relaxed"} ${index > 0 ? "mt-3" : ""}`}
+            className={`${dense ? "text-[16px] leading-[1.6]" : "text-[18px] leading-[1.65]"} ${index > 0 ? "mt-3" : ""}`}
           >
             {paragraph}
           </p>
@@ -624,9 +655,9 @@ export default function PosterCard({
             }}
           >
             <div className={dense ? "mb-2.5" : "mb-3"}>{heading(section.heading)}</div>
-            <ul className={dense ? "space-y-1.5" : "space-y-2"}>
+            <ul className={dense ? "space-y-2" : "space-y-2.5"}>
               {section.bullets.map((bullet, bIndex) => (
-                <li key={bIndex} className={`flex items-start gap-2.5 ${dense ? "text-[13px]" : "text-sm"} leading-snug`}>
+                <li key={bIndex} className={`flex items-start gap-2.5 ${dense ? "text-[14px]" : "text-[15px]"} leading-[1.45]`}>
                   <Marker kind={variant.marker} className="w-3 h-3 mt-1 flex-shrink-0" />
                   {bullet}
                 </li>
@@ -675,6 +706,7 @@ export default function PosterCard({
           <p>{poster.footer}</p>
         </div>
       </footer>
+      </div>
     </div>
   );
 }
