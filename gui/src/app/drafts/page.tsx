@@ -125,6 +125,17 @@ function DraftCard({ draft }: { draft: any }) {
 
   const audioUrl = `/api/videos/story-${draft.story_id}/audio.mp3`;
   const storyboardUrl = `/api/videos/story-${draft.story_id}/STORYBOARD.md`;
+  const videoUrl = `/api/videos/story-${draft.story_id}/renders/video.mp4`;
+  const rendered = filePath !== "Unknown path";
+  const [audioMissing, setAudioMissing] = useState(false);
+
+  useEffect(() => {
+    // Cinematic/motion builds mix per-frame voice clips straight into the
+    // video and never write a root audio.mp3; probe instead of assuming.
+    fetch(audioUrl, { method: "HEAD" })
+      .then((res) => { if (!res.ok) setAudioMissing(true); })
+      .catch(() => setAudioMissing(true));
+  }, [audioUrl]);
 
   const [picked, setPicked] = useState<"a" | "b" | null>(draftBody.thumbnail_picked ?? null);
   const [savingPick, setSavingPick] = useState<"a" | "b" | null>(null);
@@ -205,6 +216,28 @@ function DraftCard({ draft }: { draft: any }) {
       {/* Card Body */}
       <div className="p-6 md:p-8">
         {activeTab === "overview" && (
+          <>
+          {rendered && (
+            <div className="mb-8">
+              <div className="mb-3 flex items-center justify-between">
+                <h3 className="text-xs font-semibold text-[var(--muted)] uppercase tracking-[0.2em]">Rendered Video</h3>
+                <a
+                  href={videoUrl}
+                  download
+                  className="flex items-center gap-2 rounded-lg border border-border px-3 py-1.5 text-xs font-semibold transition-colors hover:bg-foreground/[0.035]"
+                >
+                  <Download className="h-3.5 w-3.5" />
+                  Download MP4
+                </a>
+              </div>
+              <video
+                controls
+                preload="metadata"
+                src={videoUrl}
+                className="mx-auto max-h-[520px] rounded-lg border border-border bg-black"
+              />
+            </div>
+          )}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12">
             {/* Draft Content (Left 2/3) */}
             <div className="md:col-span-2 space-y-6">
@@ -245,6 +278,7 @@ function DraftCard({ draft }: { draft: any }) {
               </div>
             </div>
           </div>
+          </>
         )}
 
         {activeTab === "youtube" && (
@@ -254,9 +288,15 @@ function DraftCard({ draft }: { draft: any }) {
               <h3 className="mb-4 flex items-center text-xs font-semibold text-[var(--muted)] uppercase tracking-[0.2em]">
                 <PlayCircle className="mr-2 h-4 w-4" /> Voiceover Preview
               </h3>
-              <audio controls className="h-12 w-full rounded-lg" src={audioUrl}>
-                Your browser does not support the audio element.
-              </audio>
+              {audioMissing ? (
+                <p className="text-sm text-[var(--muted)]">
+                  This build mixes the voiceover straight into the video — use the rendered video&apos;s audio.
+                </p>
+              ) : (
+                <audio controls className="h-12 w-full rounded-lg" src={audioUrl}>
+                  Your browser does not support the audio element.
+                </audio>
+              )}
             </div>
 
             {/* Thumbnails */}
@@ -268,7 +308,7 @@ function DraftCard({ draft }: { draft: any }) {
                 {(["a", "b"] as const).map((variant) => (
                   <div key={variant}>
                     <img
-                      src={`/api/videos/story-${draft.story_id}/thumbnail-${variant}.jpg`}
+                      src={`/api/videos/story-${draft.story_id}/thumbnail-${variant}-art.png`}
                       alt={`Thumbnail ${variant.toUpperCase()}`}
                       loading="lazy"
                       className={`aspect-video w-full rounded-lg border object-cover ${
