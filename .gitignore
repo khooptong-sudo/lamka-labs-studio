@@ -65,3 +65,7 @@ videos/**/thumbnail.jpg
 *.mp4
 *.wav
 *.mp3
+
+# Tooling/session artifacts
+.gstack/
+.test-tmp/
