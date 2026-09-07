@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { toPng } from "html-to-image";
 import { Copy, Check, RefreshCw, MessageSquare, Send, Image, Download, Lightbulb } from "lucide-react";
 import {
@@ -32,6 +32,8 @@ export default function XPage() {
   const [stories, setStories] = useState<Story[]>([]);
   const [selected, setSelected] = useState<Story | null>(null);
   const [loadingStories, setLoadingStories] = useState(true);
+  const [refreshingStories, setRefreshingStories] = useState(false);
+  const [lastStoriesRefresh, setLastStoriesRefresh] = useState<Date | null>(null);
   const [activeTab, setActiveTab] = useState<"post" | "poster">("post");
 
   // Post state
@@ -61,15 +63,37 @@ export default function XPage() {
 
   const [error, setError] = useState<string | null>(null);
 
+  const applyStories = useCallback((data: Story[]) => {
+    setStories(data);
+    setSelected((current) => {
+      if (!current) return data[0] ?? null;
+      return data.find((story) => story.id === current.id) ?? data[0] ?? null;
+    });
+    setLastStoriesRefresh(new Date());
+  }, []);
+
+  const loadStories = useCallback(async (isRefresh = false) => {
+    if (isRefresh) setRefreshingStories(true);
+    else setLoadingStories(true);
+    setError(null);
+
+    try {
+      const data = await fetchXStories();
+      applyStories(data);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Failed to refresh stories");
+    } finally {
+      if (isRefresh) setRefreshingStories(false);
+      else setLoadingStories(false);
+    }
+  }, [applyStories]);
+
   useEffect(() => {
     fetchXStories()
-      .then((data) => {
-        setStories(data);
-        if (data.length > 0) setSelected(data[0]);
-      })
-      .catch((err) => setError(err.message))
+      .then(applyStories)
+      .catch((err: unknown) => setError(err instanceof Error ? err.message : "Failed to fetch stories"))
       .finally(() => setLoadingStories(false));
-  }, []);
+  }, [applyStories]);
 
   const handleRewrite = async () => {
     if (!selected) return;
@@ -157,9 +181,26 @@ export default function XPage() {
     <div className="h-[calc(100vh-2rem)] flex gap-4">
       {/* Column 1: Story list */}
       <section className="w-1/3 min-w-[280px] max-w-md flex flex-col overflow-hidden rounded-[var(--radius)] border border-border bg-[var(--surface-deck)]">
-        <div className="border-b border-border px-5 py-4">
-          <h2 className="text-[17px] font-semibold tracking-tight">Inbox</h2>
-          <p className="mt-1 text-xs text-[var(--muted)]">Select a story to work with</p>
+        <div className="flex items-start justify-between gap-3 border-b border-border px-5 py-4">
+          <div>
+            <h2 className="text-[17px] font-semibold tracking-tight">Inbox</h2>
+            <p className="mt-1 text-xs text-[var(--muted)]">Select a story to work with</p>
+            {lastStoriesRefresh && (
+              <p className="mt-1 font-mono text-[10px] text-[var(--muted)]">
+                Updated {lastStoriesRefresh.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}
+              </p>
+            )}
+          </div>
+          <button
+            type="button"
+            onClick={() => void loadStories(true)}
+            disabled={loadingStories || refreshingStories}
+            className="mt-[-2px] inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-transparent text-[var(--muted)] transition-colors hover:border-border hover:bg-foreground/[0.035] hover:text-foreground disabled:cursor-not-allowed disabled:opacity-50"
+            aria-label="Refresh inbox"
+            title="Refresh inbox"
+          >
+            <RefreshCw className={`h-4 w-4 ${refreshingStories ? "animate-spin" : ""}`} />
+          </button>
         </div>
         <div className="flex-1 overflow-y-auto divide-y divide-border">
           {loadingStories ? (
