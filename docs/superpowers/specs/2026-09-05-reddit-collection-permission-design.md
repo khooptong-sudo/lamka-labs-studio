@@ -84,6 +84,31 @@ sentiment judge; a third automated layer buys risk, not value).
 - r/AskHistorians, r/science, and any strict-rule sub until rules review.
 - Sentiment judging of replies; commercial API tiers (revisit on volume).
 
+## Addendum 2026-09-07 — credential-free collection mode (#90)
+
+Supersedes the "poll refuses to start with any missing" credential rule in
+the Collection section above. `app/sources/reddit.py` now selects per poll:
+creds present → PRAW (unchanged); creds absent (or
+`REDDIT_COLLECTION_FORCE_RSS=true`) → the public
+`/r/{sub}/top/.rss?t=week` Atom feed, which needs no account, login,
+cookies, or API key (verified live 2026-09-07; browser User-Agent
+required; 429 retried twice honouring Retry-After).
+
+Trade-offs accepted, because the candidate→owner-approved-PM→granted gate
+is unchanged and remains the real filter:
+- No scores in feeds → MIN_SCORE replaced by top-of-week rank order
+  (RSS_FETCH_LIMIT=25) plus a 200-char substance floor; rss-mode items
+  carry `score: None` and a `score_unavailable` warning.
+- No NSFW flag in feeds → rss mode is seeded only against the SFW
+  allowlist subs (UnresolvedMysteries, TrueCrime).
+- Comment threads are not reachable without login; collection is
+  title + selftext only, as before.
+
+PM sending (`reddit_outreach.py`) still requires the five REDDIT_* creds —
+the fallback is collection-only. `test_fetch_requires_credentials` was
+deliberately rewritten to assert mode selection (see #74's lesson: the
+suite must be read alongside the change, not trusted by colour).
+
 ## Files touched
 
 - `worker/pyproject.toml` (+ both venv installs, same change)

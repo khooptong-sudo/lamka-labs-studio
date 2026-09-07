@@ -1,6 +1,9 @@
-"""Reddit source: allowlist, floors, credential gates. PRAW always faked."""
+"""Reddit source: allowlist, floors, mode gates. PRAW always faked."""
 
 import pytest
+
+CREDENTIAL_VARS = ("REDDIT_CLIENT_ID", "REDDIT_SECRET", "REDDIT_USERNAME",
+                   "REDDIT_PASSWORD", "REDDIT_USER_AGENT")
 
 
 def _source_row(url="https://www.reddit.com/r/UnresolvedMysteries/"):
@@ -9,14 +12,36 @@ def _source_row(url="https://www.reddit.com/r/UnresolvedMysteries/"):
     return SimpleNamespace(id="src-1", kind="reddit", url=url, name="UnresolvedMysteries")
 
 
-async def test_fetch_requires_credentials(monkeypatch):
+def _clear_creds(monkeypatch):
+    for var in CREDENTIAL_VARS:
+        monkeypatch.delenv(var, raising=False)
+
+
+async def test_missing_credentials_selects_rss_mode(monkeypatch):
+    """PROGRESS.md #90: no creds no longer fails the poll — it falls back
+    to the public RSS feed (network layer tested in test_reddit_rss_fallback)."""
     from app.sources import reddit as reddit_mod
 
-    for var in ("REDDIT_CLIENT_ID", "REDDIT_SECRET", "REDDIT_USERNAME",
-                "REDDIT_PASSWORD", "REDDIT_USER_AGENT"):
-        monkeypatch.delenv(var, raising=False)
-    with pytest.raises(Exception, match="REDDIT_CLIENT_ID"):
-        await reddit_mod.RedditSource().fetch(_source_row())
+    _clear_creds(monkeypatch)
+    assert reddit_mod._collection_mode() == "rss"
+
+
+def test_credentials_present_selects_praw_mode(monkeypatch):
+    from app.sources import reddit as reddit_mod
+
+    for var in CREDENTIAL_VARS:
+        monkeypatch.setenv(var, "x")
+    monkeypatch.delenv("REDDIT_COLLECTION_FORCE_RSS", raising=False)
+    assert reddit_mod._collection_mode() == "praw"
+
+
+def test_force_rss_overrides_credentials(monkeypatch):
+    from app.sources import reddit as reddit_mod
+
+    for var in CREDENTIAL_VARS:
+        monkeypatch.setenv(var, "x")
+    monkeypatch.setenv("REDDIT_COLLECTION_FORCE_RSS", "true")
+    assert reddit_mod._collection_mode() == "rss"
 
 
 def test_kind_registered():
@@ -34,6 +59,7 @@ async def test_fetch_collects_qualifying_posts(monkeypatch):
                      ("REDDIT_USERNAME", "u"), ("REDDIT_PASSWORD", "p"),
                      ("REDDIT_USER_AGENT", "ua")):
         monkeypatch.setenv(var, val)
+    monkeypatch.delenv("REDDIT_COLLECTION_FORCE_RSS", raising=False)
 
     good = SimpleNamespace(id="p1", title="The case", author=SimpleNamespace(name="sleuth"),
                            permalink="/r/x/comments/p1", selftext="long text here",

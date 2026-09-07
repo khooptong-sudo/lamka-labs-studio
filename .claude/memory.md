@@ -1,6 +1,6 @@
 # Project memory — Lamka Labs Studio (Fin Content Engine)
 
-Repo: **`khooptong-sudo/lamka-labs-studio`** · Local: `F:\lamka-labs-studio`
+Repo: **`khooptong-sudo/lamka-labs-studio`** · Local: `F:\Lamka Labs Studio`
 Automated finance/kids YouTube pipeline: news → story → script → narration → frames →
 rendered MP4 → upload. Worker is Python/FastAPI in `worker/`, cockpit is Next.js in `gui/`.
 
@@ -45,6 +45,8 @@ Vault: `F:\Vault the Brain\The Brain` — catalog is `index.md`, section "Conten
 - **Never run `pytest` while an end-to-end run is in flight** — the DB tests truncate tables and will delete the story mid-render.
 - **Running the full suite silently disables every news source** (`test_cold_start.py` sets `active = false` and never restores it). Never run it right before a demo. Restore command is in Claude Code memory, `local-dev-environment-gotchas`.
 - **Browser: the Chrome extension does not connect on this machine.** Use Playwright from `.venv` instead. Same memory file.
+- **DB tests need the container URL:** `conftest.py` defaults to `localhost:5432`, but the local `fce-db` container publishes `127.0.0.1:15432` (excluded-port range). Without `FCE_DATABASE_URL=postgresql://postgres:postgres@127.0.0.1:15432/fce` they error with PoolTimeout — that is an absent DB, not a failure.
+- **Reddit `.json` is login-gated; public RSS/Atom feeds are the credential-free read path** (`/r/{sub}/top/.rss?t=week`, `search.rss`, user/domain feeds). Browser UA mandatory; throttles can look like empty 200s or empty feeds. Vault: [[Dev - Reddits Public Feeds Are the Credential-Free Read Path]]. The worker source falls back to RSS mode when `REDDIT_*` creds are absent (PROGRESS.md #90) — restart the worker to pick it up.
 - **Ollama is `127.0.0.1:11434`, never `localhost`** — Windows resolves ::1 first and Ollama binds IPv4 only.
 - **Shell: Windows PowerShell 5.1**, so `&&` is a parse error in anything handed to the owner. Chain with `;`.
 - Commit source only. Rendered `mp4`/`mp3`/`wav`, `renders/`, `assets/voice/` are gitignored.

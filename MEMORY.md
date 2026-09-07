@@ -8,7 +8,7 @@
 **Owner:** UMinkoo (sole publish authority).
 **Started:** 2026-07-25. **Last update:** 2026-09-07.
 **GitHub repo:** `khooptong-sudo/lamka-labs-studio` (transferred/renamed from `khooptong-creator/fin-content-engine`).
-**Local folder:** `F:\lamka-labs-studio` (renamed from `F:\Content Creation Project` on 2026-08-14).
+**Local folder:** `F:\Lamka Labs Studio` (renamed from `F:\lamka-labs-studio` on 2026-09-07; that name came from `F:\Content Creation Project`, 2026-08-14).
 
 ---
 
@@ -389,3 +389,13 @@ docker exec desk-caddy-1 caddy reload --config /etc/caddy/Caddyfile
 - Rule: the local DB is a scratch/dev database. If the Inbox matters, the GUI must point at the VPS worker.
 
 **Deploy update (same day, done):** the Ken Burns renderer (`c73da8f`) is now DEPLOYED on the VPS. The checkout is fully in sync with `main` for the first time since the scp era: remote repointed from the old repo to `khooptong-sudo/lamka-labs-studio`, `git reset --hard origin/main` landed (`ebf50a8` → `c73da8f`), worker restarted clean (11 jobs registered, `/health` green, `app.scene3d.kenburns/motion/assemble` all import). The disk copies of `assemble.py`/`motion.py` were 180/301 lines BEHIND `main` — the repo, not the disk, was the newer side. Also seen: one transient Veo `code 13` internal error pre-restart (retries handle it).
+
+### Session-close update — 2026-09-07 (evening): Reddit collection goes credential-free
+
+- **The mystery-lane Reddit source no longer needs the five `REDDIT_*` credentials to collect.** `worker/app/sources/reddit.py` now picks per poll: creds present → PRAW (unchanged, real scores, MIN_SCORE=100); creds absent (or `REDDIT_COLLECTION_FORCE_RSS=true`) → the public `/r/{sub}/top/.rss?t=week` Atom feed — no account, login, cookies, or API key (verified live today). PROGRESS.md #90; spec addendum on `2026-09-05-reddit-collection-permission-design.md`.
+- **Accepted trade-offs (deliberate, recorded):** feeds carry no scores → MIN_SCORE replaced by top-of-week rank + 25-item cap + 200-char substance floor; no NSFW flag → RSS mode only runs against the SFW allowlist subs. The candidate → owner-approved PM → granted rights gate is untouched — the human gate replaces the missing automated one. PM sending still requires creds; fallback is collection-only.
+- **Reddit's throttle has silent shapes:** beyond an honest 429, it answers with HTTP 200 + empty body and with well-formed feeds containing zero entries. The source raises `not_a_feed` on non-feed 200s so throttling lands in source health instead of looking like a healthy empty week. My live smoke got rate-limited from testing traffic — the first real weekly production poll is the final confirmation; endpoints and parsing were proven live earlier in the day.
+- **Local test-suite DB default mismatch:** `conftest.py` defaults `FCE_DATABASE_URL` to `localhost:5432`, but the local `fce-db` container publishes `127.0.0.1:15432` (Windows excluded-port range, see trap #23). DB tests error with PoolTimeout, not failures. Run them with `FCE_DATABASE_URL=postgresql://postgres:postgres@127.0.0.1:15432/fce`.
+- **Restart the worker before trusting any of this live** — no hot reload (trap #19). 27 reddit-area tests green (incl. 6 new fallback tests); DB-backed rights/ingest tests pass against the 15432 container.
+- **Also shipped (user-scope, all projects):** three agent skills — `reddit-research`, `feed-research` (zero-install RSS/Atom/JSON-Feed reader, `feedread.py`), and `research-sweep` (web + Reddit + RSS + X + video + code in one prompt). These are agent tooling, not product code.
+- **Vault/RAG updated:** two atomic pages (`Content Engine - Reddit Collection Runs Credential-Free`, `Dev - Reddits Public Feeds Are the Credential-Free Read Path`), index/log entries, graph ingest + `graph_cli.py --rebuild --no-llm` (234 pages).
