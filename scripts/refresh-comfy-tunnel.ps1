@@ -29,8 +29,10 @@ Write-Host "Tunnel: $url"
 
 # 3. Patch VPS env and restart worker
 Write-Host "Patching VPS /opt/fce/.env ..."
-# Use ssh to replace or append COMFYUI_BASE_URL
-ssh -n -o BatchMode=yes root@160.250.204.73 @"
+# Remote script passed as the ssh COMMAND ARGUMENT, never piped stdin: piping a
+# here-string into `ssh -n` hung on 2026-09-07 (-n detaches stdin, so the pipe
+# is never read and the patch step stalled forever).
+$remote = @"
 set -e
 if grep -q '^COMFYUI_BASE_URL=' /opt/fce/.env; then
   sed -i 's|^COMFYUI_BASE_URL=.*|COMFYUI_BASE_URL=$url|' /opt/fce/.env
@@ -49,4 +51,5 @@ sleep 8
 systemctl is-active fce-worker
 curl -s http://127.0.0.1:8002/youtube/image-providers
 "@
+ssh -n -o BatchMode=yes -o ConnectTimeout=15 root@160.250.204.73 $remote
 Write-Host "Done. VPS ComfyUI should now show 'Ready' (select it in Studio and refresh)."
