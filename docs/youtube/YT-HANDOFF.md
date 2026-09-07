@@ -497,3 +497,43 @@ placeholders.
 - Validation: worker suite 587/587 passing (was 561 before this session; DB-integration tests now included since local Postgres was reachable throughout). GUI production build passing, `/cinema` registered as a static route.
 - **Deferred, tracked, not forgotten:** visual/aesthetic design of the Cinema page (colors, spacing, chip styling, motion) — functional structure only so far, reusing existing Tailwind tokens. Blocked on the `frontend-design` skill, re-enabled in `.claude/settings.local.json` this session but inactive until the next session restart. Live-browser confirmation of the picker's actual rendered behavior is also incomplete (a Claude-in-Chrome tool outage blocked it mid-session) — code-trace, API-level `curl`, and the full engine test suite all check out, but nobody has watched it render yet.
 - Start locally with `START_LAMKA_LABS_STUDIO.bat`, same as before.
+
+## Session Close — 2026-09-07 (night): second GPU black-screen — local LTX path in abeyance
+
+### What happened
+
+The local RTX 3070 dropped off the bus again (black screen, force restart) during the
+phase-2 LTX-Video validation run — the second hard hang of the day. Forensics on the
+debris in `.test-tmp/`:
+
+- `gpu_log2.csv` (1 Hz sampler): the **180 W power cap was holding** — sustained
+  175–177 W with clocks trimming at the limiter — at **65 °C** and **≤ 7.4/8 GB VRAM**
+  when the card died mid-sampler. Run 1 (`gpu_log.csv`, 13:14) showed a 218 W spike at
+  75 C under the 190 W cap; capping lower did not help.
+- `comfyui_run2.log`: faulthandler dump inside `sample_euler`/`predict_noise` — the
+  sampler was running when the GPU vanished.
+- Conclusion: **hardware** (VRM / PSU rail / VRAM), not thermals, not sustained power.
+  The power-cap branch (220 → 190 → 180 W) is closed. Do not retry with lower limits,
+  undervolts, or driver changes — each attempt is another forced reboot.
+
+### What survives (resumption kit for the 4090/5080)
+
+- **Committed:** `fdfd75f` local ComfyUI LTX i2v motion provider (`worker/app/scene3d/motion.py`,
+  `ltx_i2v_workflow.json`, routes, tests). `d595557` cap history in `scripts/gpu-thermal-cap.ps1`.
+- **Untracked debris kept in place:** `.test-tmp/run_ltx_test.py` (submit→poll→download
+  validation harness), `.test-tmp/ltx_i2v_test_payload.json`, `scripts/run-comfyui-ltx.bat`
+  (`--use-split-cross-attention` launcher for the 8 GB card).
+- **Recovered artifact:** `videos/story-88aa9c63-14aa-46b1-bbdd-e39364fccfaf/renders/video.mp4`
+  (32.7 MB, Sep 6) — complete render, but no thumbnail/upload packet; review before any
+  manual upload. A render alone is not a draft.
+
+### How the pipeline keeps moving without the local GPU
+
+- Motion providers on the Films page: `off` (Ken Burns) / `veo` (working on the VPS,
+  `GEMINI_VIDEO_MODEL=veo-3.1-fast-generate-preview`, small daily pool) / `kling`
+  (fal.run queue REST — **set `FAL_KEY` on the VPS** to make this the
+  vendor-independent backup; still unconfigured).
+- Local ComfyUI providers (image or LTX motion) stay selectable in the GUI but treat
+  them as offline until the new card is installed and re-benched (PSU first).
+- After these reboots the ComfyUI quick tunnel URL is stale; if a VPS job ever selects a
+  local provider, rerun `scripts/refresh-comfy-tunnel.ps1` first.
