@@ -683,10 +683,11 @@ export default function PosterCard({
       >
         <div className="text-center mb-4">
           <p className="text-[11px] uppercase tracking-[0.18em]" style={{ fontFamily: DISPLAY, fontWeight: 600 }}>
-            A Lamka Exchange Society Pvt Ltd Production
+            A Lamka Exchange Society Production
           </p>
-          <p className="text-[10px] uppercase tracking-[0.2em] opacity-60 mt-1">
-            in collaboration with Lamka Labs Studio
+          <p className="text-[10px] uppercase tracking-[0.2em] mt-1">
+            <span className="opacity-60">in collaboration with Lamka </span>
+            <span style={{ color: MAROON }}>Labs</span>
           </p>
         </div>
         <div className="flex items-center justify-center gap-2.5 text-xs opacity-70">
